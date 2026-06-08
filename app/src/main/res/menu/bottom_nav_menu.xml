@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/home"
+        android:title="@string/בית" />
+
+    <item
+        android:id="@+id/nav_notifications"
+        android:icon="@drawable/notifications"
+        android:title="@string/התראות" />
+
+    <item
+        android:id="@+id/nav_my_jobs"
+        android:icon="@drawable/wallet"
+        android:title="@string/העבודות_שלי" />
+
+    <item
+        android:id="@+id/nav_scan"
+        android:icon="@drawable/scan"
+        android:title="@string/סורק" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/user"
+        android:title="@string/פרופיל" />
+
 </menu>

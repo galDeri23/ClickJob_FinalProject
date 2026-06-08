@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">ClickJob_FinalProject</string>
+    <string name="בית">בית</string>
+    <string name="התראות">התראות</string>
+    <string name="העבודות_שלי">העבודות שלי</string>
+    <string name="סורק">סורק</string>
+    <string name="פרופיל">פרופיל</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
