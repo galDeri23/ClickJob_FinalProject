@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Upcoming Shift" card -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardUpcomingShift"
+    android:layout_width="371dp"
+    android:layout_height="103dp"
+    android:layoutDirection="rtl"
+    android:textDirection="rtl"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp">
+
+        <!-- Round image on the right, spans the full height of the content -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imgJob"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/CircleImageStyle"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:src="@drawable/img_cat_circle_creative" />
+
+        <!-- Job title - starts right after the image -->
+        <TextView
+            android:id="@+id/tvJobTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textColor="@color/text_dark"
+            android:fontFamily="@font/ploni_bold_aaa"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/imgJob"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="שם משרה" />
+
+        <!-- Company name - same column as the title -->
+        <TextView
+            android:id="@+id/tvCompanyName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="3dp"
+            android:textColor="@color/text_dark"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tvJobTitle"
+            app:layout_constraintStart_toEndOf="@id/imgJob"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="שם חברה" />
+
+        <!-- Info row: same column as the title, NOT below the image -->
+        <!-- Address + location icon (right side of the row) -->
+        <TextView
+            android:id="@+id/tvAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="15dp"
+            android:drawableStart="@drawable/ic_location"
+            android:drawablePadding="3dp"
+            android:drawableTint="@color/text_gray"
+            android:gravity="center_vertical"
+            android:textColor="@color/text_gray"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="13.86sp"
+            app:layout_constraintTop_toBottomOf="@id/tvCompanyName"
+            app:layout_constraintStart_toEndOf="@id/imgJob"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="כתובת" />
+
+        <!-- Date + calendar icon (center of the row) -->
+        <TextView
+            android:id="@+id/tvDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_calendar"
+            android:drawablePadding="4dp"
+            android:layout_marginTop="2dp"
+            android:drawableTint="@color/text_gray"
+            android:gravity="center_vertical"
+            android:textColor="@color/text_gray"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="14sp"
+            app:layout_constraintTop_toTopOf="@id/tvAddress"
+            app:layout_constraintBottom_toBottomOf="@id/tvAddress"
+            app:layout_constraintStart_toEndOf="@id/tvAddress"
+            app:layout_constraintEnd_toStartOf="@id/tvHours"
+            tools:text="dd/mm/yy" />
+
+        <!-- Hours + clock icon (left side of the row) -->
+        <!-- textDirection="ltr" keeps the time range in the correct order (07:00-15:00) -->
+        <TextView
+            android:id="@+id/tvHours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textDirection="ltr"
+            android:drawableStart="@drawable/ic_clock"
+            android:drawablePadding="4dp"
+            android:layout_marginTop="2dp"
+            android:drawableTint="@color/text_gray"
+            android:gravity="center_vertical"
+            android:textColor="@color/text_gray"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="14sp"
+            app:layout_constraintTop_toTopOf="@id/tvAddress"
+            app:layout_constraintBottom_toBottomOf="@id/tvAddress"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="07:00–15:00" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

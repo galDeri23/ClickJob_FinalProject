@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Job card ("Best match" / "Urgent" sections) -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardJob"
+    android:layout_width="228dp"
+    android:layout_height="257dp"
+    android:layout_margin="6dp"
+    android:layoutDirection="rtl"
+    android:textDirection="rtl"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="3dp"
+    app:cardPreventCornerOverlap="false"
+    app:cardBackgroundColor="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Job image - fills the top of the card, rounded top corners -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imgJob"
+            android:layout_width="0dp"
+            android:layout_height="150dp"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/TopRoundedImageStyle"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:src="@drawable/img_cat_security" />
+
+        <!-- Category chip - floats on the image, top right -->
+        <TextView
+            android:id="@+id/tvCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:background="@drawable/bg_category_chip"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:fontFamily="@font/heebo_medium"
+            app:layout_constraintTop_toTopOf="@id/imgJob"
+            app:layout_constraintStart_toStartOf="@id/imgJob"
+            tools:text="משלוחים ותחבורה" />
+
+        <!-- Heart (favorite) - floats on the image, top left -->
+        <ImageView
+            android:id="@+id/imgHeart"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_margin="10dp"
+            android:src="@drawable/ic_heart"
+            app:layout_constraintTop_toTopOf="@id/imgJob"
+            app:layout_constraintEnd_toEndOf="@id/imgJob" />
+
+        <!-- Price badge - floats on the image, bottom left -->
+        <LinearLayout
+            android:id="@+id/layoutPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:background="@drawable/bg_price_badge"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
+            app:layout_constraintBottom_toBottomOf="@id/imgJob"
+            app:layout_constraintEnd_toEndOf="@id/imgJob">
+
+            <!-- textDirection="ltr" keeps the shekel sign before the number -->
+            <TextView
+                android:id="@+id/tvPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textDirection="ltr"
+                android:textColor="@color/text_dark"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="₪50" />
+
+            <TextView
+                android:id="@+id/tvPerHour"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:textColor="@color/text_dark"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textSize="11sp"
+                tools:text="לשעה" />
+        </LinearLayout>
+
+        <!-- Job title - flush to the right, same line as the ring -->
+        <TextView
+            android:id="@+id/tvJobTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/text_dark"
+            android:fontFamily="@font/ploni_bold_aaa"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/imgJob"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/layoutMatch"
+            tools:text="שם משרה" />
+
+        <!-- Company row: small avatar + company name -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imgCompanyAvatar"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="6dp"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/CircleImageStyle"
+            app:layout_constraintTop_toBottomOf="@id/tvJobTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:src="@tools:sample/avatars" />
+
+        <TextView
+            android:id="@+id/tvCompanyName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/text_gray"
+            android:textSize="13sp"
+            android:fontFamily="@font/heebo_medium"
+            app:layout_constraintTop_toTopOf="@id/imgCompanyAvatar"
+            app:layout_constraintBottom_toBottomOf="@id/imgCompanyAvatar"
+            app:layout_constraintStart_toEndOf="@id/imgCompanyAvatar"
+            app:layout_constraintEnd_toStartOf="@id/layoutMatch"
+            tools:text="הפקות EventPro" />
+
+        <!-- Match progress ring (e.g. 90%) - left side, centered on the title+company block -->
+        <FrameLayout
+            android:id="@+id/layoutMatch"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginEnd="12dp"
+            app:layout_constraintTop_toTopOf="@id/tvJobTitle"
+            app:layout_constraintBottom_toBottomOf="@id/imgCompanyAvatar"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ProgressBar
+                android:id="@+id/progressMatch"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="90"
+                android:progressDrawable="@drawable/progress_ring" />
+
+            <TextView
+                android:id="@+id/tvMatchPercent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textColor="@color/brand_pink"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                tools:text="90%" />
+        </FrameLayout>
+
+        <!-- Bottom info row: distance (right), day (center), rating (left) -->
+        <TextView
+            android:id="@+id/tvDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginBottom="12dp"
+            android:drawableStart="@drawable/ic_location"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/text_gray"
+            android:gravity="center_vertical"
+            android:textColor="@color/text_gray"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="2.2 ק&quot;מ" />
+
+        <TextView
+            android:id="@+id/tvDay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:drawableStart="@drawable/ic_clock"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/text_gray"
+            android:gravity="center_vertical"
+            android:textColor="@color/text_gray"
+            android:textSize="13sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            app:layout_constraintTop_toTopOf="@id/tvDistance"
+            app:layout_constraintBottom_toBottomOf="@id/tvDistance"
+            app:layout_constraintStart_toEndOf="@id/tvDistance"
+            tools:text="מחר" />
+
+        <TextView
+            android:id="@+id/tvRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:drawableStart="@drawable/ic_star"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/text_gray"
+            android:gravity="center_vertical"
+            android:textColor="@color/text_gray"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="13sp"
+            app:layout_constraintTop_toTopOf="@id/tvDistance"
+            app:layout_constraintBottom_toBottomOf="@id/tvDistance"
+            app:layout_constraintStart_toEndOf="@id/tvDay"
+            tools:text="4.7" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

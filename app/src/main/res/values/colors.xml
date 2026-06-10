@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Basic colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Candidate mode colors (pink) -->
+    <color name="brand_pink">#CE3E8B</color>
+
+    <!-- Employer mode colors (light blue) -->
+    <color name="employer_primary">#68BAC6</color>
+
+    <!-- Text colors -->
+    <color name="text_dark">#1F1F1F</color>
+    <color name="text_gray">#909193</color>
+    <color name="category_chip_bg">#B3A39A8F</color>
+    <color name="progress_track">#F5E0EC</color>
+
+    <color name="screen_bg">#F0F0F3</color>
+    <color name="search_stroke">#EDE5EB</color>
+    <color name="dot_active">#2B2B2B</color>
+    <color name="dot_inactive">#D8D2D6</color>
 </resources>
