@@ -51,5 +51,8 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     implementation("androidx.core:core-ktx:1.17.0")
 
-    implementation("androidx.viewpager2:viewpager2:1.1.0")
+    implementation(libs.androidx.viewpager2)
+
+    implementation(libs.material.v1110)
+    implementation(libs.flexbox)
 }

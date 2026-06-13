@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/screen_bg"
+    android:layoutDirection="rtl">
+
+    <!-- Header: title on right, back arrow on left -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layoutDirection="rtl"
+        android:gravity="center_vertical"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/ivBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_arrow_forward"
+            android:background="@drawable/bg_back_button"
+            android:padding="8dp"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="תוצאות חיפוש"
+            android:textColor="#24061E"
+            android:textSize="32sp"
+            android:fontFamily="@font/ploni_bold_aaa" />
+
+    </LinearLayout>
+
+    <!-- Tabs row -->
+    <HorizontalScrollView
+        android:id="@+id/tabsScrollView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:layout_marginHorizontal="16dp"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layoutDirection="rtl">
+
+            <TextView
+                android:id="@+id/tabAll"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="הכל"
+                android:gravity="center"
+                android:paddingHorizontal="20dp"
+                android:textSize="14sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/bg_tab_selected"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/tabNear"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="קרוב"
+                android:gravity="center"
+                android:paddingHorizontal="20dp"
+                android:textSize="14sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textColor="#24061E"
+                android:background="@drawable/bg_tab_unselected"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/tabHighSalary"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="שכר גבוה"
+                android:gravity="center"
+                android:paddingHorizontal="20dp"
+                android:textSize="14sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textColor="#24061E"
+                android:background="@drawable/bg_tab_unselected"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/tabUrgent"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="דחוף"
+                android:gravity="center"
+                android:paddingHorizontal="20dp"
+                android:textSize="14sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textColor="#24061E"
+                android:background="@drawable/bg_tab_unselected" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Results list - no layoutManager in XML, set in code -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvResults"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="16dp"
+        android:clipToPadding="false"
+        tools:listitem="@layout/item_result_card"
+        app:layout_constraintTop_toBottomOf="@id/tabsScrollView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

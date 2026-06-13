@@ -16,6 +16,12 @@
         <item name="android:textColor">#363D49</item>
     </style>
 
+    <style name="TextStyle.Ploni.search">
+        <item name="android:fontFamily">@font/ploni_bold_aaa</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#363D49</item>
+    </style>
+
     <style name="TextStyle.Ploni.Subtitle">
         <item name="android:fontFamily">@font/ploni_medium_aaa</item>
         <item name="android:textSize">14sp</item>
@@ -67,5 +73,11 @@
         <item name="android:textSize">17sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:fontFamily">@font/ploni_bold_aaa</item>
+    </style>
+
+    <style name="Theme.ClickjobFinalproject" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">#CE3E8B</item>
+        <item name="colorPrimaryVariant">#C2185B</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
     </style>
 </resources>

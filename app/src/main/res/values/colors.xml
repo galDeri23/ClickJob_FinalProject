@@ -13,6 +13,7 @@
     <!-- Text colors -->
     <color name="text_dark">#1F1F1F</color>
     <color name="text_gray">#909193</color>
+    <color name="text_search">#9C8F9A</color>
     <color name="category_chip_bg">#B3A39A8F</color>
     <color name="progress_track">#F5E0EC</color>
 

@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F4F4F6"
+    android:layoutDirection="rtl">
+
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layoutDirection="rtl"
+        android:gravity="center_vertical"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Back button appears first in RTL = right side -->
+        <ImageView
+            android:id="@+id/ivBack"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_arrow_forward"
+            android:background="@drawable/bg_back_button"
+            android:padding="8dp"
+            android:contentDescription="Back" />
+
+        <!-- Title appears after button in RTL = to its left -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="חיפוש"
+            android:textColor="#24061E"
+            android:textSize="36sp"
+            android:fontFamily="@font/ploni_bold_aaa" />
+
+    </LinearLayout>
+    <EditText
+        android:id="@+id/etSearch"
+        android:layout_width="0dp"
+        android:layout_height="31dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_search_bar"
+        android:drawableStart="@drawable/ic_search"
+        android:textDirection="rtl"
+        android:layoutDirection="rtl"
+        android:drawablePadding="8dp"
+        android:fontFamily="@font/ploni_medium_aaa"
+        android:gravity="center_vertical|start"
+        android:hint="חיפוש תפקיד, עסק או אזור"
+        android:inputType="text"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:textColor="#24061E"
+        android:textColorHint="#B4ADB3"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:fillViewport="false"
+        app:layout_constraintTop_toBottomOf="@id/etSearch"
+        app:layout_constraintBottom_toTopOf="@id/btnSearch"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:gravity="start"
+                android:text="קטגוריות"
+                android:textColor="#24061E"
+                android:textSize="16sp" />
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/flexboxCategories"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layoutDirection="rtl"
+                app:alignItems="center"
+                app:flexDirection="row"
+                app:flexWrap="wrap"
+                app:justifyContent="flex_start" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:gravity="start"
+                android:text="תדירות עבודה"
+                android:textColor="#24061E"
+                android:textSize="16sp" />
+
+            <RadioGroup
+                android:id="@+id/rgFrequency"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal"
+                android:layoutDirection="rtl">
+
+                <RadioButton
+                    android:id="@+id/rbRecurring"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/brand_pink"
+                    android:checked="true"
+                    android:fontFamily="@font/ploni_medium_aaa"
+                    android:text="חד פעמי"
+                    android:textColor="#24061E"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rbOneTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="26dp"
+                    android:buttonTint="@color/brand_pink"
+                    android:fontFamily="@font/ploni_medium_aaa"
+                    android:text="מחזורי"
+                    android:textColor="#B4ADB3"
+                    android:textSize="12sp" />
+
+            </RadioGroup>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:gravity="start"
+                android:text="גובה שכר (ש״ח)"
+                android:textColor="#24061E"
+                android:textSize="16sp" />
+
+            <RadioGroup
+                android:id="@+id/rgSalaryType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal"
+                android:layoutDirection="rtl">
+
+                <RadioButton
+                    android:id="@+id/rbHourly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/brand_pink"
+                    android:checked="true"
+                    android:fontFamily="@font/ploni_medium_aaa"
+                    android:text="שעתי"
+                    android:textColor="#24061E"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rbFixed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="36dp"
+                    android:buttonTint="@color/brand_pink"
+                    android:fontFamily="@font/ploni_medium_aaa"
+                    android:text="משמרת"
+                    android:textColor="#B4ADB3"
+                    android:textSize="12sp" />
+
+            </RadioGroup>
+
+
+            <SeekBar
+                android:id="@+id/seekBarSalary"
+                android:layout_width="380dp"
+                android:layout_height="15dp"
+                android:max="300"
+                android:progress="50"
+                android:layoutDirection="rtl"
+                android:progressTint="@color/brand_pink"
+                android:thumbTint="@color/brand_pink"
+                android:progressBackgroundTint="#FFFFFF" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="30dp">
+
+                <TextView
+                    android:id="@+id/tvSalaryMax"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:text="300"
+                    android:textColor="#AAAAAA"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvSalaryValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:text="50 ש״ח"
+                    android:textColor="@color/brand_pink"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvSalaryMin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:text="0"
+                    android:textColor="#AAAAAA"
+                    android:textSize="14sp" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:gravity="start"
+                android:text="קירבה (ק״מ)"
+                android:textColor="#24061E"
+                android:textSize="16sp" />
+
+            <Spinner
+                android:id="@+id/spinnerDistance"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_spinner"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSearch"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="18dp"
+        android:background="@drawable/bg_button_pink"
+        android:elevation="6dp"
+        android:fontFamily="@font/ploni_bold_aaa"
+        android:text="תוצאות חיפוש"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
