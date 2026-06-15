@@ -1,11 +1,13 @@
 package com.example.clickjob_finalproject.ui.home
 
 import android.os.Bundle
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,11 +25,11 @@ class SearchResultsFragment : Fragment() {
 
     // Sample data — replace with real data later
     private val allItems = listOf(
-        ResultItem("שם משרה", "שם חברה", "₪50", "4.7", "2.2 ק״מ", "מחר", "בעלי חיים"),
-        ResultItem("שם משרה", "שם חברה", "₪50", "4.7", "2.2 ק״מ", "מחר", "מסעדנות"),
-        ResultItem("שם משרה", "שם חברה", "₪50", "4.7", "2.2 ק״מ", "מחר", "אחזקה"),
-        ResultItem("שם משרה", "שם חברה", "₪50", "4.7", "2.2 ק״מ", "מחר", "בעלי חיים"),
-        ResultItem("שם משרה", "שם חברה", "₪50", "4.7", "2.2 ק״מ", "מחר", "בעלי חיים")
+        ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "4.7", "2.2 ק״מ", "אבטחה וביטחון"),
+        ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "4.7", "2.2 ק״מ", "משלוחים ותחבורה"),
+        ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "4.7", "2.2 ק״מ", "חינוך והוראה"),
+        ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "4.7", "2.2 ק״מ", "בעלי חיים"),
+        ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "4.7", "2.2 ק״מ", "הפקה ואירועים")
     )
 
     override fun onCreateView(
@@ -64,11 +66,9 @@ class SearchResultsFragment : Fragment() {
 
         tabs.forEach { tab ->
             tab.setOnClickListener {
-                // Update tab appearance
                 tabs.forEach { setTabUnselected(it) }
                 setTabSelected(tab)
-
-                // Filter list by tab — replace with real filter logic later
+                // TODO: filter list by tab
                 adapter.updateItems(allItems)
             }
         }
@@ -77,11 +77,13 @@ class SearchResultsFragment : Fragment() {
     private fun setTabSelected(tab: TextView) {
         tab.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_tab_selected)
         tab.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+        tab.typeface = ResourcesCompat.getFont(requireContext(), R.font.ploni_bold_aaa)
     }
 
     private fun setTabUnselected(tab: TextView) {
-        tab.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_tab_unselected)
+        tab.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_tab_unselected_box)
         tab.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_dark))
+        tab.typeface = ResourcesCompat.getFont(requireContext(), R.font.ploni_regular_aaa)
     }
 
     override fun onDestroyView() {

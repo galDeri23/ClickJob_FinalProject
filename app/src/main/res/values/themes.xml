@@ -77,4 +77,7 @@
         <item name="colorPrimaryVariant">#C2185B</item>
         <item name="colorOnPrimary">#FFFFFF</item>
     </style>
+    <style name="RoundedSquareImageStyle">
+        <item name="cornerSize">12dp</item>
+    </style>
 </resources>

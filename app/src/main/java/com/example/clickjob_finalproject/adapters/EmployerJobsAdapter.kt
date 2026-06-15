@@ -38,6 +38,7 @@ class EmployerJobsAdapter(
         val progressWorkers = itemView.findViewById<ProgressBar>(R.id.progressWorkers)
         val tvTimer         = itemView.findViewById<TextView>(R.id.tvTimer)
         val btnQr           = itemView.findViewById<LinearLayout>(R.id.btnQr)
+        val btnHandled      = itemView.findViewById<LinearLayout>(R.id.btnHandled)
         var countDownTimer: CountDownTimer? = null
     }
 
@@ -62,29 +63,38 @@ class EmployerJobsAdapter(
 
         holder.countDownTimer?.cancel()
 
+        // Reset all top-left indicators before applying per-tab rules
+        holder.btnQr.visibility      = View.GONE
+        holder.tvTimer.visibility    = View.GONE
+        holder.btnHandled.visibility = View.GONE
+
         when (tabType) {
             JobTabType.ACTIVE -> {
+                // "מאוישות" tab: QR button, teal progress bar
                 holder.cardRoot.setCardBackgroundColor(Color.WHITE)
-                holder.btnQr.visibility   = View.VISIBLE
-                holder.tvTimer.visibility = View.GONE
+                holder.btnQr.visibility = View.VISIBLE
+                holder.progressWorkers.progressDrawable =
+                    androidx.core.content.ContextCompat.getDrawable(holder.itemView.context, R.drawable.progress_bar_teal)
                 holder.btnQr.setOnClickListener { onQrClick(item) }
             }
 
             JobTabType.PENDING -> {
+                // "בטיפול" tab: countdown timer, teal progress bar
                 holder.cardRoot.setCardBackgroundColor(Color.WHITE)
-                holder.btnQr.visibility = View.GONE
+                holder.progressWorkers.progressDrawable =
+                    androidx.core.content.ContextCompat.getDrawable(holder.itemView.context, R.drawable.progress_bar_teal)
                 if (item.countdownMillis > 0) {
                     holder.tvTimer.visibility = View.VISIBLE
                     startTimer(holder, item.countdownMillis)
-                } else {
-                    holder.tvTimer.visibility = View.GONE
                 }
             }
 
             JobTabType.HISTORY -> {
+                // "היסטוריה" tab: "טופל" badge, gray progress bar (shift already passed)
                 holder.cardRoot.setCardBackgroundColor(Color.parseColor("#FFF8F0"))
-                holder.btnQr.visibility   = View.GONE
-                holder.tvTimer.visibility = View.GONE
+                holder.btnHandled.visibility = View.VISIBLE
+                holder.progressWorkers.progressDrawable =
+                    androidx.core.content.ContextCompat.getDrawable(holder.itemView.context, R.drawable.progress_bar_gray)
             }
         }
     }

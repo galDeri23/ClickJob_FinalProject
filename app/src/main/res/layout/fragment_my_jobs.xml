@@ -85,16 +85,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Tabs row: each tab has its own box, all inside a light gray container -->
     <LinearLayout
         android:id="@+id/tabsRow"
         android:layout_width="0dp"
-        android:layout_height="42dp"
+        android:layout_height="46dp"
         android:orientation="horizontal"
         android:layoutDirection="rtl"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="12dp"
         android:background="@drawable/bg_tabs_container"
-        android:padding="3dp"
+        android:padding="4dp"
         app:layout_constraintTop_toBottomOf="@id/etSearch"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -104,6 +105,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:layout_marginHorizontal="2dp"
             android:text="פעילות (3)"
             android:gravity="center"
             android:textSize="13sp"
@@ -116,26 +118,29 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:layout_marginHorizontal="2dp"
             android:text="בהמתנה (0)"
             android:gravity="center"
             android:textSize="13sp"
             android:fontFamily="@font/ploni_regular_aaa"
             android:textColor="#24061E"
-            android:background="@android:color/transparent" />
+            android:background="@drawable/bg_tab_unselected_box" />
 
         <TextView
             android:id="@+id/tabHistory"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:layout_marginHorizontal="2dp"
             android:text="היסטוריה"
             android:gravity="center"
             android:textSize="13sp"
             android:fontFamily="@font/ploni_regular_aaa"
             android:textColor="#24061E"
-            android:background="@android:color/transparent" />
+            android:background="@drawable/bg_tab_unselected_box" />
 
     </LinearLayout>
+
     <!-- Jobs list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvJobs"

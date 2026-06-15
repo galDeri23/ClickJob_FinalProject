@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.clickjob_finalproject.R
@@ -39,16 +40,22 @@ class MyJobsFragment : Fragment() {
     )
 
     // ===== Employer data =====
+
+    // "מאוישות" - fully staffed jobs (workersRegistered == workersNeeded), QR button shown
     private val employerActive = mutableListOf(
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 3, 7),
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 1, 5),
+        EmployerJobItem("מלצרית לחתונה", "שם חברה", 7, 7),
+        EmployerJobItem("מלצרית לחתונה", "שם חברה", 5, 5),
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 4, 4)
     )
+
+    // "בטיפול" - still recruiting workers (workersRegistered < workersNeeded), countdown timer shown
     private val employerPending = mutableListOf(
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 2, 6, countdownMillis = 18000000L),
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 3, 7, countdownMillis = 18000000L),
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 1, 3, countdownMillis = 18000000L)
     )
+
+    // "היסטוריה" - past shifts, "טופל" badge shown
     private val employerHistory = mutableListOf(
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 7, 7),
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 5, 5),
@@ -154,11 +161,12 @@ class MyJobsFragment : Fragment() {
         if (isWorkerMode) {
             binding.tabActive.text  = "פעילות (${workerActive.size})"
             binding.tabPending.text = "בהמתנה (${workerPending.size})"
+            binding.tabHistory.text = "היסטוריה"
         } else {
-            binding.tabActive.text  = "פעילות (${employerActive.size})"
-            binding.tabPending.text = "בהמתנה (${employerPending.size})"
+            binding.tabActive.text  = "מאוישות (${employerActive.size})"
+            binding.tabPending.text = "בטיפול (${employerPending.size})"
+            binding.tabHistory.text = "היסטוריה"
         }
-        binding.tabHistory.text = "היסטוריה"
     }
 
     private fun setupToggle() {
@@ -241,11 +249,13 @@ class MyJobsFragment : Fragment() {
 
         tab.background = ContextCompat.getDrawable(requireContext(), selectedDrawable)
         tab.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+        tab.typeface = ResourcesCompat.getFont(requireContext(), R.font.ploni_bold_aaa)
     }
 
     private fun setTabUnselected(tab: TextView) {
-        tab.background = null
+        tab.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_tab_unselected_box)
         tab.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_dark))
+        tab.typeface = ResourcesCompat.getFont(requireContext(), R.font.ploni_regular_aaa)
     }
 
     override fun onDestroyView() {

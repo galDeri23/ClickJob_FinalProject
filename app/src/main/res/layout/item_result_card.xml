@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
-    android:layoutDirection="rtl"
     app:cardCornerRadius="16dp"
     app:cardElevation="2dp"
     app:cardBackgroundColor="@color/white">
@@ -14,130 +13,125 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="14dp">
+        android:layoutDirection="ltr"
+        android:padding="12dp">
 
-        <!-- Company image: circle, right side -->
+        <!-- Category image: top-right circle -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/tvCategory"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:scaleType="centerCrop"
             app:shapeAppearanceOverlay="@style/CircleImageStyle"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             tools:src="@drawable/img_cat_circle_creative" />
 
-        <!-- Job title -->
+        <!-- Price: number then ₪ sign, pink, top-left -->
+        <TextView
+            android:id="@+id/tvPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/brand_pink"
+            android:fontFamily="@font/ploni_bold_aaa"
+            android:textSize="16sp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="50₪" />
+
+        <!-- "לשעה" label under the price -->
+        <TextView
+            android:id="@+id/tvPerHour"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="לשעה"
+            android:textColor="#999999"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="11sp"
+            app:layout_constraintTop_toBottomOf="@id/tvPrice"
+            app:layout_constraintStart_toStartOf="@id/tvPrice" />
+
+        <!-- Job title: same row as price, between price and image -->
         <TextView
             android:id="@+id/tvJobTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="12dp"
             android:textColor="#24061E"
             android:fontFamily="@font/ploni_bold_aaa"
-            android:textSize="16sp"
+            android:textSize="15sp"
+            android:gravity="start"
+            android:textDirection="rtl"
+            android:maxLines="1"
+            android:ellipsize="end"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/tvCategory"
-            app:layout_constraintEnd_toStartOf="@id/layoutPrice"
+            app:layout_constraintStart_toEndOf="@id/tvPrice"
+            app:layout_constraintEnd_toStartOf="@id/tvCategory"
             tools:text="שם משרה" />
 
-        <!-- Company name -->
+        <!-- Address row: under job title -->
         <TextView
-            android:id="@+id/tvCompanyName"
+            android:id="@+id/tvAddress"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="12dp"
             android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
             android:textColor="#888888"
             android:fontFamily="@font/ploni_regular_aaa"
-            android:textSize="13sp"
+            android:textSize="12sp"
+            android:gravity="start"
+            android:textDirection="rtl"
+            android:maxLines="1"
+            android:ellipsize="end"
             app:layout_constraintTop_toBottomOf="@id/tvJobTitle"
-            app:layout_constraintStart_toEndOf="@id/tvCategory"
-            app:layout_constraintEnd_toStartOf="@id/layoutPrice"
-            tools:text="שם חברה" />
+            app:layout_constraintStart_toEndOf="@id/tvPerHour"
+            app:layout_constraintEnd_toStartOf="@id/tvCategory"
+            tools:text="נופי הכפר 93, כפר מנחם" />
 
-        <!-- Price block: left side -->
-        <LinearLayout
-            android:id="@+id/layoutPrice"
-            android:layout_width="wrap_content"
+        <!-- Day + clock icon: under address -->
+        <TextView
+            android:id="@+id/tvDay"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:layout_marginEnd="0dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/infoRow">
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="4dp"
+            android:drawableEnd="@drawable/ic_clock"
+            android:drawablePadding="3dp"
+            android:drawableTint="@color/black"
+            android:gravity="start|center_vertical"
+            android:textColor="@color/black"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="12sp"
+            android:textDirection="rtl"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintTop_toBottomOf="@id/tvAddress"
+            app:layout_constraintStart_toEndOf="@id/tvPerHour"
+            app:layout_constraintEnd_toStartOf="@id/tvCategory"
+            tools:text="יום שני, 28.09" />
 
-            <TextView
-                android:id="@+id/tvPrice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textDirection="ltr"
-                android:textColor="@color/brand_pink"
-                android:fontFamily="@font/ploni_bold_aaa"
-                android:textSize="20sp"
-                tools:text="₪50" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="לשעה"
-                android:textColor="#888888"
-                android:fontFamily="@font/ploni_regular_aaa"
-                android:textSize="11sp" />
-
-        </LinearLayout>
-
-        <!-- Bottom info row: distance / day / rating -->
+        <!-- Bottom info row: rating on the left, distance on the right -->
         <LinearLayout
             android:id="@+id/infoRow"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginStart="12dp"
             android:layout_marginTop="10dp"
             android:gravity="center_vertical"
-            app:layout_constraintTop_toBottomOf="@id/tvCompanyName"
-            app:layout_constraintStart_toEndOf="@id/tvCategory"
+            app:layout_constraintTop_toBottomOf="@id/tvDay"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
-
-            <TextView
-                android:id="@+id/tvDistance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableStart="@drawable/ic_location"
-                android:drawablePadding="3dp"
-                android:drawableTint="@color/text_search"
-                android:gravity="center_vertical"
-                android:textColor="@color/text_search"
-                android:fontFamily="@font/ploni_regular_aaa"
-                android:textSize="13sp"
-                tools:text="2.2 ק״מ" />
-
-            <TextView
-                android:id="@+id/tvDay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:drawableStart="@drawable/ic_clock"
-                android:drawablePadding="3dp"
-                android:drawableTint="@color/text_search"
-                android:gravity="center_vertical"
-                android:textColor="@color/text_search"
-                android:fontFamily="@font/ploni_regular_aaa"
-                android:textSize="13sp"
-                tools:text="מחר" />
 
             <TextView
                 android:id="@+id/tvRating"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:drawableStart="@drawable/ic_star"
+                android:drawableEnd="@drawable/ic_star"
                 android:drawablePadding="3dp"
                 android:drawableTint="@color/text_search"
                 android:gravity="center_vertical"
@@ -145,6 +139,21 @@
                 android:fontFamily="@font/ploni_regular_aaa"
                 android:textSize="13sp"
                 tools:text="4.7" />
+
+            <TextView
+                android:id="@+id/tvDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:drawableEnd="@drawable/ic_location"
+                android:drawablePadding="3dp"
+                android:drawableTint="@color/text_search"
+                android:gravity="center_vertical"
+                android:textColor="@color/text_search"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textSize="13sp"
+                android:textDirection="rtl"
+                tools:text="2.2 ק״מ" />
 
         </LinearLayout>
 

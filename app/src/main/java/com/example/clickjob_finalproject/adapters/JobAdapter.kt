@@ -9,6 +9,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.clickjob_finalproject.R
+import com.google.android.material.imageview.ShapeableImageView
 
 data class JobItem(
     val title: String,
@@ -39,6 +40,7 @@ class JobAdapter(
         val progressMatch: ProgressBar = itemView.findViewById(R.id.progressMatch)
         val layoutMatch: FrameLayout = itemView.findViewById(R.id.layoutMatch)
         val imgJob: ImageView        = itemView.findViewById(R.id.imgJob)
+        val imgCompanyAvatar: ShapeableImageView = itemView.findViewById(R.id.imgCompanyAvatar)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): JobViewHolder {
@@ -59,6 +61,9 @@ class JobAdapter(
         holder.tvDistance.text = item.distance
         holder.tvDay.text      = item.date
         holder.imgJob.setImageResource(getCategoryImage(item.category))
+
+        // Placeholder company avatar — replace with real logo loading later (e.g. Glide/Coil from URL)
+        holder.imgCompanyAvatar.setImageResource(R.drawable.img_cat_circle_creative)
 
         if (item.matchPercent != null) {
             holder.layoutMatch.visibility = View.VISIBLE
