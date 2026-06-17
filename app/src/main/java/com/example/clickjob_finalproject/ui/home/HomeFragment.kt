@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -104,28 +105,39 @@ class HomeFragment : Fragment() {
 
     private fun setupBestMatchList() {
         val items = listOf(
-            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", "90%"),
-            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", null),
-            JobItem("שם משרה", "EventPro הפקות", "₪45", "4.2", "1.5 ק״מ", "היום", "87%")
+            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", "90%", id = "best_1"),
+            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", null, id = "best_2"),
+            JobItem("שם משרה", "EventPro הפקות", "₪45", "4.2", "1.5 ק״מ", "היום", "87%", id = "best_3")
         )
 
         binding.rvBestMatch.layoutManager = LinearLayoutManager(
             requireContext(), LinearLayoutManager.HORIZONTAL, false
         )
-        binding.rvBestMatch.adapter = JobAdapter(items)
+        binding.rvBestMatch.adapter = JobAdapter(items) { job ->
+            openJobDetails(job)
+        }
     }
 
     private fun setupUrgentList() {
         val items = listOf(
-            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "היום", null),
-            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", null),
-            JobItem("שם משרה", "EventPro הפקות", "₪55", "4.5", "0.8 ק״מ", "היום", null)
+            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "היום", null, id = "urgent_1"),
+            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", null, id = "urgent_2"),
+            JobItem("שם משרה", "EventPro הפקות", "₪55", "4.5", "0.8 ק״מ", "היום", null, id = "urgent_3")
         )
 
         binding.rvUrgent.layoutManager = LinearLayoutManager(
             requireContext(), LinearLayoutManager.HORIZONTAL, false
         )
-        binding.rvUrgent.adapter = JobAdapter(items)
+        binding.rvUrgent.adapter = JobAdapter(items) { job ->
+            openJobDetails(job)
+        }
+    }
+
+    // Navigates to the job details screen, passing the clicked job's id as an argument.
+    // Requires action_homeFragment_to_jobDetailsFragment to exist in the nav graph.
+    private fun openJobDetails(job: JobItem) {
+        val args = bundleOf("jobId" to job.id)
+        findNavController().navigate(R.id.action_homeFragment_to_jobDetailsFragment, args)
     }
 
     override fun onDestroyView() {

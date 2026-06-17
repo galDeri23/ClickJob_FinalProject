@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_homeFragment_to_searchFragment"
             app:destination="@id/searchFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_jobDetailsFragment"
+            app:destination="@id/JobDetailsFragment" />
     </fragment>
 
     <fragment
@@ -30,6 +33,12 @@
         android:name="com.example.clickjob_finalproject.ui.home.SearchResultsFragment"
         android:label="fragment_search_results"
         tools:layout="@layout/fragment_search_results" />
+
+    <fragment
+        android:id="@+id/JobDetailsFragment"
+        android:name="com.example.clickjob_finalproject.ui.home.JobDetailsFragment"
+        android:label="fragment_job_details"
+        tools:layout="@layout/fragment_job_details" />
 
     <fragment
         android:id="@+id/notificationsFragment"

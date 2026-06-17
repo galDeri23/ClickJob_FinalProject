@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F4F3F4"
+    android:layoutDirection="rtl">
+
+    <!-- Bottom Button -->
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnApply"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_margin="16dp"
+        android:text="הגשת מועמדות/אישור עבודה"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:fontFamily="@font/ploni_bold_aaa"
+        app:backgroundTint="@color/brand_pink"
+        app:cornerRadius="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnApply"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Hero Image -->
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="260dp">
+
+                <ImageView
+                    android:id="@+id/imgHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/wat_img"/>
+
+                <!-- Back (top-start = top-right in RTL) -->
+
+                <ImageButton
+                    android:id="@+id/btnBack"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="top|start"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/bg_icon_btn"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_arrow_forward"/>
+
+                <!-- Favorite (top-end = top-left in RTL, closest to the edge) -->
+
+                <ImageButton
+                    android:id="@+id/btnFavorite"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="top|end"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_icon_btn"
+                    android:padding="12dp"
+                    android:src="@drawable/bookmark"/>
+
+                <!-- Share (top-end = top-left in RTL, just right of favorite) -->
+
+                <ImageButton
+                    android:id="@+id/btnShare"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="top|end"
+                    android:layout_marginEnd="72dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_icon_btn"
+                    android:padding="12dp"
+                    android:src="@drawable/share"/>
+
+            </FrameLayout>
+
+            <!-- Business Card -->
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="-28dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="4dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <!-- Logo - top-start (top-right in RTL) -->
+
+                    <ImageView
+                        android:id="@+id/imgLogo"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/wat_san"
+                        android:background="@drawable/bg_circle_logo"
+                        android:clipToOutline="true"
+                        android:scaleType="centerCrop"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"/>
+
+                    <!-- Company name + category, sitting just to the start side of the logo -->
+
+                    <TextView
+                        android:id="@+id/tvCompanyName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="wat-san"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/ploni_bold_aaa"
+                        android:textColor="@color/text_dark"
+                        app:layout_constraintTop_toTopOf="@id/imgLogo"
+                        app:layout_constraintStart_toEndOf="@id/imgLogo"/>
+
+                    <TextView
+                        android:id="@+id/tvCategory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="מסעדנות ואירוח"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_gray"
+                        app:layout_constraintTop_toBottomOf="@id/tvCompanyName"
+                        app:layout_constraintStart_toStartOf="@id/tvCompanyName"/>
+
+                    <!-- Employer profile pill - top-end (top-left in RTL) -->
+
+                    <LinearLayout
+                        android:id="@+id/btnEmployerProfile"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layoutDirection="rtl"
+                        android:background="@drawable/bg_pill_gray"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="5dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginEnd="6dp"
+                            android:src="@drawable/ic_person"
+                            app:tint="@color/text_dark"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="פרופיל מעסיק"
+                            android:textColor="@color/text_dark"
+                            android:textSize="13sp"/>
+
+                    </LinearLayout>
+
+                    <!-- Address pill - stacked below the employer profile pill -->
+
+                    <LinearLayout
+                        android:id="@+id/btnAddress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layoutDirection="rtl"
+                        android:background="@drawable/bg_pill_gray"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="5dp"
+                        app:layout_constraintTop_toBottomOf="@id/btnEmployerProfile"
+                        app:layout_constraintEnd_toEndOf="parent">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginEnd="6dp"
+                            android:src="@drawable/ic_location"
+                            app:tint="@color/text_dark"/>
+
+                        <TextView
+                            android:id="@+id/tvAddress"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="כתובת"
+                            android:textColor="@color/text_dark"
+                            android:textSize="13sp"/>
+
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Info Cards: תיזמון, שעות, שכר -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="16dp"
+                android:layoutDirection="rtl"
+                android:orientation="horizontal"
+                android:weightSum="3">
+
+                <!-- תיזמון (1st / start side = right) -->
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="70dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="תיזמון"
+                            android:fontFamily="@font/ploni_bold_aaa"
+                            android:textStyle="bold"
+                            android:textSize="16sp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:gravity="center"
+                            android:text="25/06/2026\nיום שלישי"
+                            android:textColor="@color/text_gray"
+                            android:textSize="13sp"/>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- שעות (2nd / middle) -->
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="70dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="שעות"
+                            android:fontFamily="@font/ploni_bold_aaa"
+                            android:textStyle="bold"
+                            android:textSize="16sp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="17:00-22:00"
+                            android:textColor="@color/text_gray"
+                            android:textSize="13sp"/>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- שכר (3rd / end side = left) -->
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="70dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="שכר"
+                            android:fontFamily="@font/ploni_bold_aaa"
+                            android:textStyle="bold"
+                            android:textSize="16sp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="₪55/שעה"
+                            android:textColor="@color/text_gray"
+                            android:textSize="13sp"/>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- Job Type -->
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginHorizontal="16dp"
+                android:text="אופי משרה"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textStyle="bold"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="6dp"
+                android:text="3 משמרות בשבוע"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textSize="14sp"
+                android:textColor="@color/text_gray"/>
+
+            <!-- Requirements -->
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginHorizontal="16dp"
+                android:text="דרישות"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textStyle="bold"
+                android:textSize="18sp"/>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupRequirements"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp">
+
+                <!-- Chips are added dynamically from Kotlin (see JobDetailsFragment),
+                     so the number of requirement chips can change per job -->
+
+            </com.google.android.material.chip.ChipGroup>
+            <!-- Description -->
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginHorizontal="16dp"
+                android:text="תיאור עבודה"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textStyle="bold"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:textAlignment="viewStart"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textSize="14sp"
+                android:text="דרושים עובדי צוות למסעדה אסיאתית [שם העיר] למשמרות בוקר וערב גמישות. המשמרת כוללת קבלת קהל, לקיחת הזמנות, אריזת משלוחים (לוודא רטבים וצ'ופסטיקס), הגשת מנות ושמירה על ניקיון ואסתטיקה של המקום. אנחנו מחפשים אנשים אחראיים, חרוצים ובעלי תודעת שירות גבוהה שיודעים לעבוד בקצב מהיר – הניסיון יתרון אך לא חובה, ההכשרה עלינו. בתמורה תקבלו שכר מתגמל, טיפים, ארוחות עובד ותנאים מצוינים בסביבה דינמית וצעירה."
+                android:textColor="#9C8F9A"/>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

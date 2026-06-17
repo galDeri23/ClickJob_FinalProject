@@ -20,11 +20,13 @@ data class JobItem(
     val date: String,
     val matchPercent: String? = null,
     val isUrgent: Boolean = false,
-    val category: String = "משלוחים ותחבורה"
+    val category: String = "משלוחים ותחבורה",
+    val id: String = ""
 )
 
 class JobAdapter(
-    private val items: List<JobItem>
+    private val items: List<JobItem>,
+    private val onItemClick: (JobItem) -> Unit = {}
 ) : RecyclerView.Adapter<JobAdapter.JobViewHolder>() {
 
     inner class JobViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -72,6 +74,11 @@ class JobAdapter(
             holder.progressMatch.progress = progress
         } else {
             holder.layoutMatch.visibility = View.INVISIBLE
+        }
+
+        // Whole card is clickable -> opens job details screen
+        holder.itemView.setOnClickListener {
+            onItemClick(item)
         }
     }
 
