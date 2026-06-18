@@ -147,25 +147,28 @@
             app:layout_constraintEnd_toStartOf="@id/layoutMatch">
 
             <TextView
-                android:id="@+id/tvPerHour"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:textColor="@color/text_gray"
-                android:fontFamily="@font/ploni_regular_aaa"
-                android:textSize="8sp"
-                tools:text="לשעה" />
-
-            <TextView
                 android:id="@+id/tvPrice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textDirection="ltr"
                 android:textColor="@color/brand_pink"
                 android:fontFamily="@font/ploni_bold_aaa"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textStyle="bold"
                 tools:text="₪50" />
+
+            <TextView
+                android:id="@+id/tvPerHour"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/text_gray"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textSize="9sp"
+                tools:text="לשעה" />
+
+
         </LinearLayout>
 
         <!-- Divider line: below price row AND avatar/match ring (whichever is taller) -->

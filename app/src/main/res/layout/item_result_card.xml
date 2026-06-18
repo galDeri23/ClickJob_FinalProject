@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/brand_pink"
             android:fontFamily="@font/ploni_bold_aaa"
-            android:textSize="16sp"
+            android:textSize="20sp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             tools:text="50₪" />

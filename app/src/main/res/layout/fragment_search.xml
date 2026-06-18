@@ -127,23 +127,23 @@
                     android:id="@+id/rbRecurring"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/brand_pink"
                     android:checked="true"
                     android:fontFamily="@font/ploni_medium_aaa"
                     android:text="חד פעמי"
                     android:textColor="#24061E"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    app:buttonTint="@color/brand_pink"/>
 
                 <RadioButton
                     android:id="@+id/rbOneTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="26dp"
-                    android:buttonTint="@color/brand_pink"
                     android:fontFamily="@font/ploni_medium_aaa"
                     android:text="מחזורי"
                     android:textColor="#B4ADB3"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    app:buttonTint="@color/brand_pink"/>
 
             </RadioGroup>
 
@@ -169,23 +169,23 @@
                     android:id="@+id/rbHourly"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/brand_pink"
                     android:checked="true"
                     android:fontFamily="@font/ploni_medium_aaa"
                     android:text="שעתי"
                     android:textColor="#24061E"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    app:buttonTint="@color/brand_pink"/>
 
                 <RadioButton
                     android:id="@+id/rbFixed"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="36dp"
-                    android:buttonTint="@color/brand_pink"
                     android:fontFamily="@font/ploni_medium_aaa"
                     android:text="משמרת"
                     android:textColor="#B4ADB3"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    app:buttonTint="@color/brand_pink"/>
 
             </RadioGroup>
 
