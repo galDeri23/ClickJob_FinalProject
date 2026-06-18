@@ -3,7 +3,9 @@ package com.example.clickjob_finalproject
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -13,18 +15,41 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_root)) { view, insets ->
+        // The app background is light, so status bar icons (battery/wifi/clock)
+        // need to be dark to stay visible - otherwise they default to light/white
+        // and nearly disappear against a light background, like in your screenshot.
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
+
+        // On Android 15+ (targetSdk 35+) the system enforces edge-to-edge and the line
+        // above stops having effect, so we add the system bars' insets as padding
+        // ourselves. This keeps things correct on every API level.
+        //
+        // Top/left/right go on the whole screen (so content clears the status bar).
+        // Bottom goes on the bottom nav bar ITSELF, not on main_root - that way the
+        // nav bar's own background fills the gesture-bar area instead of leaving a
+        // stray strip of the screen's background color showing below it.
+        val rootView = findViewById<android.view.View>(R.id.main_root)
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
+            bottomNav.setPadding(
+                bottomNav.paddingLeft,
+                bottomNav.paddingTop,
+                bottomNav.paddingRight,
+                systemBars.bottom
+            )
             insets
         }
+
         // Connect bottom navigation to nav controller
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
 
-        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNav.setupWithNavController(navController)
     }
 }

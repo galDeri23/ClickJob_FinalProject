@@ -10,12 +10,13 @@
     android:layoutDirection="rtl"
     android:textDirection="rtl"
     app:cardCornerRadius="16dp"
-    app:cardElevation="3dp"
-    app:cardBackgroundColor="@color/white">
+    app:cardElevation="5dp"
+    app:cardBackgroundColor="@android:color/transparent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="103dp"
+        android:background="@drawable/bg_card_gradient_blue"
         android:padding="14dp">
 
         <!-- Round image on the right, centered vertically -->
@@ -28,7 +29,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:src="@drawable/img_cat_circle_creative" />
+            tools:src="@drawable/img_cat_circle_creative_white" />
 
         <!-- Job title -->
         <TextView
@@ -80,7 +81,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="15dp"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="20dp"
             android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@id/barrierInfo"
             app:layout_constraintStart_toEndOf="@id/imgJob"

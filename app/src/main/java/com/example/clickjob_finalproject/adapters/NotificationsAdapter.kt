@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.clickjob_finalproject.R
+import androidx.core.graphics.toColorInt
 
 // 6 notification types based on Figma icons
 enum class NotificationStatus {
@@ -72,7 +73,7 @@ class NotificationsAdapter(
                 holder.imgStatus.setImageResource(R.drawable.ic_status_alert)
                 holder.actionsRow.visibility = View.VISIBLE
                 // Light pink background for items needing approval
-                holder.cardRoot.setCardBackgroundColor(Color.parseColor("#FCE9F2"))
+                holder.cardRoot.setCardBackgroundColor("#FDF5F9".toColorInt())
                 holder.btnApprove.setOnClickListener { onApprove(item) }
                 holder.btnCancel.setOnClickListener { onCancel(item) }
             }

@@ -49,24 +49,36 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupUpcomingShifts() {
+        // TODO: replace with the real list of upcoming shifts (from ViewModel/repository).
+        // Temporarily filled with sample data so you can see the carousel + dots;
+        // switch back to emptyList<ShiftItem>() to see the "no upcoming shifts" card.
         val items = listOf(
             ShiftItem("שם משרה", "שם חברה", "07:00–15:00", "dd/mm/yy"),
             ShiftItem("שם משרה", "שם חברה", "15:00–23:00", "dd/mm/yy"),
             ShiftItem("שם משרה", "שם חברה", "08:00–16:00", "dd/mm/yy")
         )
 
-        // No open shifts -> hide section title, carousel and dots
+        // No open shifts -> hide section title, carousel and dots, show the prompt card instead
         if (items.isEmpty()) {
             binding.tvSectionUpcoming.visibility = View.GONE
             binding.vpUpcoming.visibility = View.GONE
             binding.layoutDots.visibility = View.GONE
+            binding.cardNoUpcomingShifts.visibility = View.VISIBLE
             return
         }
 
-        binding.vpUpcoming.adapter = ShiftAdapter(items)
+        // Design only supports up to 3 cards/dots in this carousel
+        val shiftsToShow = items.take(3)
 
-        // Build the dots manually
-        setupDots(items.size)
+        binding.cardNoUpcomingShifts.visibility = View.GONE
+        binding.tvSectionUpcoming.visibility = View.VISIBLE
+        binding.vpUpcoming.visibility = View.VISIBLE
+        binding.layoutDots.visibility = View.VISIBLE
+
+        binding.vpUpcoming.adapter = ShiftAdapter(shiftsToShow)
+
+        // Build the dots manually - one per shift, matching shiftsToShow.size (max 3)
+        setupDots(shiftsToShow.size)
         binding.vpUpcoming.registerOnPageChangeCallback(
             object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
@@ -105,9 +117,9 @@ class HomeFragment : Fragment() {
 
     private fun setupBestMatchList() {
         val items = listOf(
-            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", "90%", id = "best_1"),
-            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", null, id = "best_2"),
-            JobItem("שם משרה", "EventPro הפקות", "₪45", "4.2", "1.5 ק״מ", "היום", "87%", id = "best_3")
+            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", "90%",false ,"אחזקה", id = "best_1"),
+            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", null, false ,"בעלי חיים",id = "best_2"),
+            JobItem("שם משרה", "EventPro הפקות", "₪45", "4.2", "1.5 ק״מ", "היום", "87%",false ,"אבטחה וביטחון", id = "best_3")
         )
 
         binding.rvBestMatch.layoutManager = LinearLayoutManager(

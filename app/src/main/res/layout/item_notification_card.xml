@@ -124,6 +124,7 @@
             android:paddingHorizontal="18dp"
             android:textColor="@color/brand_pink"
             android:textSize="13sp"
+            android:layoutDirection="ltr"
             android:fontFamily="@font/ploni_bold_aaa"
             android:background="@drawable/bg_outline_button_pink"
             android:visibility="gone"

@@ -131,6 +131,93 @@
             android:layout_marginTop="10dp"
             android:orientation="horizontal" />
 
+        <!-- Shown instead of the carousel+dots above when there are no upcoming shifts -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cardNoUpcomingShifts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layoutDirection="rtl"
+            android:visibility="gone">
+
+            <!-- The actual card: MaterialCardView gives us the rounded corners +
+                 elevation shadow "for free", same as every other card in the app.
+                 Background is transparent so the gradient View inside can show
+                 through, clipped to the card's rounded corners. -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardNoShiftsBg"
+                android:layout_width="0dp"
+                android:layout_height="103dp"
+                android:layout_marginTop="30dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_card_gradient_blue" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Character illustration, overlapping the top edge of the card.
+                 It's a sibling of the MaterialCardView (not a child), because
+                 MaterialCardView clips its children to its rounded corners -
+                 a child here could never poke out above the card. -->
+            <ImageView
+                android:id="@+id/imgNoShiftsCharacter"
+                android:layout_width="132dp"
+                android:layout_height="103dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="30dp"
+                android:elevation="4dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/img_empty_jobs_character"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/cardNoShiftsBg"
+                app:layout_constraintStart_toStartOf="@id/cardNoShiftsBg" />
+
+            <!-- Title - elevation higher than cardNoShiftsBg's 3dp, otherwise the
+                 card gets drawn on top of the text and hides it. -->
+            <TextView
+                android:id="@+id/tvNoShiftsTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="16dp"
+                android:elevation="4dp"
+                android:text="מחפשים עבודה להיום?"
+                android:textColor="@color/text_dark"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                app:layout_constraintTop_toTopOf="@id/cardNoShiftsBg"
+                app:layout_constraintBottom_toTopOf="@id/tvNoShiftsSubtitle"
+                app:layout_constraintStart_toEndOf="@id/imgNoShiftsCharacter"
+                app:layout_constraintEnd_toEndOf="@id/cardNoShiftsBg"
+                app:layout_constraintVertical_chainStyle="packed" />
+
+            <!-- Subtitle - same elevation fix as the title above -->
+            <TextView
+                android:id="@+id/tvNoShiftsSubtitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:elevation="4dp"
+                android:text="מצאו עבודות בקליק"
+                android:textColor="@color/text_dark"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textSize="16sp"
+                app:layout_constraintTop_toBottomOf="@id/tvNoShiftsTitle"
+                app:layout_constraintBottom_toBottomOf="@id/cardNoShiftsBg"
+                app:layout_constraintStart_toStartOf="@id/tvNoShiftsTitle"
+                app:layout_constraintEnd_toEndOf="@id/tvNoShiftsTitle" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <!-- ===== Best match section ===== -->
         <TextView
             android:id="@+id/tvSectionBestMatch"

@@ -19,11 +19,19 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph" />
 
-    <!-- Bottom navigation bar sits below, never overlapping -->
+    <!-- Bottom navigation bar sits below, never overlapping.
+         Classic MaterialComponents style (not Material3) so there's no rounded
+         "pill" indicator behind the selected icon - matches the Figma, which
+         just recolors the icon/label on selection instead. -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.BottomNavigationView"
+        app:itemIconSize="22dp"
+        app:itemIconTint="@color/bottom_nav_item_color"
+        app:itemTextColor="@color/bottom_nav_item_color"
+        app:itemRippleColor="@android:color/transparent"
         app:menu="@menu/bottom_nav_menu" />
 
 </LinearLayout>
