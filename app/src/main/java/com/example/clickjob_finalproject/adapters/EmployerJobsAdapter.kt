@@ -26,7 +26,9 @@ data class EmployerJobItem(
 class EmployerJobsAdapter(
     private var items: List<EmployerJobItem>,
     private var tabType: JobTabType = JobTabType.ACTIVE,
-    private val onQrClick: (EmployerJobItem) -> Unit = {}
+    private val onQrClick: (EmployerJobItem) -> Unit = {},
+    // Called when user taps "שכפל" on a history card - opens PostJobFragment with pre-filled data
+    private val onDuplicateClick: (EmployerJobItem) -> Unit = {}
 ) : RecyclerView.Adapter<EmployerJobsAdapter.EmployerViewHolder>() {
 
     inner class EmployerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -56,7 +58,6 @@ class EmployerJobsAdapter(
         holder.tvWorkersCount.text = "${item.workersRegistered}/${item.workersNeeded}"
         holder.imgCategory.setImageResource(getCategoryImage(item.category))
 
-        // Progress = registered / needed * 100
         val progress = if (item.workersNeeded > 0)
             (item.workersRegistered * 100) / item.workersNeeded else 0
         holder.progressWorkers.progress = progress
@@ -64,25 +65,25 @@ class EmployerJobsAdapter(
         holder.countDownTimer?.cancel()
 
         // Reset all top-left indicators before applying per-tab rules
-        holder.btnQr.visibility      = View.GONE
-        holder.tvTimer.visibility    = View.GONE
-        holder.btnHandled.visibility = View.GONE
+        holder.btnQr.visibility       = View.GONE
+        holder.tvTimer.visibility     = View.GONE
+        holder.btnHandled.visibility  = View.GONE
 
         when (tabType) {
             JobTabType.ACTIVE -> {
-                // "מאוישות" tab: QR button, teal progress bar
                 holder.cardRoot.setCardBackgroundColor(Color.WHITE)
                 holder.btnQr.visibility = View.VISIBLE
                 holder.progressWorkers.progressDrawable =
-                    androidx.core.content.ContextCompat.getDrawable(holder.itemView.context, R.drawable.progress_bar_teal)
+                    androidx.core.content.ContextCompat.getDrawable(
+                        holder.itemView.context, R.drawable.progress_bar_teal)
                 holder.btnQr.setOnClickListener { onQrClick(item) }
             }
 
             JobTabType.PENDING -> {
-                // "בטיפול" tab: countdown timer, teal progress bar
                 holder.cardRoot.setCardBackgroundColor(Color.WHITE)
                 holder.progressWorkers.progressDrawable =
-                    androidx.core.content.ContextCompat.getDrawable(holder.itemView.context, R.drawable.progress_bar_teal)
+                    androidx.core.content.ContextCompat.getDrawable(
+                        holder.itemView.context, R.drawable.progress_bar_teal)
                 if (item.countdownMillis > 0) {
                     holder.tvTimer.visibility = View.VISIBLE
                     startTimer(holder, item.countdownMillis)
@@ -90,11 +91,12 @@ class EmployerJobsAdapter(
             }
 
             JobTabType.HISTORY -> {
-                // "היסטוריה" tab: "טופל" badge, gray progress bar (shift already passed)
-                holder.cardRoot.setCardBackgroundColor(Color.parseColor("#FFF8F0"))
-                holder.btnHandled.visibility = View.VISIBLE
+                holder.cardRoot.setCardBackgroundColor(Color.WHITE)
+                holder.btnHandled.visibility   = View.VISIBLE
                 holder.progressWorkers.progressDrawable =
-                    androidx.core.content.ContextCompat.getDrawable(holder.itemView.context, R.drawable.progress_bar_gray)
+                    androidx.core.content.ContextCompat.getDrawable(
+                        holder.itemView.context, R.drawable.progress_bar_gray)
+                holder.btnHandled.setOnClickListener { onDuplicateClick(item) }
             }
         }
     }

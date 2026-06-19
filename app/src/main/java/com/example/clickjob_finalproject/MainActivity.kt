@@ -1,7 +1,9 @@
 package com.example.clickjob_finalproject
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -11,6 +13,8 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
+
+    private val appViewModel: AppViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,5 +55,18 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
 
         bottomNav.setupWithNavController(navController)
+
+        // Observe global worker/employer mode and switch bottom nav color accordingly.
+        // Pink = worker mode, teal = employer mode.
+        appViewModel.isWorkerMode.observe(this) { isWorker ->
+            val colorList = if (isWorker) {
+                ContextCompat.getColorStateList(this, R.color.bottom_nav_item_color)
+            } else {
+                ContextCompat.getColorStateList(this, R.color.bottom_nav_item_color_teal)
+            }
+            bottomNav.itemIconTintList = colorList
+            bottomNav.itemTextColor = colorList
+        }
     }
+
 }

@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_homeFragment_to_jobDetailsFragment"
             app:destination="@id/JobDetailsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_myJobsFragment"
+            app:destination="@id/myJobsFragment" />
     </fragment>
 
     <fragment
@@ -50,8 +53,11 @@
         android:id="@+id/myJobsFragment"
         android:name="com.example.clickjob_finalproject.ui.myjobs.MyJobsFragment"
         android:label="fragment_my_jobs"
-        tools:layout="@layout/fragment_my_jobs" />
-
+        tools:layout="@layout/fragment_my_jobs" >
+        <action
+            android:id="@+id/action_myJobsFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
     <fragment
         android:id="@+id/scanFragment"
         android:name="com.example.clickjob_finalproject.ui.scan.ScanFragment"

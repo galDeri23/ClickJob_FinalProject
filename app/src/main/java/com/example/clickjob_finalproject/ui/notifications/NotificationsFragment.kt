@@ -12,6 +12,8 @@ import com.example.clickjob_finalproject.adapters.NotificationItem
 import com.example.clickjob_finalproject.adapters.NotificationStatus
 import com.example.clickjob_finalproject.adapters.NotificationsAdapter
 import com.example.clickjob_finalproject.databinding.FragmentNotificationsBinding
+import androidx.fragment.app.activityViewModels
+import com.example.clickjob_finalproject.AppViewModel
 
 class NotificationsFragment : Fragment() {
 
@@ -21,6 +23,7 @@ class NotificationsFragment : Fragment() {
     private lateinit var adapter: NotificationsAdapter
     private var isWorkerMode = true
 
+    private val appViewModel: AppViewModel by activityViewModels()
     // Worker notifications - matches the 6 Figma icon types
     private val workerNotifications = listOf(
         NotificationItem(
@@ -108,6 +111,7 @@ class NotificationsFragment : Fragment() {
     }
 
     private fun switchToWorkerMode() {
+        appViewModel.setWorkerMode()
         binding.toggleWorker.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected)
         binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         binding.toggleEmployer.background = null
@@ -117,6 +121,7 @@ class NotificationsFragment : Fragment() {
     }
 
     private fun switchToEmployerMode() {
+        appViewModel.setEmployerMode()
         binding.toggleEmployer.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected_teal)
         binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         binding.toggleWorker.background = null

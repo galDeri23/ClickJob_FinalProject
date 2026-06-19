@@ -85,7 +85,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Tabs row: each tab has its own box, all inside a light gray container -->
+    <!-- Tabs row -->
     <LinearLayout
         android:id="@+id/tabsRow"
         android:layout_width="0dp"
@@ -141,16 +141,134 @@
 
     </LinearLayout>
 
-    <!-- Jobs list -->
+    <!-- "Post job" button - shown at top of employer history list ONLY when history exists.
+         Tapping it opens the PostJobFragment for a new (empty) job. -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardPostJob"
+        android:layout_width="214dp"
+        android:layout_height="33dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        android:visibility="gone"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/tabsRow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layoutDirection="ltr">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+"
+                android:textColor="@color/black"
+                android:textSize="22sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="פרסום עבודה"
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                android:fontFamily="@font/ploni_bold_aaa" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Empty state card - shown in employer history tab ONLY when no history exists.
+         Tapping it opens PostJobFragment for a new (empty) job. -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardEmptyHistory"
+        android:layout_width="0dp"
+        android:layout_height="150dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        android:visibility="gone"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/tabsRow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layoutDirection="ltr">
+
+            <!-- Character illustration on the left -->
+
+            <!-- Text in the middle -->
+
+            <ImageView
+                android:id="@+id/imgEmptyCharacter"
+                android:layout_width="130dp"
+                android:layout_height="150dp"
+                android:layout_marginTop="25dp"
+                android:contentDescription="@null"
+                android:gravity="start"
+                android:scaleType="fitCenter"
+                android:src="@drawable/img_empty_jobs_character"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <TextView
+                android:id="@+id/tvEmptyText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:text="עדיין לא פרסמתם משרה,\nבוא ניצור את המשרה הראשונה שלך"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:gravity="center"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/tvEmptyPlus"
+                app:layout_constraintEnd_toStartOf="@id/imgEmptyCharacter" />
+
+
+            <!-- "+" icon on the left side -->
+            <TextView
+                android:id="@+id/tvEmptyPlus"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:text="+"
+                android:gravity="end"
+                android:textColor="@color/black"
+                android:textSize="28sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Jobs list - constrained to cardPostJob when visible, otherwise to tabsRow -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvJobs"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:paddingHorizontal="16dp"
         android:paddingBottom="16dp"
         android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/tabsRow"
+        app:layout_constraintTop_toBottomOf="@id/cardPostJob"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

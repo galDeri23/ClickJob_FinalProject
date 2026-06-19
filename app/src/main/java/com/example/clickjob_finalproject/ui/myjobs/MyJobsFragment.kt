@@ -10,6 +10,10 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import com.example.clickjob_finalproject.AppViewModel
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.clickjob_finalproject.R
 import com.example.clickjob_finalproject.adapters.EmployerJobItem
@@ -24,8 +28,11 @@ class MyJobsFragment : Fragment() {
     private var _binding: FragmentMyJobsBinding? = null
     private val binding get() = _binding!!
 
-    private var isWorkerMode = true
-    private var currentTab = JobTabType.ACTIVE
+    // Survives navigation - remembers mode and tab when user leaves and returns
+    private val viewModel: MyJobsViewModel by viewModels()
+
+    // Shared with MainActivity and NotificationsFragment to sync bottom nav color
+    private val appViewModel: AppViewModel by activityViewModels()
 
     // ===== Worker data =====
     private val workerActive = mutableListOf(
@@ -40,27 +47,17 @@ class MyJobsFragment : Fragment() {
     )
 
     // ===== Employer data =====
-
-    // "מאוישות" - fully staffed jobs (workersRegistered == workersNeeded), QR button shown
     private val employerActive = mutableListOf(
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 7, 7),
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 5, 5),
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 4, 4)
     )
-
-    // "בטיפול" - still recruiting workers (workersRegistered < workersNeeded), countdown timer shown
     private val employerPending = mutableListOf(
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 2, 6, countdownMillis = 18000000L),
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 3, 7, countdownMillis = 18000000L),
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 1, 3, countdownMillis = 18000000L)
     )
-
-    // "היסטוריה" - past shifts, "טופל" badge shown
-    private val employerHistory = mutableListOf(
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 7, 7),
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 5, 5),
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 3, 6)
-    )
+    private val employerHistory = mutableListOf<EmployerJobItem>()
 
     // Adapters
     private lateinit var workerAdapter: MyJobsAdapter
@@ -80,9 +77,27 @@ class MyJobsFragment : Fragment() {
 
         setupKeyboard()
         setupWorkerAdapter()
+        setupEmployerAdapter()
         setupTabs()
         setupToggle()
-        updateTabLabels()
+        setupPostJobButtons()
+
+        // If the user arrived from the "פרסום משרה" button in HomeFragment,
+        // force employer mode + history tab regardless of the saved ViewModel state.
+        val openEmployerHistory = arguments?.getBoolean("openEmployerHistory", false) ?: false
+        if (openEmployerHistory) {
+            arguments?.remove("openEmployerHistory")
+            viewModel.isWorkerMode = false
+            viewModel.currentTab = JobTabType.HISTORY
+        }
+
+        // Restore the saved mode and tab (either just forced above, or from a previous visit)
+        if (viewModel.isWorkerMode) {
+            applyWorkerMode(animated = false)
+        } else {
+            applyEmployerMode(animated = false)
+        }
+        restoreTab(viewModel.currentTab)
     }
 
     private fun setupKeyboard() {
@@ -95,7 +110,6 @@ class MyJobsFragment : Fragment() {
         }
     }
 
-    // Setup worker adapter (default mode)
     private fun setupWorkerAdapter() {
         workerAdapter = MyJobsAdapter(
             items = workerActive,
@@ -111,54 +125,159 @@ class MyJobsFragment : Fragment() {
         binding.rvJobs.adapter = workerAdapter
     }
 
-    // Setup employer adapter
     private fun setupEmployerAdapter() {
         employerAdapter = EmployerJobsAdapter(
             items = employerActive,
             tabType = JobTabType.ACTIVE,
-            onQrClick = { item ->
-                // TODO: open camera for QR scan
+            onQrClick = { /* TODO: open camera for QR scan */ },
+            onDuplicateClick = { item ->
+                // TODO: navigate to PostJobFragment with item's data pre-filled
+                // findNavController().navigate(
+                //     R.id.action_myJobsFragment_to_postJobFragment,
+                //     bundleOf("jobData" to item)
+                // )
             }
         )
-        binding.rvJobs.adapter = employerAdapter
+    }
+
+    private fun setupPostJobButtons() {
+        // "פרסום עבודה" card (top of list when history exists)
+        binding.cardPostJob.setOnClickListener {
+            // TODO: navigate to PostJobFragment (empty)
+            // findNavController().navigate(R.id.action_myJobsFragment_to_postJobFragment)
+        }
+
+        // Empty state card (when no history exists yet)
+        binding.cardEmptyHistory.setOnClickListener {
+            // TODO: navigate to PostJobFragment (empty)
+            // findNavController().navigate(R.id.action_myJobsFragment_to_postJobFragment)
+        }
     }
 
     private fun setupTabs() {
-        val tabs = listOf(binding.tabActive, binding.tabPending, binding.tabHistory)
-
         binding.tabActive.setOnClickListener {
-            currentTab = JobTabType.ACTIVE
-            tabs.forEach { setTabUnselected(it) }
-            setTabSelected(binding.tabActive)
-            if (isWorkerMode)
-                workerAdapter.updateItems(workerActive.toList(), JobTabType.ACTIVE)
-            else
-                employerAdapter.updateItems(employerActive.toList(), JobTabType.ACTIVE)
+            viewModel.currentTab = JobTabType.ACTIVE
+            applyTab(JobTabType.ACTIVE)
         }
-
         binding.tabPending.setOnClickListener {
-            currentTab = JobTabType.PENDING
-            tabs.forEach { setTabUnselected(it) }
-            setTabSelected(binding.tabPending)
-            if (isWorkerMode)
-                workerAdapter.updateItems(workerPending.toList(), JobTabType.PENDING)
-            else
-                employerAdapter.updateItems(employerPending.toList(), JobTabType.PENDING)
+            viewModel.currentTab = JobTabType.PENDING
+            applyTab(JobTabType.PENDING)
         }
-
         binding.tabHistory.setOnClickListener {
-            currentTab = JobTabType.HISTORY
-            tabs.forEach { setTabUnselected(it) }
-            setTabSelected(binding.tabHistory)
-            if (isWorkerMode)
-                workerAdapter.updateItems(workerHistory.toList(), JobTabType.HISTORY)
-            else
-                employerAdapter.updateItems(employerHistory.toList(), JobTabType.HISTORY)
+            viewModel.currentTab = JobTabType.HISTORY
+            applyTab(JobTabType.HISTORY)
         }
     }
 
+    private fun applyTab(tab: JobTabType) {
+        val tabs = listOf(binding.tabActive, binding.tabPending, binding.tabHistory)
+        tabs.forEach { setTabUnselected(it) }
+
+        // Always reset rvJobs to visible first - updateEmployerHistoryUI() will
+        // hide it again if needed (empty employer history). Without this reset,
+        // once history sets it to GONE it stays GONE when switching to other tabs.
+        binding.rvJobs.visibility = View.VISIBLE
+
+        when (tab) {
+            JobTabType.ACTIVE  -> setTabSelected(binding.tabActive)
+            JobTabType.PENDING -> setTabSelected(binding.tabPending)
+            JobTabType.HISTORY -> setTabSelected(binding.tabHistory)
+        }
+
+        if (viewModel.isWorkerMode) {
+            val items = when (tab) {
+                JobTabType.ACTIVE  -> workerActive.toList()
+                JobTabType.PENDING -> workerPending.toList()
+                JobTabType.HISTORY -> workerHistory.toList()
+            }
+            workerAdapter.updateItems(items, tab)
+            // Worker mode never shows employer-only UI
+            binding.cardPostJob.visibility    = View.GONE
+            binding.cardEmptyHistory.visibility = View.GONE
+        } else {
+            val items = when (tab) {
+                JobTabType.ACTIVE  -> employerActive.toList()
+                JobTabType.PENDING -> employerPending.toList()
+                JobTabType.HISTORY -> employerHistory.toList()
+            }
+            employerAdapter.updateItems(items, tab)
+            binding.rvJobs.adapter = employerAdapter
+
+            // Employer history: show either Empty State or PostJob button + list
+            if (tab == JobTabType.HISTORY) {
+                updateEmployerHistoryUI()
+            } else {
+                binding.cardPostJob.visibility    = View.GONE
+                binding.cardEmptyHistory.visibility = View.GONE
+            }
+        }
+    }
+
+    // Decides whether to show Empty State card or "פרסום עבודה" button in employer history
+    private fun updateEmployerHistoryUI() {
+        if (employerHistory.isEmpty()) {
+            binding.cardEmptyHistory.visibility = View.VISIBLE
+            binding.cardPostJob.visibility      = View.GONE
+            binding.rvJobs.visibility           = View.GONE
+        } else {
+            binding.cardEmptyHistory.visibility = View.GONE
+            binding.cardPostJob.visibility      = View.VISIBLE
+            binding.rvJobs.visibility           = View.VISIBLE
+        }
+    }
+
+    private fun restoreTab(tab: JobTabType) {
+        applyTab(tab)
+    }
+
+    private fun setupToggle() {
+        binding.toggleWorker.setOnClickListener {
+            if (!viewModel.isWorkerMode) {
+                viewModel.isWorkerMode = true
+                viewModel.currentTab = JobTabType.ACTIVE
+                applyWorkerMode(animated = true)
+                restoreTab(JobTabType.ACTIVE)
+            }
+        }
+        binding.toggleEmployer.setOnClickListener {
+            if (viewModel.isWorkerMode) {
+                viewModel.isWorkerMode = false
+                viewModel.currentTab = JobTabType.ACTIVE
+                applyEmployerMode(animated = true)
+                restoreTab(JobTabType.ACTIVE)
+            }
+        }
+    }
+
+    // Apply worker toggle visuals only (no tab/list changes)
+    private fun applyWorkerMode(animated: Boolean) {
+        appViewModel.setWorkerMode()
+        binding.rvJobs.visibility = View.VISIBLE
+        binding.cardPostJob.visibility = View.GONE
+        binding.cardEmptyHistory.visibility = View.GONE
+        binding.toggleWorker.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected)
+        binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+        binding.toggleEmployer.background = null
+        binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
+        updateTabColors(isPink = true)
+        binding.rvJobs.adapter = workerAdapter
+        updateTabLabels()
+    }
+
+    // Apply employer toggle visuals only (no tab/list changes)
+    private fun applyEmployerMode(animated: Boolean) {
+        appViewModel.setEmployerMode()
+        binding.toggleEmployer.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected_teal)
+        binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+        binding.toggleWorker.background = null
+        binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
+        updateTabColors(isPink = false)
+        binding.rvJobs.adapter = employerAdapter
+        updateTabLabels()
+    }
+
     private fun updateTabLabels() {
-        if (isWorkerMode) {
+        if (viewModel.isWorkerMode) {
             binding.tabActive.text  = "פעילות (${workerActive.size})"
             binding.tabPending.text = "בהמתנה (${workerPending.size})"
             binding.tabHistory.text = "היסטוריה"
@@ -169,84 +288,17 @@ class MyJobsFragment : Fragment() {
         }
     }
 
-    private fun setupToggle() {
-        binding.toggleWorker.setOnClickListener {
-            if (!isWorkerMode) {
-                isWorkerMode = true
-                switchToWorkerMode()
-            }
-        }
-        binding.toggleEmployer.setOnClickListener {
-            if (isWorkerMode) {
-                isWorkerMode = false
-                switchToEmployerMode()
-            }
-        }
-    }
-
-    private fun switchToWorkerMode() {
-        // Toggle colors: pink
-        binding.toggleWorker.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected)
-        binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-        binding.toggleEmployer.background = null
-        binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
-
-        // Tab colors: pink
-        updateTabColors(isPink = true)
-
-        // Switch adapter to worker
-        currentTab = JobTabType.ACTIVE
-        binding.rvJobs.adapter = workerAdapter
-        workerAdapter.updateItems(workerActive.toList(), JobTabType.ACTIVE)
-        updateTabLabels()
-
-        val tabs = listOf(binding.tabActive, binding.tabPending, binding.tabHistory)
-        tabs.forEach { setTabUnselected(it) }
-        setTabSelected(binding.tabActive)
-    }
-
-    private fun switchToEmployerMode() {
-        // Toggle colors: teal
-        binding.toggleEmployer.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected_teal)
-        binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-        binding.toggleWorker.background = null
-        binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
-
-        // Tab colors: teal
-        updateTabColors(isPink = false)
-
-        // Switch adapter to employer
-        currentTab = JobTabType.ACTIVE
-        setupEmployerAdapter()
-        updateTabLabels()
-
-        val tabs = listOf(binding.tabActive, binding.tabPending, binding.tabHistory)
-        tabs.forEach { setTabUnselected(it) }
-        setTabSelected(binding.tabActive)
-    }
-
-    // Switch all tab colors between pink and teal
     private fun updateTabColors(isPink: Boolean) {
-        val selectedDrawable = if (isPink)
-            R.drawable.bg_tab_selected
-        else
-            R.drawable.bg_tab_selected_teal
-
-        // Reset all to unselected first
         listOf(binding.tabActive, binding.tabPending, binding.tabHistory)
             .forEach { setTabUnselected(it) }
-
-        // Active tab gets selected color
+        val selectedDrawable = if (isPink) R.drawable.bg_tab_selected else R.drawable.bg_tab_selected_teal
         binding.tabActive.background = ContextCompat.getDrawable(requireContext(), selectedDrawable)
         binding.tabActive.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
     }
 
     private fun setTabSelected(tab: TextView) {
-        val selectedDrawable = if (isWorkerMode)
-            R.drawable.bg_tab_selected
-        else
-            R.drawable.bg_tab_selected_teal
-
+        val selectedDrawable = if (viewModel.isWorkerMode)
+            R.drawable.bg_tab_selected else R.drawable.bg_tab_selected_teal
         tab.background = ContextCompat.getDrawable(requireContext(), selectedDrawable)
         tab.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         tab.typeface = ResourcesCompat.getFont(requireContext(), R.font.ploni_bold_aaa)

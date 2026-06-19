@@ -36,9 +36,17 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupSearchBar()
+        setupJobPosting()
         setupUpcomingShifts()
         setupBestMatchList()
         setupUrgentList()
+    }
+
+    private fun setupJobPosting() {
+        binding.btnPostJob.setOnClickListener {
+            val args = bundleOf("openEmployerHistory" to true)
+            findNavController().navigate(R.id.action_homeFragment_to_myJobsFragment, args)
+        }
     }
 
     private fun setupSearchBar() {
