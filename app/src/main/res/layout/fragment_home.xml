@@ -116,7 +116,7 @@
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/vpUpcoming"
             android:layout_width="match_parent"
-            android:layout_height="105dp"
+            android:layout_height="150dp"
             android:layout_marginTop="10dp"
             android:paddingHorizontal="16dp"
             android:clipToPadding="false" />
@@ -147,7 +147,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardNoShiftsBg"
                 android:layout_width="0dp"
-                android:layout_height="103dp"
+                android:layout_height="150dp"
                 android:layout_marginTop="30dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
@@ -169,9 +169,9 @@
                  a child here could never poke out above the card. -->
             <ImageView
                 android:id="@+id/imgNoShiftsCharacter"
-                android:layout_width="132dp"
-                android:layout_height="103dp"
-                android:layout_marginStart="8dp"
+                android:layout_width="193dp"
+                android:layout_height="150dp"
+                android:layout_marginStart="4dp"
                 android:layout_marginTop="30dp"
                 android:elevation="4dp"
                 android:scaleType="fitCenter"
@@ -193,7 +193,7 @@
                 android:textColor="@color/text_dark"
                 android:fontFamily="@font/ploni_bold_aaa"
                 android:textStyle="bold"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 app:layout_constraintTop_toTopOf="@id/cardNoShiftsBg"
                 app:layout_constraintBottom_toTopOf="@id/tvNoShiftsSubtitle"
                 app:layout_constraintStart_toEndOf="@id/imgNoShiftsCharacter"
@@ -210,7 +210,7 @@
                 android:text="מצאו עבודות בקליק"
                 android:textColor="@color/text_dark"
                 android:fontFamily="@font/ploni_bold_aaa"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 app:layout_constraintTop_toBottomOf="@id/tvNoShiftsTitle"
                 app:layout_constraintBottom_toBottomOf="@id/cardNoShiftsBg"
                 app:layout_constraintStart_toStartOf="@id/tvNoShiftsTitle"

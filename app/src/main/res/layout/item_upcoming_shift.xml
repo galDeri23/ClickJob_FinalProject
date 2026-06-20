@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- "Upcoming Shift" card -->
+<!-- "Upcoming Shift" card - Figma v2:
+     logo stays on the RIGHT (start in RTL) and gains a white circle bg;
+     info rows are now stacked vertically instead of three horizontal columns -->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -15,133 +17,118 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="103dp"
+        android:layout_height="match_parent"
         android:background="@drawable/bg_card_gradient_blue"
         android:padding="14dp">
 
-        <!-- Round image on the right, centered vertically -->
+        <!-- Logo: RIGHT side (start in RTL), with white circle background -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgJob"
-            android:layout_width="58dp"
-            android:layout_height="58dp"
+            android:layout_width="78dp"
+            android:layout_height="78dp"
             android:scaleType="centerCrop"
+            android:background="@drawable/bg_circle_logo"
             app:shapeAppearanceOverlay="@style/CircleImageStyle"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:src="@drawable/img_cat_circle_creative_white" />
+            tools:src="@drawable/img_cat_circle_hospitality_white" />
 
-        <!-- Job title -->
+        <!-- Job title: to the left of the logo -->
         <TextView
             android:id="@+id/tvJobTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="14dp"
             android:maxLines="1"
             android:textColor="@color/text_dark"
             android:fontFamily="@font/ploni_bold_aaa"
-            android:textSize="15sp"
-            android:textStyle="bold"
+            android:textSize="20sp"
+            android:gravity="start"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@id/imgJob"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintBottom_toTopOf="@id/tvCompanyName"
-            tools:text="שם משרה" />
+            tools:text="תגבור מלצרות" />
 
         <!-- Company name -->
         <TextView
             android:id="@+id/tvCompanyName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="14dp"
             android:layout_marginTop="2dp"
             android:maxLines="1"
-            android:textColor="@color/text_dark"
+            android:textColor="@color/DarkDeep"
             android:fontFamily="@font/ploni_regular_aaa"
-            android:textSize="13sp"
+            android:textSize="14sp"
+            android:gravity="start"
             app:layout_constraintTop_toBottomOf="@id/tvJobTitle"
             app:layout_constraintStart_toEndOf="@id/imgJob"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/barrierInfo"
-            tools:text="שם חברה" />
+            app:layout_constraintBottom_toTopOf="@id/layoutInfo"
+            tools:text="אולם אירועים אירוסים" />
 
-        <!-- Barrier so the info row always sits below the company name -->
-        <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/barrierInfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:barrierDirection="bottom"
-            app:constraint_referenced_ids="tvCompanyName" />
-
-        <!-- Info row: three equal columns so they never collide.
-             Each text autosizes to fit its column. -->
+        <!-- Info rows: stacked vertically below company name -->
         <LinearLayout
             android:id="@+id/layoutInfo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginTop="20dp"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/barrierInfo"
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="15dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@id/tvCompanyName"
             app:layout_constraintStart_toEndOf="@id/imgJob"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-            <!-- Address + location icon -->
+            <!-- Address -->
             <TextView
                 android:id="@+id/tvAddress"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_marginBottom="2dp"
                 android:drawableStart="@drawable/ic_location"
-                android:drawablePadding="2dp"
-                android:drawableTint="@color/text_gray"
-                android:gravity="start|center_vertical"
-                android:maxLines="1"
-                android:autoSizeMinTextSize="9sp"
-                android:autoSizeMaxTextSize="12sp"
-                android:autoSizeStepGranularity="1sp"
-                android:textColor="@color/text_gray"
-                android:fontFamily="@font/ploni_regular_aaa"
-                tools:text="כתובת" />
-
-            <!-- Date + calendar icon -->
-            <TextView
-                android:id="@+id/tvDate"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:drawableStart="@drawable/ic_calendar"
-                android:drawablePadding="5dp"
-                android:drawableTint="@color/text_gray"
+                android:drawablePadding="4dp"
+                android:drawableTint="@color/DarkDeep"
                 android:gravity="center_vertical"
                 android:maxLines="1"
-                android:autoSizeTextType="uniform"
-                android:autoSizeMinTextSize="9sp"
-                android:autoSizeMaxTextSize="12sp"
-                android:autoSizeStepGranularity="1sp"
-                android:textColor="@color/text_gray"
+                android:textSize="13sp"
+                android:textColor="@color/DarkDeep"
                 android:fontFamily="@font/ploni_regular_aaa"
-                tools:text="dd/mm/yy" />
+                tools:text="נדרה, שמואל יוסף 13" />
 
-            <!-- Hours + clock icon -->
+            <!-- Hours -->
             <TextView
                 android:id="@+id/tvHours"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_marginBottom="2dp"
                 android:drawableStart="@drawable/ic_clock"
-                android:drawablePadding="2dp"
-                android:drawableTint="@color/text_gray"
+                android:drawablePadding="4dp"
+                android:drawableTint="@color/DarkDeep"
                 android:gravity="center_vertical"
                 android:maxLines="1"
-                android:autoSizeTextType="uniform"
-                android:autoSizeMinTextSize="9sp"
-                android:autoSizeMaxTextSize="12sp"
-                android:autoSizeStepGranularity="1sp"
-                android:textColor="@color/text_gray"
+                android:textSize="13sp"
+                android:textColor="@color/DarkDeep"
                 android:fontFamily="@font/ploni_regular_aaa"
-                tools:text="07:00-15:00" />
+                tools:text="20:00-02:00" />
+
+            <!-- Date -->
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_calendar"
+                android:drawablePadding="4dp"
+                android:drawableTint="@color/DarkDeep"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:textSize="13sp"
+                android:textColor="@color/DarkDeep"
+                android:fontFamily="@font/ploni_regular_aaa"
+                tools:text="25/06" />
 
         </LinearLayout>
 

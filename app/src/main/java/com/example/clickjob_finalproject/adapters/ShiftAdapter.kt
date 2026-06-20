@@ -13,6 +13,7 @@ data class ShiftItem(
     val company: String,
     val time: String,
     val date: String,
+    val address: String,
     val category: String = "מסעדנות"
 )
 
@@ -41,7 +42,7 @@ class ShiftAdapter(
         holder.tvCompany.text = item.company
         holder.tvTime.text    = item.time
         holder.tvDate.text    = item.date
-        holder.tvAddress.text = "כתובת"
+        holder.tvAddress.text = item.address
         holder.imgJob.setImageResource(getCategoryCircleImage(item.category))
     }
 
