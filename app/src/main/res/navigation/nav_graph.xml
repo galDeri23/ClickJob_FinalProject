@@ -38,6 +38,11 @@
         tools:layout="@layout/fragment_search_results" />
 
     <fragment
+        android:id="@+id/workerSortingFragment"
+        android:name="com.example.clickjob_finalproject.ui.myjobs.WorkerSortingFragment"
+        android:label="WorkerSortingFragment"/>
+
+    <fragment
         android:id="@+id/JobDetailsFragment"
         android:name="com.example.clickjob_finalproject.ui.home.JobDetailsFragment"
         android:label="fragment_job_details"
@@ -57,6 +62,9 @@
         <action
             android:id="@+id/action_myJobsFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_myJobsFragment_to_workerSortingFragment"
+            app:destination="@id/workerSortingFragment"/>
     </fragment>
     <fragment
         android:id="@+id/scanFragment"

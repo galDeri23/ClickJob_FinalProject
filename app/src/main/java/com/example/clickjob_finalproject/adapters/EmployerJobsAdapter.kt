@@ -27,8 +27,8 @@ class EmployerJobsAdapter(
     private var items: List<EmployerJobItem>,
     private var tabType: JobTabType = JobTabType.ACTIVE,
     private val onQrClick: (EmployerJobItem) -> Unit = {},
-    // Called when user taps "שכפל" on a history card - opens PostJobFragment with pre-filled data
-    private val onDuplicateClick: (EmployerJobItem) -> Unit = {}
+    private val onDuplicateClick: (EmployerJobItem) -> Unit = {},
+    private val onItemClick: (EmployerJobItem) -> Unit = {}  // Added for WorkerSortingFragment navigation
 ) : RecyclerView.Adapter<EmployerJobsAdapter.EmployerViewHolder>() {
 
     inner class EmployerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -64,10 +64,12 @@ class EmployerJobsAdapter(
 
         holder.countDownTimer?.cancel()
 
-        // Reset all top-left indicators before applying per-tab rules
-        holder.btnQr.visibility       = View.GONE
-        holder.tvTimer.visibility     = View.GONE
-        holder.btnHandled.visibility  = View.GONE
+        holder.btnQr.visibility      = View.GONE
+        holder.tvTimer.visibility    = View.GONE
+        holder.btnHandled.visibility = View.GONE
+
+        // Reset click listener
+        holder.itemView.setOnClickListener(null)
 
         when (tabType) {
             JobTabType.ACTIVE -> {
@@ -88,11 +90,13 @@ class EmployerJobsAdapter(
                     holder.tvTimer.visibility = View.VISIBLE
                     startTimer(holder, item.countdownMillis)
                 }
+                // Navigate to WorkerSortingFragment on card click
+                holder.itemView.setOnClickListener { onItemClick(item) }
             }
 
             JobTabType.HISTORY -> {
                 holder.cardRoot.setCardBackgroundColor(Color.WHITE)
-                holder.btnHandled.visibility   = View.VISIBLE
+                holder.btnHandled.visibility = View.VISIBLE
                 holder.progressWorkers.progressDrawable =
                     androidx.core.content.ContextCompat.getDrawable(
                         holder.itemView.context, R.drawable.progress_bar_gray)
@@ -115,23 +119,25 @@ class EmployerJobsAdapter(
         }.start()
     }
 
-    private fun getCategoryImage(category: String): Int {
-        return when (category) {
-            "אבטחה וביטחון"      -> R.drawable.img_cat_circle_security
-            "משלוחים ותחבורה"    -> R.drawable.img_cat_circle_delivery
-            "בניין וייצור"        -> R.drawable.img_cat_circle_construction
-            "חינוך והוראה"        -> R.drawable.img_cat_circle_education
-            "בעלי חיים"          -> R.drawable.img_cat_circle_pets
-            "אפסנאות ולוגיסטיקה" -> R.drawable.img_cat_circle_logistics
-            "מסעדות"             -> R.drawable.img_cat_circle_hospitality
-            "אחזקה"              -> R.drawable.img_cat_circle_maintenance
-            "רפואה ובריאות"      -> R.drawable.img_cat_circle_health
-            "הפקה ואירועים"      -> R.drawable.img_cat_circle_events
-            "טכנולוגיה"          -> R.drawable.img_cat_circle_tech
-            "שירות לקוחות"       -> R.drawable.img_cat_circle_service
-            "מכירות ואופנה"      -> R.drawable.img_cat_circle_sales
-            "עיצוב וקריאייטיב"   -> R.drawable.img_cat_circle_creative
-            else                 -> R.drawable.img_cat_circle_hospitality
+    companion object {
+        fun getCategoryImage(category: String): Int {
+            return when (category) {
+                "אבטחה וביטחון"      -> R.drawable.img_cat_circle_security
+                "משלוחים ותחבורה"    -> R.drawable.img_cat_circle_delivery
+                "בניין וייצור"        -> R.drawable.img_cat_circle_construction
+                "חינוך והוראה"        -> R.drawable.img_cat_circle_education
+                "בעלי חיים"          -> R.drawable.img_cat_circle_pets
+                "אפסנאות ולוגיסטיקה" -> R.drawable.img_cat_circle_logistics
+                "מסעדות"             -> R.drawable.img_cat_circle_hospitality
+                "אחזקה"              -> R.drawable.img_cat_circle_maintenance
+                "רפואה ובריאות"      -> R.drawable.img_cat_circle_health
+                "הפקה ואירועים"      -> R.drawable.img_cat_circle_events
+                "טכנולוגיה"          -> R.drawable.img_cat_circle_tech
+                "שירות לקוחות"       -> R.drawable.img_cat_circle_service
+                "מכירות ואופנה"      -> R.drawable.img_cat_circle_sales
+                "עיצוב וקריאייטיב"   -> R.drawable.img_cat_circle_creative
+                else                 -> R.drawable.img_cat_circle_hospitality
+            }
         }
     }
 

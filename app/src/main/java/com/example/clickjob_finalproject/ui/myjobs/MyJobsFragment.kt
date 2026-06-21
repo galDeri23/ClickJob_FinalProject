@@ -28,10 +28,7 @@ class MyJobsFragment : Fragment() {
     private var _binding: FragmentMyJobsBinding? = null
     private val binding get() = _binding!!
 
-    // Survives navigation - remembers mode and tab when user leaves and returns
     private val viewModel: MyJobsViewModel by viewModels()
-
-    // Shared with MainActivity and NotificationsFragment to sync bottom nav color
     private val appViewModel: AppViewModel by activityViewModels()
 
     // ===== Worker data =====
@@ -59,7 +56,6 @@ class MyJobsFragment : Fragment() {
     )
     private val employerHistory = mutableListOf<EmployerJobItem>()
 
-    // Adapters
     private lateinit var workerAdapter: MyJobsAdapter
     private lateinit var employerAdapter: EmployerJobsAdapter
 
@@ -82,8 +78,6 @@ class MyJobsFragment : Fragment() {
         setupToggle()
         setupPostJobButtons()
 
-        // If the user arrived from the "פרסום משרה" button in HomeFragment,
-        // force employer mode + history tab regardless of the saved ViewModel state.
         val openEmployerHistory = arguments?.getBoolean("openEmployerHistory", false) ?: false
         if (openEmployerHistory) {
             arguments?.remove("openEmployerHistory")
@@ -91,7 +85,6 @@ class MyJobsFragment : Fragment() {
             viewModel.currentTab = JobTabType.HISTORY
         }
 
-        // Restore the saved mode and tab (either just forced above, or from a previous visit)
         if (viewModel.isWorkerMode) {
             applyWorkerMode(animated = false)
         } else {
@@ -131,26 +124,32 @@ class MyJobsFragment : Fragment() {
             tabType = JobTabType.ACTIVE,
             onQrClick = { /* TODO: open camera for QR scan */ },
             onDuplicateClick = { item ->
-                // TODO: navigate to PostJobFragment with item's data pre-filled
-                // findNavController().navigate(
-                //     R.id.action_myJobsFragment_to_postJobFragment,
-                //     bundleOf("jobData" to item)
-                // )
+                // TODO: navigate to PostJobFragment
+            },
+            onItemClick = { item ->
+                // Navigate to WorkerSortingFragment only from PENDING tab
+                if (viewModel.currentTab == JobTabType.PENDING) {
+                    val bundle = Bundle().apply {
+                        putString("jobTitle", item.title)
+                        putString("jobCompany", item.company)
+                        putInt("workersNeeded", item.workersNeeded)
+                        putInt("workersRegistered", item.workersRegistered)
+                    }
+                    findNavController().navigate(
+                        R.id.action_myJobsFragment_to_workerSortingFragment,
+                        bundle
+                    )
+                }
             }
         )
     }
 
     private fun setupPostJobButtons() {
-        // "פרסום עבודה" card (top of list when history exists)
         binding.cardPostJob.setOnClickListener {
             // TODO: navigate to PostJobFragment (empty)
-            // findNavController().navigate(R.id.action_myJobsFragment_to_postJobFragment)
         }
-
-        // Empty state card (when no history exists yet)
         binding.cardEmptyHistory.setOnClickListener {
             // TODO: navigate to PostJobFragment (empty)
-            // findNavController().navigate(R.id.action_myJobsFragment_to_postJobFragment)
         }
     }
 
@@ -173,9 +172,6 @@ class MyJobsFragment : Fragment() {
         val tabs = listOf(binding.tabActive, binding.tabPending, binding.tabHistory)
         tabs.forEach { setTabUnselected(it) }
 
-        // Always reset rvJobs to visible first - updateEmployerHistoryUI() will
-        // hide it again if needed (empty employer history). Without this reset,
-        // once history sets it to GONE it stays GONE when switching to other tabs.
         binding.rvJobs.visibility = View.VISIBLE
 
         when (tab) {
@@ -191,8 +187,7 @@ class MyJobsFragment : Fragment() {
                 JobTabType.HISTORY -> workerHistory.toList()
             }
             workerAdapter.updateItems(items, tab)
-            // Worker mode never shows employer-only UI
-            binding.cardPostJob.visibility    = View.GONE
+            binding.cardPostJob.visibility      = View.GONE
             binding.cardEmptyHistory.visibility = View.GONE
         } else {
             val items = when (tab) {
@@ -203,17 +198,15 @@ class MyJobsFragment : Fragment() {
             employerAdapter.updateItems(items, tab)
             binding.rvJobs.adapter = employerAdapter
 
-            // Employer history: show either Empty State or PostJob button + list
             if (tab == JobTabType.HISTORY) {
                 updateEmployerHistoryUI()
             } else {
-                binding.cardPostJob.visibility    = View.GONE
+                binding.cardPostJob.visibility      = View.GONE
                 binding.cardEmptyHistory.visibility = View.GONE
             }
         }
     }
 
-    // Decides whether to show Empty State card or "פרסום עבודה" button in employer history
     private fun updateEmployerHistoryUI() {
         if (employerHistory.isEmpty()) {
             binding.cardEmptyHistory.visibility = View.VISIBLE
@@ -249,11 +242,10 @@ class MyJobsFragment : Fragment() {
         }
     }
 
-    // Apply worker toggle visuals only (no tab/list changes)
     private fun applyWorkerMode(animated: Boolean) {
         appViewModel.setWorkerMode()
-        binding.rvJobs.visibility = View.VISIBLE
-        binding.cardPostJob.visibility = View.GONE
+        binding.rvJobs.visibility           = View.VISIBLE
+        binding.cardPostJob.visibility      = View.GONE
         binding.cardEmptyHistory.visibility = View.GONE
         binding.toggleWorker.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected)
         binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
@@ -264,7 +256,6 @@ class MyJobsFragment : Fragment() {
         updateTabLabels()
     }
 
-    // Apply employer toggle visuals only (no tab/list changes)
     private fun applyEmployerMode(animated: Boolean) {
         appViewModel.setEmployerMode()
         binding.toggleEmployer.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected_teal)
