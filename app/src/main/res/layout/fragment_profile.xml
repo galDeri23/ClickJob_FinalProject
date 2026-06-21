@@ -107,7 +107,7 @@
                 android:src="@drawable/ic_edit"
                 android:padding="4dp"
                 android:contentDescription="עריכה"
-                app:tint="@color/gray03"
+                app:tint="@color/DarkDeep"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
@@ -327,7 +327,7 @@
             android:layout_marginStart="20dp"
             android:layout_gravity="start"
             android:text="התנתקות"
-            android:textColor="@color/text_gray"
+            android:textColor="@color/DarkDeep"
             android:textSize="15sp"
             android:fontFamily="@font/ploni_regular_aaa"
             android:clickable="true"

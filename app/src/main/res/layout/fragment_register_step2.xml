@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layoutDirection="rtl"
+    android:gravity="center"
+    android:background="@color/screen_bg"
+    android:paddingHorizontal="16dp">
+
+    <!-- כותרת -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="חסימת ימים"
+        android:textSize="16sp"
+        android:fontFamily="@font/ploni_bold_aaa"
+        android:textColor="@color/DarkDeep"
+        android:gravity="center"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- שורת הימים -->
+    <LinearLayout
+        android:id="@+id/llDays"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layoutDirection="rtl">
+
+        <!-- א -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="א"
+                android:textSize="24sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textColor="@color/DarkDeep"
+                android:layout_marginBottom="6dp"/>
+            <CheckBox
+                android:id="@+id/cbSunday"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:button="@null"
+                android:background="@drawable/bg_day_checkbox"
+                app:buttonTint="@color/brand_pink"/>
+        </LinearLayout>
+
+        <!-- ב -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ב"
+                android:textSize="24sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textColor="@color/DarkDeep"
+                android:layout_marginBottom="6dp"/>
+            <CheckBox
+                android:id="@+id/cbMonday"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:button="@null"
+                android:background="@drawable/bg_day_checkbox"
+                app:buttonTint="@color/brand_pink"/>
+        </LinearLayout>
+
+        <!-- ג -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ג"
+                android:textSize="24sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textColor="@color/DarkDeep"
+                android:layout_marginBottom="6dp"/>
+            <CheckBox
+                android:id="@+id/cbTuesday"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:button="@null"
+                android:background="@drawable/bg_day_checkbox"
+                app:buttonTint="@color/brand_pink"/>
+        </LinearLayout>
+
+        <!-- ד -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ד"
+                android:textSize="24sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textColor="@color/DarkDeep"
+                android:layout_marginBottom="6dp"/>
+            <CheckBox
+                android:id="@+id/cbWednesday"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:button="@null"
+                android:background="@drawable/bg_day_checkbox"
+                app:buttonTint="@color/brand_pink"/>
+        </LinearLayout>
+
+        <!-- ה -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ה"
+                android:textSize="24sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textColor="@color/DarkDeep"
+                android:layout_marginBottom="6dp"/>
+            <CheckBox
+                android:id="@+id/cbThursday"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:button="@null"
+                android:background="@drawable/bg_day_checkbox"
+                app:buttonTint="@color/brand_pink"/>
+        </LinearLayout>
+
+        <!-- ו -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ו"
+                android:textSize="24sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textColor="@color/DarkDeep"
+                android:layout_marginBottom="6dp"/>
+            <CheckBox
+                android:id="@+id/cbFriday"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:button="@null"
+                android:background="@drawable/bg_day_checkbox"
+                app:buttonTint="@color/brand_pink"/>
+        </LinearLayout>
+
+        <!-- ש -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ש"
+                android:textSize="24sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textColor="@color/DarkDeep"
+                android:layout_marginBottom="6dp"/>
+            <CheckBox
+                android:id="@+id/cbSaturday"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:button="@null"
+                android:background="@drawable/bg_day_checkbox"
+                app:buttonTint="@color/brand_pink"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>

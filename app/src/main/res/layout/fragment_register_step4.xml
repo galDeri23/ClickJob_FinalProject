@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layoutDirection="rtl"
+    android:paddingHorizontal="16dp"
+    android:background="@color/screen_bg"
+    android:paddingTop="16dp">
+
+    <!-- תיאור עצמי -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="תיאור עצמי"
+        android:textSize="16sp"
+        android:fontFamily="@font/ploni_bold_aaa"
+        android:textColor="@color/DarkDeep"
+        android:gravity="start"
+        android:layout_marginBottom="8dp"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilBio"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:hintEnabled="false"
+        app:boxCornerRadiusTopStart="8dp"
+        app:boxCornerRadiusTopEnd="8dp"
+        app:boxCornerRadiusBottomStart="8dp"
+        app:boxCornerRadiusBottomEnd="8dp"
+        app:boxStrokeColor="@color/gray04"
+        app:boxStrokeWidth="1dp"
+        app:boxBackgroundColor="@android:color/white"
+        android:layout_marginBottom="20dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etBio"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:inputType="textMultiLine"
+            android:gravity="top|start"
+            android:textSize="13sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textColor="#333333"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- הוסף קורות חיים -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="הוסף קורות חיים"
+        android:textSize="16sp"
+        android:fontFamily="@font/ploni_bold_aaa"
+        android:textColor="@color/DarkDeep"
+        android:gravity="start"
+        android:layout_marginBottom="10dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnUploadCV"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="קורות חיים"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:fontFamily="@font/ploni_regular_aaa"
+        app:backgroundTint="#938B86"
+        app:strokeWidth="0dp"
+        app:cornerRadius="8dp"/>
+
+</LinearLayout>
