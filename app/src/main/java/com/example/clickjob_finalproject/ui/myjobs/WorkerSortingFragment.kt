@@ -116,6 +116,7 @@ class WorkerSortingFragment : Fragment() {
     }
 
     private fun showWorkerDialog(worker: WorkerItem) {
-        // TODO: build WorkerDetailsDialog
+        val dialog = WorkerDetailsDialog(worker)
+        dialog.show(parentFragmentManager, "worker_details")
     }
 }
