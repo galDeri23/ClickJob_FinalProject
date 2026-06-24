@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.google.android.material.button.MaterialButton
 
 class RegisterStep4Fragment : Fragment() {
 
@@ -21,7 +21,7 @@ class RegisterStep4Fragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<MaterialButton>(R.id.btnUploadCV).setOnClickListener {
+        view.findViewById<LinearLayout>(R.id.llAddCV).setOnClickListener {
             // TODO: open file picker
             Toast.makeText(requireContext(), "העלאת קורות חיים - בקרוב", Toast.LENGTH_SHORT).show()
         }

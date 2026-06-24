@@ -1,74 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layoutDirection="rtl"
-    android:paddingHorizontal="16dp"
     android:background="@color/screen_bg"
+    android:paddingHorizontal="16dp"
     android:paddingTop="16dp">
 
-    <!-- תיאור עצמי -->
+    <!-- קורות חיים label -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="תיאור עצמי"
+        android:text="קורות חיים"
         android:textSize="16sp"
         android:fontFamily="@font/ploni_bold_aaa"
         android:textColor="@color/DarkDeep"
         android:gravity="start"
         android:layout_marginBottom="8dp"/>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilBio"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:hintEnabled="false"
-        app:boxCornerRadiusTopStart="8dp"
-        app:boxCornerRadiusTopEnd="8dp"
-        app:boxCornerRadiusBottomStart="8dp"
-        app:boxCornerRadiusBottomEnd="8dp"
-        app:boxStrokeColor="@color/gray04"
-        app:boxStrokeWidth="1dp"
-        app:boxBackgroundColor="@android:color/white"
-        android:layout_marginBottom="20dp">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etBio"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:inputType="textMultiLine"
-            android:gravity="top|start"
-            android:textSize="13sp"
-            android:fontFamily="@font/ploni_regular_aaa"
-            android:textColor="#333333"/>
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- הוסף קורות חיים -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="הוסף קורות חיים"
-        android:textSize="16sp"
-        android:fontFamily="@font/ploni_bold_aaa"
-        android:textColor="@color/DarkDeep"
-        android:gravity="start"
-        android:layout_marginBottom="10dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnUploadCV"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+    <!-- CV upload row -->
+    <LinearLayout
+        android:id="@+id/llAddCV"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:text="קורות חיים"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        android:fontFamily="@font/ploni_regular_aaa"
-        app:backgroundTint="#938B86"
-        app:strokeWidth="0dp"
-        app:cornerRadius="8dp"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@android:color/white"
+        android:paddingHorizontal="12dp">
+
+        <!-- Placeholder text on right -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="תאריך 88.88 ₪--שעה"
+            android:textSize="13sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textColor="#AAAAAA"/>
+
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+
+
+        <!-- + button on left -->
+        <ImageView
+            android:id="@+id/btnAddCV"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_plus"
+            android:background="@color/gray04"
+            android:layout_marginStart="8dp"/>
+
+    </LinearLayout>
+
+    <!-- Illustration image -->
+    <ImageView
+        android:id="@+id/ivIllustration"
+        android:layout_width="260dp"
+        android:layout_height="260dp"
+        android:src="@drawable/img_register_illustration"
+        android:scaleType="fitCenter"
+        android:layout_gravity="center"
+        android:layout_marginTop="300dp"/>
 
 </LinearLayout>

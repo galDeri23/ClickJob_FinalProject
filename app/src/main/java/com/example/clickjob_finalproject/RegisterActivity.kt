@@ -26,8 +26,8 @@ class RegisterActivity : AppCompatActivity() {
     private val stepTitles = listOf(
         "מי אני ואיפה אני?",
         "מתי אני פנוי?",
-        "בחירת מיומנויות מסוג פסטורית",
-        "ניסיון ורקע אישי"
+        "מיומנות",
+        "רקע אישי"
     )
 
     private val stepIndicators = listOf(
