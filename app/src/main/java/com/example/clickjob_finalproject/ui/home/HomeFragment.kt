@@ -1,60 +1,167 @@
 package com.example.clickjob_finalproject.ui.home
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.LinearLayout
+import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2
 import com.example.clickjob_finalproject.R
+import com.example.clickjob_finalproject.adapters.JobAdapter
+import com.example.clickjob_finalproject.adapters.JobItem
+import com.example.clickjob_finalproject.adapters.ShiftAdapter
+import com.example.clickjob_finalproject.adapters.ShiftItem
+import com.example.clickjob_finalproject.databinding.FragmentHomeBinding
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class HomeFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupSearchBar()
+        setupJobPosting()
+        setupUpcomingShifts()
+        setupBestMatchList()
+        setupUrgentList()
+    }
+
+    private fun setupJobPosting() {
+        binding.btnPostJob.setOnClickListener {
+            val args = bundleOf("openEmployerHistory" to true)
+            findNavController().navigate(R.id.action_homeFragment_to_myJobsFragment, args)
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false)
+    private fun setupSearchBar() {
+        binding.etSearch.isFocusable = false
+        binding.etSearch.setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_searchFragment)
+        }
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment HomeFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            HomeFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun setupUpcomingShifts() {
+        // TODO: replace with the real list of upcoming shifts (from ViewModel/repository).
+        // Temporarily filled with sample data so you can see the carousel + dots;
+        // switch back to emptyList<ShiftItem>() to see the "no upcoming shifts" card.
+        val items = listOf(
+            ShiftItem("תגבור מלצרות", "אולם אירועים אירוסין", "07:00–15:00", "25/06/26","גדרה, שמואל יוסף 13"),
+            ShiftItem("שם משרה", "שם חברה", "15:00–23:00", "dd/mm/yy","גדרה, שמואל יוסף 13"),
+            ShiftItem("שם משרה", "שם חברה", "08:00–16:00", "25/06/26","גדרה, שמואל יוסף 13")
+        )
+
+        // No open shifts -> hide section title, carousel and dots, show the prompt card instead
+        if (items.isEmpty()) {
+            binding.tvSectionUpcoming.visibility = View.GONE
+            binding.vpUpcoming.visibility = View.GONE
+            binding.layoutDots.visibility = View.GONE
+            binding.cardNoUpcomingShifts.visibility = View.VISIBLE
+            return
+        }
+
+        // Design only supports up to 3 cards/dots in this carousel
+        val shiftsToShow = items.take(3)
+
+        binding.cardNoUpcomingShifts.visibility = View.GONE
+        binding.tvSectionUpcoming.visibility = View.VISIBLE
+        binding.vpUpcoming.visibility = View.VISIBLE
+        binding.layoutDots.visibility = View.VISIBLE
+
+        binding.vpUpcoming.adapter = ShiftAdapter(shiftsToShow)
+
+        // Build the dots manually - one per shift, matching shiftsToShow.size (max 3)
+        setupDots(shiftsToShow.size)
+        binding.vpUpcoming.registerOnPageChangeCallback(
+            object : ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    updateDots(position)
                 }
             }
+        )
+    }
+
+    // Create one dot ImageView per shift
+    private fun setupDots(count: Int) {
+        binding.layoutDots.removeAllViews()
+        val size = (8 * resources.displayMetrics.density).toInt()
+        val margin = (4 * resources.displayMetrics.density).toInt()
+        for (i in 0 until count) {
+            val dot = ImageView(requireContext())
+            val params = LinearLayout.LayoutParams(size, size)
+            params.setMargins(margin, 0, margin, 0)
+            dot.layoutParams = params
+            dot.setImageResource(
+                if (i == 0) R.drawable.dot_active else R.drawable.dot_inactive
+            )
+            binding.layoutDots.addView(dot)
+        }
+    }
+
+    // Highlight the dot for the current page
+    private fun updateDots(selected: Int) {
+        for (i in 0 until binding.layoutDots.childCount) {
+            val dot = binding.layoutDots.getChildAt(i) as ImageView
+            dot.setImageResource(
+                if (i == selected) R.drawable.dot_active else R.drawable.dot_inactive
+            )
+        }
+    }
+
+    private fun setupBestMatchList() {
+        val items = listOf(
+            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", "90%",false ,"אחזקה", id = "best_1"),
+            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", null, false ,"בעלי חיים",id = "best_2"),
+            JobItem("שם משרה", "EventPro הפקות", "₪45", "4.2", "1.5 ק״מ", "היום", "87%",false ,"אבטחה וביטחון", id = "best_3")
+        )
+
+        binding.rvBestMatch.layoutManager = LinearLayoutManager(
+            requireContext(), LinearLayoutManager.HORIZONTAL, false
+        )
+        binding.rvBestMatch.adapter = JobAdapter(items) { job ->
+            openJobDetails(job)
+        }
+    }
+
+    private fun setupUrgentList() {
+        val items = listOf(
+            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "היום", null, id = "urgent_1"),
+            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", null, id = "urgent_2"),
+            JobItem("שם משרה", "EventPro הפקות", "₪55", "4.5", "0.8 ק״מ", "היום", null, id = "urgent_3")
+        )
+
+        binding.rvUrgent.layoutManager = LinearLayoutManager(
+            requireContext(), LinearLayoutManager.HORIZONTAL, false
+        )
+        binding.rvUrgent.adapter = JobAdapter(items) { job ->
+            openJobDetails(job)
+        }
+    }
+
+    // Navigates to the job details screen, passing the clicked job's id as an argument.
+    // Requires action_homeFragment_to_jobDetailsFragment to exist in the nav graph.
+    private fun openJobDetails(job: JobItem) {
+        val args = bundleOf("jobId" to job.id)
+        findNavController().navigate(R.id.action_homeFragment_to_jobDetailsFragment, args)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

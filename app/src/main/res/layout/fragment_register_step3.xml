@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/screen_bg"
+    android:layoutDirection="rtl">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp">
+
+        <!-- שפות -->
+        <include layout="@layout/item_expandable_category"
+            android:id="@+id/rowLanguages"/>
+
+        <!-- רישיונות -->
+        <include layout="@layout/item_expandable_category"
+            android:id="@+id/rowLicenses"/>
+
+        <!-- תעודות -->
+        <include layout="@layout/item_expandable_category"
+            android:id="@+id/rowCertificates"/>
+
+        <!-- תוכנות -->
+        <include layout="@layout/item_expandable_category"
+            android:id="@+id/rowSoftware"/>
+
+        <!-- שפות תכנות -->
+        <include layout="@layout/item_expandable_category"
+            android:id="@+id/rowProgramming"/>
+
+        <!-- מיומנויות רכות -->
+        <include layout="@layout/item_expandable_category"
+            android:id="@+id/rowSoftSkills"/>
+
+        <!-- אחר -->
+        <include layout="@layout/item_expandable_category"
+            android:id="@+id/rowOther"/>
+
+    </LinearLayout>
+</ScrollView>

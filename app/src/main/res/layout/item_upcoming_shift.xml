@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Upcoming Shift" card - Figma v2:
+     logo stays on the RIGHT (start in RTL) and gains a white circle bg;
+     info rows are now stacked vertically instead of three horizontal columns -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardUpcomingShift"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layoutDirection="rtl"
+    android:textDirection="rtl"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="5dp"
+    app:cardBackgroundColor="@android:color/transparent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_card_gradient_blue"
+        android:padding="14dp">
+
+        <!-- Logo: RIGHT side (start in RTL), with white circle background -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imgJob"
+            android:layout_width="78dp"
+            android:layout_height="78dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bg_circle_logo"
+            app:shapeAppearanceOverlay="@style/CircleImageStyle"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:src="@drawable/img_cat_circle_hospitality_white" />
+
+        <!-- Job title: to the left of the logo -->
+        <TextView
+            android:id="@+id/tvJobTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:maxLines="1"
+            android:textColor="@color/text_dark"
+            android:fontFamily="@font/ploni_bold_aaa"
+            android:textSize="20sp"
+            android:gravity="start"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/imgJob"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintBottom_toTopOf="@id/tvCompanyName"
+            tools:text="תגבור מלצרות" />
+
+        <!-- Company name -->
+        <TextView
+            android:id="@+id/tvCompanyName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="2dp"
+            android:maxLines="1"
+            android:textColor="@color/DarkDeep"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="14sp"
+            android:gravity="start"
+            app:layout_constraintTop_toBottomOf="@id/tvJobTitle"
+            app:layout_constraintStart_toEndOf="@id/imgJob"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/layoutInfo"
+            tools:text="אולם אירועים אירוסים" />
+
+        <!-- Info rows: stacked vertically below company name -->
+        <LinearLayout
+            android:id="@+id/layoutInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="15dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@id/tvCompanyName"
+            app:layout_constraintStart_toEndOf="@id/imgJob"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <!-- Address -->
+            <TextView
+                android:id="@+id/tvAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                android:drawableStart="@drawable/ic_location"
+                android:drawablePadding="4dp"
+                android:drawableTint="@color/DarkDeep"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:textSize="13sp"
+                android:textColor="@color/DarkDeep"
+                android:fontFamily="@font/ploni_regular_aaa"
+                tools:text="נדרה, שמואל יוסף 13" />
+
+            <!-- Hours -->
+            <TextView
+                android:id="@+id/tvHours"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                android:drawableStart="@drawable/ic_clock"
+                android:drawablePadding="4dp"
+                android:drawableTint="@color/DarkDeep"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:textSize="13sp"
+                android:textColor="@color/DarkDeep"
+                android:fontFamily="@font/ploni_regular_aaa"
+                tools:text="20:00-02:00" />
+
+            <!-- Date -->
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_calendar"
+                android:drawablePadding="4dp"
+                android:drawableTint="@color/DarkDeep"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:textSize="13sp"
+                android:textColor="@color/DarkDeep"
+                android:fontFamily="@font/ploni_regular_aaa"
+                tools:text="25/06" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

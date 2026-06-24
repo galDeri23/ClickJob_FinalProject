@@ -9,7 +9,44 @@
         android:id="@+id/homeFragment"
         android:name="com.example.clickjob_finalproject.ui.home.HomeFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_homeFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_jobDetailsFragment"
+            app:destination="@id/JobDetailsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_myJobsFragment"
+            app:destination="@id/myJobsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.clickjob_finalproject.ui.home.SearchFragment"
+        android:label="fragment_search"
+        tools:layout="@layout/fragment_search">
+        <action
+            android:id="@+id/action_searchFragment_to_searchResultsFragment"
+            app:destination="@id/searchResultsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/searchResultsFragment"
+        android:name="com.example.clickjob_finalproject.ui.home.SearchResultsFragment"
+        android:label="fragment_search_results"
+        tools:layout="@layout/fragment_search_results" />
+
+    <fragment
+        android:id="@+id/workerSortingFragment"
+        android:name="com.example.clickjob_finalproject.ui.myjobs.WorkerSortingFragment"
+        android:label="WorkerSortingFragment"/>
+
+    <fragment
+        android:id="@+id/JobDetailsFragment"
+        android:name="com.example.clickjob_finalproject.ui.home.JobDetailsFragment"
+        android:label="fragment_job_details"
+        tools:layout="@layout/fragment_job_details" />
 
     <fragment
         android:id="@+id/notificationsFragment"
@@ -21,8 +58,14 @@
         android:id="@+id/myJobsFragment"
         android:name="com.example.clickjob_finalproject.ui.myjobs.MyJobsFragment"
         android:label="fragment_my_jobs"
-        tools:layout="@layout/fragment_my_jobs" />
-
+        tools:layout="@layout/fragment_my_jobs" >
+        <action
+            android:id="@+id/action_myJobsFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_myJobsFragment_to_workerSortingFragment"
+            app:destination="@id/workerSortingFragment"/>
+    </fragment>
     <fragment
         android:id="@+id/scanFragment"
         android:name="com.example.clickjob_finalproject.ui.scan.ScanFragment"

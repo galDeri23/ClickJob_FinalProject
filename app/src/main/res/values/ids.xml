@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="tvYourLocation" type="id" />
+    <item name="tvLocation" type="id" />
+    <item name="etSearch" type="id" />
+    <item name="tvSectionUpcoming" type="id" />
+    <item name="vpUpcoming" type="id" />
+    <item name="tabDots" type="id" />
+    <item name="tvSectionBestMatch" type="id" />
+    <item name="rvBestMatch" type="id" />
+    <item name="tvSectionUrgent" type="id" />
+    <item name="rvUrgent" type="id" />
+</resources>

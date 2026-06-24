@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:layout_marginBottom="10dp"
+    android:layoutDirection="rtl"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <!-- Profile image -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imgWorker"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:src="@drawable/user"
+            android:layout_marginTop="7dp"
+            android:scaleType="centerCrop"
+            android:background="@color/gray02"
+            app:shapeAppearanceOverlay="@style/CircleImageStyle"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <!-- Name -->
+        <TextView
+            android:id="@+id/tvWorkerName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textSize="16sp"
+            android:fontFamily="@font/ploni_bold_aaa"
+            android:textColor="@color/DarkDeep"
+            app:layout_constraintTop_toTopOf="@+id/imgWorker"
+            app:layout_constraintStart_toEndOf="@+id/imgWorker"
+            app:layout_constraintEnd_toStartOf="@+id/btnCancel"
+            tools:text="שם עובד"/>
+
+        <!-- Role -->
+        <TextView
+            android:id="@+id/tvWorkerRole"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            android:textSize="14sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textColor="@color/DarkDeep"
+            app:layout_constraintTop_toBottomOf="@+id/tvWorkerName"
+            app:layout_constraintStart_toEndOf="@+id/imgWorker"
+            app:layout_constraintEnd_toStartOf="@+id/btnCancel"
+            tools:text="פרטים על התפקיד"/>
+
+        <!-- Cancel button (shown in התקבלו tab) -->
+        <TextView
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="בטל"
+            android:textSize="12sp"
+            android:fontFamily="@font/ploni_bold_aaa"
+            android:textColor="@color/brand_pink"
+            android:background="@drawable/bg_outline_button_pink"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Phone -->
+        <TextView
+            android:id="@+id/tvPhone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="8dp"
+            android:drawableStart="@drawable/ic_phone"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/gray04"
+            android:textSize="14sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textColor="@color/gray04"
+            app:layout_constraintTop_toBottomOf="@+id/tvWorkerRole"
+            app:layout_constraintStart_toEndOf="@+id/imgWorker"
+            tools:text="0525381648"/>
+
+        <!-- Email -->
+        <TextView
+            android:id="@+id/tvEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:drawableStart="@drawable/ic_mail"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/gray04"
+            android:textSize="14sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textColor="@color/gray04"
+            app:layout_constraintTop_toTopOf="@+id/tvPhone"
+            app:layout_constraintStart_toEndOf="@+id/tvPhone"
+            tools:text="מייל"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

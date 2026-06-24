@@ -1,14 +1,339 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.profile.ProfileFragment">
+    android:background="@color/screen_bg"
+    android:layoutDirection="rtl"
+    android:fillViewport="true">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
 
-</FrameLayout>
+        <!-- ===== Header ===== -->
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="24dp">
+
+            <!-- Profile photo: right side (start in RTL) -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/imgProfile"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/bari"
+                app:shapeAppearanceOverlay="@style/CircleImageStyle"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Name -->
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:text="ברי צקלה"
+                android:textColor="@color/text_dark"
+                android:textSize="20sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                app:layout_constraintTop_toTopOf="@id/imgProfile"
+                app:layout_constraintStart_toEndOf="@id/imgProfile"
+                app:layout_constraintEnd_toStartOf="@id/btnEdit"
+                app:layout_constraintVertical_chainStyle="packed"
+                app:layout_constraintBottom_toTopOf="@id/tvJobTitle" />
+
+            <!-- Job title -->
+            <TextView
+                android:id="@+id/tvJobTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginTop="2dp"
+                android:text="מורה לחינוך גופני"
+                android:textColor="@color/gray04"
+                android:textSize="20sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                app:layout_constraintTop_toBottomOf="@id/tvName"
+                app:layout_constraintStart_toEndOf="@id/imgProfile"
+                app:layout_constraintEnd_toStartOf="@id/btnEdit"
+                app:layout_constraintBottom_toTopOf="@id/ratingRow" />
+
+            <!-- Rating row -->
+            <LinearLayout
+                android:id="@+id/ratingRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@id/tvJobTitle"
+                app:layout_constraintStart_toEndOf="@id/imgProfile"
+                app:layout_constraintBottom_toBottomOf="@id/imgProfile">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_star"
+                    app:tint="@color/gray04"
+                    android:contentDescription="דירוג" />
+
+                <TextView
+                    android:id="@+id/tvRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4.7"
+                    android:textColor="@color/gray04"
+                    android:textSize="18sp"
+                    android:fontFamily="@font/ploni_regular_aaa"
+                    android:layout_marginStart="7dp" />
+
+
+            </LinearLayout>
+
+            <!-- Edit pencil: left side (end in RTL) -->
+            <ImageView
+                android:id="@+id/btnEdit"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_edit"
+                android:padding="4dp"
+                android:contentDescription="עריכה"
+                app:tint="@color/DarkDeep"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- ===== Contact buttons: טלפון (right) + סושיאל (left) ===== -->
+        <!-- Icon-only square, label below outside the square -->
+
+        <LinearLayout
+            android:id="@+id/contactRow"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="28dp"
+            android:gravity="center_vertical">
+
+
+
+            <!-- טלפון (right in RTL layout = first child) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <!-- Square box with icon only -->
+                <LinearLayout
+                    android:id="@+id/btnPhone"
+                    android:layout_width="37dp"
+                    android:layout_height="37dp"
+                    android:gravity="center"
+                    android:background="@color/white"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_phone"
+                        android:contentDescription="טלפון" />
+
+                </LinearLayout>
+
+                <!-- Label below the box -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="טלפון"
+                    android:textColor="@color/text_dark"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/ploni_regular_aaa" />
+
+            </LinearLayout>
+            <!-- סושיאל (left in RTL layout = second child) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginStart="65dp">
+
+                <!-- Square box with icon only -->
+                <LinearLayout
+                    android:id="@+id/btnSocial"
+                    android:layout_width="37dp"
+                    android:layout_height="37dp"
+                    android:gravity="center"
+                    android:background="@color/white"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_instagram"
+                        android:contentDescription="סושיאל" />
+
+                </LinearLayout>
+
+                <!-- Label below the box -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="סושיאל"
+                    android:textColor="@color/text_dark"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/ploni_regular_aaa" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- ===== Skills sections ===== -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="54dp"
+            android:paddingHorizontal="20dp">
+
+            <!-- Hard skills -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="כישורים"
+                android:textColor="@color/text_dark"
+                android:textSize="16sp"
+                android:fontFamily="@font/ploni_bold_aaa" />
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/flexHardSkills"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layoutDirection="rtl"
+                app:flexDirection="row"
+                app:flexWrap="wrap"
+                app:alignItems="center"
+                app:justifyContent="flex_start" />
+
+            <!-- Soft skills -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="כישורים רכים"
+                android:textColor="@color/text_dark"
+                android:textSize="16sp"
+                android:fontFamily="@font/ploni_bold_aaa" />
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/flexSoftSkills"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layoutDirection="rtl"
+                app:flexDirection="row"
+                app:flexWrap="wrap"
+                app:alignItems="center"
+                app:justifyContent="flex_start" />
+
+        </LinearLayout>
+
+        <!-- ===== קו"ח ומסמכים card (inside scroll, gray rounded card) ===== -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btnDocuments"
+            android:layout_width="match_parent"
+            android:layout_height="34dp"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="54dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/gray02">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layoutDirection="rtl"
+                android:paddingHorizontal="14dp">
+
+                <!-- Link icon + label -->
+                <ImageView
+                    android:layout_width="19dp"
+                    android:layout_height="19dp"
+                    android:src="@drawable/ic_link"
+                    android:contentDescription="קישור"
+                    app:tint="@color/text_dark" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="קוח ומסמכים"
+                    android:textColor="@color/DarkDeepPink"
+                    android:textSize="15sp"
+                    android:fontFamily="@font/ploni_regular_aaa" />
+
+                <!-- Count + arrow on the left -->
+                <TextView
+                    android:id="@+id/tvDocumentsCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="(8)"
+                    android:textColor="@color/DarkDeepPink"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/ploni_regular_aaa"
+                    android:layout_marginEnd="15dp" />
+
+                <ImageView
+                    android:layout_width="6dp"
+                    android:layout_height="11dp"
+                    android:src="@drawable/ic_arrow_back"
+                    android:contentDescription="פתח"
+                    app:tint="#4F4F4F" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== התנתקות - plain text, right-aligned, below the card ===== -->
+
+        <TextView
+            android:id="@+id/btnLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="36dp"
+            android:layout_marginStart="20dp"
+            android:layout_gravity="start"
+            android:text="התנתקות"
+            android:textColor="@color/DarkDeep"
+            android:textSize="15sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

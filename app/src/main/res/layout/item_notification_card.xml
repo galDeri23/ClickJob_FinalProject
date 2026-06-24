@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:layoutDirection="rtl"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp">
+
+        <!-- Status icon: RIGHT side (RTL: constraintEnd) -->
+        <ImageView
+            android:id="@+id/imgStatus"
+            android:layout_width="37dp"
+            android:layout_height="33dp"
+            android:layout_marginTop="35dp"
+            android:layout_marginLeft="316dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:src="@drawable/ic_status_check" />
+
+        <!-- Title: to the left of the icon, right-aligned text -->
+        <TextView
+            android:id="@+id/tvNotificationTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:textColor="#363D49"
+            android:fontFamily="@font/ploni_bold_aaa"
+            android:textSize="16sp"
+            android:gravity="start"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/imgStatus"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="נדרש אישור לעבודה ב- מיט-בר" />
+
+        <!-- Date/time row with clock icon -->
+        <TextView
+            android:id="@+id/tvDateTime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginStart="10dp"
+            android:gravity="start|center_vertical"
+            android:textColor="#525A69"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tvNotificationTitle"
+            app:layout_constraintStart_toEndOf="@id/imgStatus"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="עבודה ביום שני 23.03.26 19:00" />
+
+        <!-- "Time ago" text -->
+        <TextView
+            android:id="@+id/tvTimeAgo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginStart="10dp"
+            android:gravity="start"
+            android:textColor="#8B919E"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tvDateTime"
+            app:layout_constraintStart_toEndOf="@id/imgStatus"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="לפני 12 דקות" />
+
+        <!-- Action buttons row: visible only for ALERT type -->
+        <LinearLayout
+            android:id="@+id/actionsRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layoutDirection="ltr"
+            android:layout_marginTop="10dp"
+            android:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@id/tvTimeAgo"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView
+                android:id="@+id/btnApprove"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="אישור"
+                android:gravity="center"
+                android:paddingHorizontal="18dp"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:background="@drawable/bg_button_pink"
+                android:layout_marginStart="8dp" />
+
+            <TextView
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="ביטול"
+                android:gravity="center"
+                android:paddingHorizontal="18dp"
+                android:textColor="#24061E"
+                android:textSize="13sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:background="@drawable/bg_tab_unselected" />
+
+        </LinearLayout>
+
+        <!-- Single action button: e.g. "דירוג" -->
+        <TextView
+            android:id="@+id/btnSingleAction"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:paddingHorizontal="18dp"
+            android:textColor="@color/brand_pink"
+            android:textSize="13sp"
+            android:layoutDirection="ltr"
+            android:fontFamily="@font/ploni_bold_aaa"
+            android:background="@drawable/bg_outline_button_pink"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/tvTimeAgo"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="דירוג" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

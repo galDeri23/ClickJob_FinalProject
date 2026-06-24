@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layoutDirection="rtl"
+    android:background="@android:color/white"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="24dp">
+
+    <!-- X close button - top right in RTL = start -->
+    <ImageView
+        android:id="@+id/btnClose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_close"
+        android:padding="8dp"
+        android:layout_gravity="start"/>
+
+    <!-- Profile image -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/imgWorkerProfile"
+        android:layout_width="161dp"
+        android:layout_height="161dp"
+        android:src="@drawable/bari"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/CircleImageStyle"
+        android:layout_gravity="center"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Name -->
+    <TextView
+        android:id="@+id/tvWorkerName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ברי צקלה"
+        android:textSize="20sp"
+        android:fontFamily="@font/ploni_bold_aaa"
+        android:textColor="@color/DarkDeep"
+        android:gravity="center"
+        android:layout_marginBottom="4dp"/>
+
+    <!-- Role -->
+    <TextView
+        android:id="@+id/tvWorkerRole"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="מורה לחינוך גופני"
+        android:textSize="14sp"
+        android:fontFamily="@font/ploni_regular_aaa"
+        android:textColor="@color/gray04"
+        android:gravity="center"
+        android:layout_marginBottom="4dp"/>
+
+    <!-- Rating -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp">
+
+        <ImageView
+            android:layout_width="19dp"
+            android:layout_height="19dp"
+            android:src="@drawable/ic_star"
+            android:layout_marginEnd="4dp"/>
+
+        <TextView
+            android:id="@+id/tvRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4.7"
+            android:textSize="20sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textColor="@color/DarkDeep"/>
+
+    </LinearLayout>
+    <!-- Documents -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginBottom="20dp">
+
+        <ImageView
+            android:id="@+id/ivDocuments"
+            android:layout_width="29dp"
+            android:layout_height="29dp"
+            android:src="@drawable/ic_link"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="מסמכים"
+            android:textSize="14sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textColor="@color/black"/>
+
+    </LinearLayout>
+
+    <!-- Buttons row: פרטים נוספים (right, smaller) | אישור (left, bigger) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layoutDirection="ltr">
+
+        <!-- אישור - left, bigger -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnApprove"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="3"
+            android:text="אישור"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:fontFamily="@font/ploni_bold_aaa"
+            app:backgroundTint="#68BAC6"
+            app:cornerRadius="8dp"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- פרטים נוספים - right, smaller -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMoreDetails"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="2"
+            android:text="פרטים נוספים"
+            android:textColor="#477E87"
+            android:textSize="14sp"
+            android:fontFamily="@font/ploni_bold_aaa"
+            app:backgroundTint="@android:color/white"
+            app:strokeColor="#477E87"
+            app:strokeWidth="1dp"
+            app:cornerRadius="8dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>

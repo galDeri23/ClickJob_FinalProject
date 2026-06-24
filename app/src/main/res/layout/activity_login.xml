@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/bg_login_gradient"
+    android:layoutDirection="rtl">
+
+    <!-- Logo above card -->
+    <ImageView
+        android:id="@+id/ivLogo"
+        android:layout_width="153dp"
+        android:layout_height="60dp"
+        android:src="@drawable/logo"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/cardLogin"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Login card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardLogin"
+        android:layout_width="343dp"
+        android:layout_height="528dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="40dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.6">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:layoutDirection="rtl">
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="התחברות"
+                android:textSize="36sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textColor="@color/DarkDeep"
+                android:gravity="center"
+                android:layout_marginBottom="6dp"/>
+
+            <TextView
+                android:id="@+id/tvRegisterLink"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="עדיין אין משתמש? רישום"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textColor="@color/gray04"
+                android:layout_marginBottom="20dp"/>
+
+            <!-- Email label -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="מייל"
+                android:textSize="16sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textColor="@color/gray04"
+                android:gravity="start"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- Email field -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilEmail"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:hintEnabled="false"
+                app:boxCornerRadiusTopStart="8dp"
+                app:boxCornerRadiusTopEnd="8dp"
+                app:boxCornerRadiusBottomStart="8dp"
+                app:boxCornerRadiusBottomEnd="8dp"
+                app:boxStrokeColor="@color/input_stroke_color"
+                app:boxStrokeWidth="1dp"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Loisbecket@gmail.com"
+                    android:inputType="textEmailAddress"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/ploni_regular_aaa"
+                    android:textColor="#333333"
+                    android:textColorHint="#BBBBBB"
+                    android:gravity="start"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Password label -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="סיסמא"
+                android:textSize="14sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textColor="@color/gray04"
+                android:gravity="start"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- Password field -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPassword"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:hintEnabled="false"
+                app:boxCornerRadiusTopStart="8dp"
+                app:boxCornerRadiusTopEnd="8dp"
+                app:boxCornerRadiusBottomStart="8dp"
+                app:boxCornerRadiusBottomEnd="8dp"
+                app:boxStrokeColor="@color/input_stroke_color"
+                app:boxStrokeWidth="1dp"
+                app:endIconMode="password_toggle"
+                app:endIconTint="#AAAAAA"
+                android:layout_marginBottom="12dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPassword"
+                    android:hint="••••••••"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/ploni_regular_aaa"
+                    android:textColor="#333333"
+                    android:textColorHint="#BBBBBB"
+                    android:gravity="start"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Remember me + Forgot password row -->
+            <!-- In RTL: first child = right side, last child = left side -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="20dp">
+
+                <!-- LEFT: Remember me (layoutDirection ltr = checkbox on left of text) -->
+                <CheckBox
+                    android:id="@+id/cbRememberMe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="זכור אותי"
+                    android:layoutDirection="rtl"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/ploni_regular_aaa"
+                    android:textColor="@color/gray04"
+                    app:buttonTint="@color/gray04"/>
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"/>
+                <!-- RIGHT: Forgot password -->
+                <TextView
+                    android:id="@+id/tvForgotPassword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="שכחת את הסיסמא?"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/ploni_regular_aaa"
+                    android:textColor="@color/brand_pink"/>
+
+
+
+
+
+            </LinearLayout>
+
+            <!-- Login button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogin"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="התחברות"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                app:backgroundTint="@color/brand_pink"
+                app:cornerRadius="8dp"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- OR divider -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="#EDF1F3"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="או"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/ploni_regular_aaa"
+                    android:textColor="@color/gray04"
+                    android:paddingHorizontal="12dp"/>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="#EDF1F3"/>
+
+            </LinearLayout>
+
+            <!-- Google button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoogle"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="להמשיך עם גוגל"
+                android:textColor="@color/DarkDeep"
+                android:textSize="14sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                app:backgroundTint="@android:color/white"
+                app:strokeColor="#DDDDDD"
+                app:strokeWidth="1dp"
+                app:cornerRadius="8dp"
+                app:icon="@drawable/ic_google"
+                app:iconGravity="textStart"
+                app:iconTint="@null"
+                android:layout_marginBottom="4dp"/>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

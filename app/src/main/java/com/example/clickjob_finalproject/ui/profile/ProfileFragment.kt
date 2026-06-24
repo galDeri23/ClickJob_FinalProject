@@ -1,60 +1,113 @@
 package com.example.clickjob_finalproject.ui.profile
 
+import android.R.attr.fontFamily
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import com.example.clickjob_finalproject.R
+import com.example.clickjob_finalproject.databinding.FragmentProfileBinding
+import com.google.android.flexbox.FlexboxLayout
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ProfileFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ProfileFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private var _binding: FragmentProfileBinding? = null
+    private val binding get() = _binding!!
+
+    // TODO: replace with real data loaded from Firebase for the current user
+    private val hardSkills = listOf(
+        "חשמלאי", "אינסטלטור", "יזמות נדל\"ן", "מאלף",
+        "מעלף", "מהלף", "אלוף", "יודע לבחור אבטיח"
+    )
+
+    private val softSkills = listOf(
+        "אסרטיבי", "מנלומן", "נדען", "מיזופון", "שונא ג'ינג'ים",
+        "שונא שחורים", "שונא סנלים", "שונא אדומים", "אנטישמי",
+        "מצ'ו מצ'ו", "מצ'ואיסט"
+    )
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupChips()
+        setupClickListeners()
+    }
+
+    private fun setupChips() {
+        hardSkills.forEach { skill ->
+            addChip(binding.flexHardSkills, skill)
+        }
+        softSkills.forEach { skill ->
+            addChip(binding.flexSoftSkills, skill)
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false)
+    // Creates a single chip TextView and adds it to the FlexboxLayout.
+    // Replace the sample data above with Firebase data and call this the same way.
+    private fun addChip(container: FlexboxLayout, text: String) {
+        val chip = TextView(requireContext()).apply {
+            this.text = text
+            textSize = 13f
+            setTextColor(resources.getColor(R.color.text_dark, null))
+            fontFamily
+            setPadding(
+                resources.getDimensionPixelSize(R.dimen.chip_padding_horizontal),
+                resources.getDimensionPixelSize(R.dimen.chip_padding_vertical),
+                resources.getDimensionPixelSize(R.dimen.chip_padding_horizontal),
+                resources.getDimensionPixelSize(R.dimen.chip_padding_vertical)
+            )
+            background = resources.getDrawable(R.drawable.bg_gray, null)
+        }
+
+        val lp = FlexboxLayout.LayoutParams(
+            FlexboxLayout.LayoutParams.WRAP_CONTENT,
+            FlexboxLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            setMargins(0, 0,
+                resources.getDimensionPixelSize(R.dimen.chip_margin),
+                resources.getDimensionPixelSize(R.dimen.chip_margin)
+            )
+        }
+        chip.layoutParams = lp
+        container.addView(chip)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ProfileFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ProfileFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    private fun setupClickListeners() {
+        binding.btnEdit.setOnClickListener {
+            Toast.makeText(requireContext(), "עריכת פרופיל (TODO)", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnPhone.setOnClickListener {
+            Toast.makeText(requireContext(), "חיוג (TODO)", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnSocial.setOnClickListener {
+            Toast.makeText(requireContext(), "פתיחת רשת חברתית (TODO)", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnDocuments.setOnClickListener {
+            Toast.makeText(requireContext(), "קו\"ח ומסמכים (TODO)", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnLogout.setOnClickListener {
+            Toast.makeText(requireContext(), "התנתקות (TODO)", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
