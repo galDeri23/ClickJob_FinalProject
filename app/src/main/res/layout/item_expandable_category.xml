@@ -18,19 +18,17 @@
         android:background="@android:color/white"
         android:paddingHorizontal="12dp">
 
-        <!-- Title -->
         <TextView
             android:id="@+id/tvCategoryTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="קטגוריה"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:fontFamily="@font/ploni_bold_aaa"
-            android:textColor="@color/DarkDeep"
+            android:textColor="#1C1C1C"
             android:gravity="start"/>
 
-        <!-- Arrow -->
         <ImageView
             android:id="@+id/ivArrow"
             android:layout_width="24dp"
@@ -53,11 +51,56 @@
         android:background="@android:color/white"
         android:visibility="gone">
 
+        <!-- Chips -->
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layoutDirection="rtl"
+            app:chipSpacingHorizontal="8dp"/>
+
+        <!-- "אחר +" chip - hidden for job categories row -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipAddOther"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+"
+            android:textSize="13sp"
+            android:layout_marginTop="4dp"
+            style="@style/Widget.MaterialComponents.Chip.Filter"/>
+
+        <!-- Free text input for "אחר" row only -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilOtherInput"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:hintEnabled="false"
+            app:boxCornerRadiusTopStart="8dp"
+            app:boxCornerRadiusTopEnd="8dp"
+            app:boxCornerRadiusBottomStart="8dp"
+            app:boxCornerRadiusBottomEnd="8dp"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etOtherInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="הוסף..."
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:gravity="end"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Chips added by user in "אחר" row -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupCustom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layoutDirection="rtl"
+            android:visibility="gone"
             app:chipSpacingHorizontal="8dp"/>
 
     </LinearLayout>

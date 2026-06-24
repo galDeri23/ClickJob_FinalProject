@@ -114,8 +114,8 @@
     <!-- Next button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnNext"
-        android:layout_width="265dp"
-        android:layout_height="40dp"
+        android:layout_width="371dp"
+        android:layout_height="52dp"
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="24dp"
         android:text="הבא"
