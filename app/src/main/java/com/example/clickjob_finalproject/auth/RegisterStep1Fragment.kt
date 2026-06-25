@@ -30,13 +30,11 @@ class RegisterStep1Fragment : Fragment() {
         val tvRadiusValue = view.findViewById<TextView>(R.id.tvRadiusValue)
         val etName = view.findViewById<TextInputEditText>(R.id.etName)
         val etPhone = view.findViewById<TextInputEditText>(R.id.etPhone)
-        val etEmail = view.findViewById<TextInputEditText>(R.id.etEmail)
         val etAddress = view.findViewById<TextInputEditText>(R.id.etAddress)
 
         // Save to ViewModel as user types
         etName.doAfterTextChanged { viewModel.name = it.toString().trim() }
         etPhone.doAfterTextChanged { viewModel.phone = it.toString().trim() }
-        etEmail.doAfterTextChanged { viewModel.email = it.toString().trim() }
         etAddress.doAfterTextChanged { viewModel.address = it.toString().trim() }
 
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {

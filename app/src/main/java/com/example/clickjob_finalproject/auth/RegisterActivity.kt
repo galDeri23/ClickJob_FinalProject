@@ -38,12 +38,6 @@ class RegisterActivity : AppCompatActivity() {
         "רקע אישי"
     )
 
-    private val stepIndicators = listOf(
-        "יכולת התאמה (15%)",
-        "יכולת התאמה (30%)",
-        "יכולת התאמה (50%)",
-        "יכולת התאמה (80%)"
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,8 +53,6 @@ class RegisterActivity : AppCompatActivity() {
         btnNext = findViewById(R.id.btnNext)
         tvSkip = findViewById(R.id.tvSkip)
         tvStepTitle = findViewById(R.id.tvStepTitle)
-        tvStepIndicator = findViewById(R.id.tvStepIndicator)
-        progressBar = findViewById(R.id.progressBar)
 
         setupViewPager()
         setupClickListeners()
@@ -100,7 +92,7 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun saveStep1AndContinue() {
         if (registerViewModel.name.isEmpty() || registerViewModel.phone.isEmpty() ||
-            registerViewModel.email.isEmpty() || registerViewModel.address.isEmpty()) {
+            registerViewModel.address.isEmpty()) {
             Toast.makeText(this, "יש למלא את כל השדות החובה", Toast.LENGTH_SHORT).show()
             return
         }
@@ -181,9 +173,7 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun updateStep(step: Int) {
-        progressBar.progress = step + 1
         tvStepTitle.text = stepTitles[step]
-        tvStepIndicator.text = stepIndicators[step]
         btnNext.text = if (step == 3) "הצג לי משרות מתאימות" else "הבא"
         if (step == 3) {
             btnNext.setBackgroundResource(R.drawable.bg_login_gradient)

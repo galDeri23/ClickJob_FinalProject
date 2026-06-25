@@ -78,7 +78,7 @@ class LoginActivity : AppCompatActivity() {
         )
         tvRegisterLink.text = spannable
         tvRegisterLink.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
+            startActivity(Intent(this, SignUpActivity::class.java))
         }
     }
 
