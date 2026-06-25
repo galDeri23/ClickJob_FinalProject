@@ -46,6 +46,7 @@ dependencies {
     implementation("androidx.core:core:1.17.0")
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.camera.view)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
@@ -68,5 +69,9 @@ dependencies {
 
     implementation(libs.firebase.firestore)
 
+    implementation(libs.camera.core)
+    implementation(libs.camera.camera2)
+    implementation(libs.camera.lifecycle)
+    implementation(libs.camera.view)
 
 }

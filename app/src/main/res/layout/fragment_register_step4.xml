@@ -60,11 +60,11 @@
     <!-- Illustration image -->
     <ImageView
         android:id="@+id/ivIllustration"
-        android:layout_width="260dp"
-        android:layout_height="260dp"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
         android:src="@drawable/img_register_illustration"
         android:scaleType="fitCenter"
         android:layout_gravity="center"
-        android:layout_marginTop="300dp"/>
+        android:layout_marginTop="280dp"/>
 
 </LinearLayout>
