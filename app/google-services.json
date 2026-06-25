@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "493713788422",
+    "firebase_url": "https://jobmatcherproject-default-rtdb.firebaseio.com",
+    "project_id": "jobmatcherproject",
+    "storage_bucket": "jobmatcherproject.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:493713788422:android:f9fd26af1567f0e6163d87",
+        "android_client_info": {
+          "package_name": "com.example.clickjob_finalproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "493713788422-tgi02c7vedu7nu2dd6ptuq38jmnhdbnd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBo23ixsjjnQ_TFYQi8N5RI-iJGmX17scA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "493713788422-tgi02c7vedu7nu2dd6ptuq38jmnhdbnd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

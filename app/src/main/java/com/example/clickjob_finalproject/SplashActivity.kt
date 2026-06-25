@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
+import com.example.clickjob_finalproject.auth.LoginActivity
 
 // First screen shown when the app launches. Pure image, no logic - shows the
 // branded splash for SPLASH_DURATION_MS, then moves on to MainActivity and
