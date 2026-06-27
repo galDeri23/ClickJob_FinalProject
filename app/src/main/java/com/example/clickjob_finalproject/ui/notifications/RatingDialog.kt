@@ -42,7 +42,6 @@ class RatingDialog : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Show dialog in center of screen with transparent background
         dialog?.window?.apply {
             setBackgroundDrawableResource(android.R.color.transparent)
             setLayout(
@@ -50,11 +49,14 @@ class RatingDialog : DialogFragment() {
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
             setGravity(android.view.Gravity.CENTER)
-            addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
             setDimAmount(0.7f)
-            attributes = attributes.apply {
-                dimAmount = 0.7f
-                blurBehindRadius = 20
+
+            // Blur effect only on API 31+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                attributes = attributes.apply {
+                    blurBehindRadius = 20
+                }
             }
         }
 
@@ -91,12 +93,14 @@ class RatingDialog : DialogFragment() {
     private fun updateStars(stars: List<ImageView>, rating: Int) {
         stars.forEachIndexed { index, star ->
             if (index < rating) {
-                // Filled: color the star yellow
+                // Filled star - use ic_star_filled with pink color
+                star.setImageResource(R.drawable.ic_star_filled)
                 star.setColorFilter(
-                    ContextCompat.getColor(requireContext(), android.R.color.holo_orange_light)
+                    ContextCompat.getColor(requireContext(), R.color.brand_pink)
                 )
             } else {
-                // Empty: gray
+                // Empty star - outline with gray color
+                star.setImageResource(R.drawable.ic_star_outline)
                 star.setColorFilter(
                     ContextCompat.getColor(requireContext(), R.color.text_gray)
                 )

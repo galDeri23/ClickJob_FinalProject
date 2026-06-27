@@ -45,16 +45,21 @@ class MyJobsFragment : Fragment() {
 
     // ===== Employer data =====
     private val employerActive = mutableListOf(
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 7, 7),
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 5, 5),
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 4, 4)
+        EmployerJobItem("מלצרית לחתונה", "שם חברה", 7, 7, category = "מסעדות"),
+        EmployerJobItem("מלצרית לחתונה", "שם חברה", 5, 5, category = "הפקה ואירועים"),
+        EmployerJobItem("מלצרית לחתונה", "שם חברה", 4, 4, category = "חינוך והוראה")
     )
     private val employerPending = mutableListOf(
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 2, 6, countdownMillis = 18000000L),
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 3, 7, countdownMillis = 18000000L),
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 1, 3, countdownMillis = 18000000L)
+        EmployerJobItem("מלצרית לחתונה", "שם חברה", 2, 6, countdownMillis = 18000000L, category = "מסעדות"),
+        EmployerJobItem("מלצרית לחתונה", "שם חברה", 3, 7, countdownMillis = 18000000L, category = "אחזקה"),
+        EmployerJobItem("מלצרית לחתונה", "שם חברה", 1, 3, countdownMillis = 18000000L, category = "טכנולוגיה")
     )
-    private val employerHistory = mutableListOf<EmployerJobItem>()
+
+    // TEMP: employer history with dummy data for testing
+    private val employerHistory = mutableListOf(
+        EmployerJobItem("מלצרית לחתונה", "שם חברה", 7, 7, category = "מסעדות"),
+        EmployerJobItem("שיעור פרטי לילדה", "שם חברה", 3, 3, category = "חינוך והוראה")
+    )
 
     private lateinit var workerAdapter: MyJobsAdapter
     private lateinit var employerAdapter: EmployerJobsAdapter
@@ -78,28 +83,13 @@ class MyJobsFragment : Fragment() {
         setupToggle()
         setupPostJobButtons()
 
-        // Show toggle if coming from "post job" in home screen
-        val showToggle = arguments?.getBoolean("showToggle", false) ?: false
-        if (showToggle) {
-            binding.toggleContainer.visibility = View.VISIBLE
-            viewModel.isWorkerMode = false
-            viewModel.currentTab = JobTabType.ACTIVE
-        }
+        // TEMP: always show toggle in employer mode for testing
+        binding.toggleContainer.visibility = View.VISIBLE
+        viewModel.isWorkerMode = false
+        viewModel.currentTab = JobTabType.ACTIVE
 
-        val openEmployerHistory = arguments?.getBoolean("openEmployerHistory", false) ?: false
-        if (openEmployerHistory) {
-            arguments?.remove("openEmployerHistory")
-            binding.toggleContainer.visibility = View.VISIBLE
-            viewModel.isWorkerMode = false
-            viewModel.currentTab = JobTabType.HISTORY
-        }
-
-        if (viewModel.isWorkerMode) {
-            applyWorkerMode(animated = false)
-        } else {
-            applyEmployerMode(animated = false)
-        }
-        restoreTab(viewModel.currentTab)
+        applyEmployerMode(animated = false)
+        restoreTab(JobTabType.ACTIVE)
     }
 
     private fun setupKeyboard() {
@@ -128,9 +118,14 @@ class MyJobsFragment : Fragment() {
         employerAdapter = EmployerJobsAdapter(
             items = employerActive,
             tabType = JobTabType.ACTIVE,
-            onQrClick = { /* TODO: open camera for QR scan */ },
+            onQrClick = { item ->
+                QrCodeDialog.newInstance(
+                    jobTitle = item.title,
+                    jobCompany = item.company,
+                    category = item.category
+                ).show(childFragmentManager, "QrCodeDialog")
+            },
             onDuplicateClick = { item ->
-                // Navigate to PostJobFragment with job details prefilled
                 val bundle = Bundle().apply {
                     putString("jobTitle", item.title)
                     putString("jobCompany", item.company)
@@ -164,19 +159,15 @@ class MyJobsFragment : Fragment() {
     }
 
     private fun setupPostJobButtons() {
-        // Empty history card → navigate to PostJobFragment (empty)
         binding.cardEmptyHistory.setOnClickListener {
             findNavController().navigate(R.id.action_myJobsFragment_to_postJobFragment)
         }
-
-        // Post job button → navigate to PostJobFragment (empty)
         binding.cardPostJob.setOnClickListener {
             findNavController().navigate(R.id.action_myJobsFragment_to_postJobFragment)
         }
     }
 
     private fun setupTabs() {
-        // Only 2 tabs: active and history
         binding.tabActive.setOnClickListener {
             viewModel.currentTab = JobTabType.ACTIVE
             applyTab(JobTabType.ACTIVE)

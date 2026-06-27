@@ -153,7 +153,7 @@
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardEmptyHistory"
         android:layout_width="0dp"
-        android:layout_height="150dp"
+        android:layout_height="221dp"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="12dp"
         android:visibility="gone"
@@ -171,39 +171,39 @@
 
             <ImageView
                 android:id="@+id/imgEmptyCharacter"
-                android:layout_width="170dp"
-                android:layout_height="170dp"
+                android:layout_width="74dp"
+                android:layout_height="155dp"
                 android:layout_marginTop="25dp"
-                android:contentDescription="@null"
+                android:layout_marginEnd="28dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/img_empty_jobs_character"
+                android:src="@drawable/img_rating_character"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.533" />
+                app:layout_constraintVertical_bias="0.508" />
 
             <TextView
                 android:id="@+id/tvEmptyText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:text="עדיין לא פרסמתם משרה,\nבוא ניצור את המשרה הראשונה שלך"
+                android:text="עדיין לא פרסמת משרה ראשונה?\nבואו ניצור ביחד "
                 android:textColor="@color/black"
                 android:textSize="17sp"
-                android:fontFamily="@font/ploni_bold_aaa"
+                android:fontFamily="@font/ploni_medium_aaa"
                 android:gravity="center"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/tvEmptyPlus"
                 app:layout_constraintEnd_toStartOf="@id/imgEmptyCharacter" />
 
-            <TextView
+            <ImageView
                 android:id="@+id/tvEmptyPlus"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:text="+"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
                 android:gravity="end"
+                android:layout_marginStart="28dp"
+                android:src="@drawable/plus"
                 android:textColor="@color/black"
                 android:textSize="28sp"
                 android:fontFamily="@font/ploni_bold_aaa"
