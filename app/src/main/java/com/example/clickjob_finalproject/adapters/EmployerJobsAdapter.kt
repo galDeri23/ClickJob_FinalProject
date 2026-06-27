@@ -28,19 +28,21 @@ class EmployerJobsAdapter(
     private var tabType: JobTabType = JobTabType.ACTIVE,
     private val onQrClick: (EmployerJobItem) -> Unit = {},
     private val onDuplicateClick: (EmployerJobItem) -> Unit = {},
-    private val onItemClick: (EmployerJobItem) -> Unit = {}  // Added for WorkerSortingFragment navigation
+    private val onItemClick: (EmployerJobItem) -> Unit = {}
 ) : RecyclerView.Adapter<EmployerJobsAdapter.EmployerViewHolder>() {
 
     inner class EmployerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val cardRoot        = itemView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardRoot)
         val imgCategory     = itemView.findViewById<ImageView>(R.id.imgCategory)
         val tvJobTitle      = itemView.findViewById<TextView>(R.id.tvJobTitle)
-        val tvDatePrice     = itemView.findViewById<TextView>(R.id.tvDatePrice)
+        val tvCompanyName   = itemView.findViewById<TextView>(R.id.tvCompanyName)
+        val tvPrice         = itemView.findViewById<TextView>(R.id.tvPrice)
+        val tvDate          = itemView.findViewById<TextView>(R.id.tvDate)
         val tvWorkersCount  = itemView.findViewById<TextView>(R.id.tvWorkersCount)
         val progressWorkers = itemView.findViewById<ProgressBar>(R.id.progressWorkers)
         val tvTimer         = itemView.findViewById<TextView>(R.id.tvTimer)
         val btnQr           = itemView.findViewById<LinearLayout>(R.id.btnQr)
-        val btnHandled      = itemView.findViewById<LinearLayout>(R.id.btnHandled)
+        val btnDuplicate    = itemView.findViewById<LinearLayout>(R.id.btnDuplicate)
         var countDownTimer: CountDownTimer? = null
     }
 
@@ -54,7 +56,9 @@ class EmployerJobsAdapter(
         val item = items[position]
 
         holder.tvJobTitle.text     = item.title
-        holder.tvDatePrice.text    = "${item.date} · ${item.price} ₪/שעה"
+        holder.tvCompanyName.text  = item.company
+        holder.tvPrice.text        = "₪${item.price}/לשעה"
+        holder.tvDate.text         = item.date
         holder.tvWorkersCount.text = "${item.workersRegistered}/${item.workersNeeded}"
         holder.imgCategory.setImageResource(getCategoryImage(item.category))
 
@@ -62,17 +66,18 @@ class EmployerJobsAdapter(
             (item.workersRegistered * 100) / item.workersNeeded else 0
         holder.progressWorkers.progress = progress
 
+        // Cancel any running timer
         holder.countDownTimer?.cancel()
 
+        // Hide all badges by default
         holder.btnQr.visibility      = View.GONE
         holder.tvTimer.visibility    = View.GONE
-        holder.btnHandled.visibility = View.GONE
-
-        // Reset click listener
+        holder.btnDuplicate.visibility = View.GONE
         holder.itemView.setOnClickListener(null)
 
         when (tabType) {
             JobTabType.ACTIVE -> {
+                holder.cardRoot.alpha = 1f
                 holder.cardRoot.setCardBackgroundColor(Color.WHITE)
                 holder.btnQr.visibility = View.VISIBLE
                 holder.progressWorkers.progressDrawable =
@@ -82,6 +87,7 @@ class EmployerJobsAdapter(
             }
 
             JobTabType.PENDING -> {
+                holder.cardRoot.alpha = 1f
                 holder.cardRoot.setCardBackgroundColor(Color.WHITE)
                 holder.progressWorkers.progressDrawable =
                     androidx.core.content.ContextCompat.getDrawable(
@@ -90,17 +96,18 @@ class EmployerJobsAdapter(
                     holder.tvTimer.visibility = View.VISIBLE
                     startTimer(holder, item.countdownMillis)
                 }
-                // Navigate to WorkerSortingFragment on card click
                 holder.itemView.setOnClickListener { onItemClick(item) }
             }
 
             JobTabType.HISTORY -> {
+                // Dimmed appearance for history
+                holder.cardRoot.alpha = 0.5f
                 holder.cardRoot.setCardBackgroundColor(Color.WHITE)
-                holder.btnHandled.visibility = View.VISIBLE
+                holder.btnDuplicate.visibility = View.VISIBLE
                 holder.progressWorkers.progressDrawable =
                     androidx.core.content.ContextCompat.getDrawable(
                         holder.itemView.context, R.drawable.progress_bar_gray)
-                holder.btnHandled.setOnClickListener { onDuplicateClick(item) }
+                holder.btnDuplicate.setOnClickListener { onDuplicateClick(item) }
             }
         }
     }

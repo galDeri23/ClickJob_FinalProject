@@ -1,7 +1,6 @@
 package com.example.clickjob_finalproject.ui.home
 
 import android.os.Bundle
-import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,7 @@ import com.example.clickjob_finalproject.R
 import com.example.clickjob_finalproject.adapters.ResultItem
 import com.example.clickjob_finalproject.adapters.SearchResultsAdapter
 import com.example.clickjob_finalproject.databinding.FragmentSearchResultsBinding
+import com.google.android.material.chip.Chip
 
 class SearchResultsFragment : Fragment() {
 
@@ -23,7 +23,9 @@ class SearchResultsFragment : Fragment() {
 
     private lateinit var adapter: SearchResultsAdapter
 
-    // Sample data — replace with real data later
+    // Selected categories received from SearchFragment
+    private val selectedCategories = mutableListOf<String>()
+
     private val allItems = listOf(
         ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "4.7", "2.2 ק״מ", "אבטחה וביטחון"),
         ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "4.7", "2.2 ק״מ", "משלוחים ותחבורה"),
@@ -44,9 +46,16 @@ class SearchResultsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Get selected categories from SearchFragment
+        arguments?.getStringArrayList("selectedCategories")?.let {
+            selectedCategories.addAll(it)
+        }
+
         setupBackButton()
         setupResultsList()
         setupTabs()
+        setupCategoryChips()
+        updateResultsCount()
     }
 
     private fun setupBackButton() {
@@ -61,6 +70,42 @@ class SearchResultsFragment : Fragment() {
         binding.rvResults.adapter = adapter
     }
 
+    private fun setupCategoryChips() {
+        binding.chipGroupCategories.removeAllViews()
+
+        if (selectedCategories.isEmpty()) {
+            binding.chipGroupCategories.visibility = View.GONE
+            return
+        }
+
+        binding.chipGroupCategories.visibility = View.VISIBLE
+
+        selectedCategories.forEach { category ->
+            val chip = Chip(requireContext()).apply {
+                text = category
+                isCloseIconVisible = true
+                isClickable = false
+                setChipBackgroundColorResource(R.color.white)
+                setTextColor(ContextCompat.getColor(requireContext(), R.color.DarkDeep))
+                setCloseIconTintResource(R.color.DarkDeep)
+                chipStrokeWidth = 1f
+                setChipStrokeColorResource(R.color.DarkDeep)
+
+                setOnCloseIconClickListener {
+                    // Remove category and refresh chips
+                    selectedCategories.remove(category)
+                    setupCategoryChips()
+                    updateResultsCount()
+                }
+            }
+            binding.chipGroupCategories.addView(chip)
+        }
+    }
+
+    private fun updateResultsCount() {
+        binding.tvResultsCount.text = "תוצאות חיפוש (${allItems.size})"
+    }
+
     private fun setupTabs() {
         val tabs = listOf(binding.tabAll, binding.tabNear, binding.tabHighSalary, binding.tabUrgent)
 
@@ -68,7 +113,6 @@ class SearchResultsFragment : Fragment() {
             tab.setOnClickListener {
                 tabs.forEach { setTabUnselected(it) }
                 setTabSelected(tab)
-                // TODO: filter list by tab
                 adapter.updateItems(allItems)
             }
         }

@@ -24,7 +24,7 @@ class NotificationsFragment : Fragment() {
     private var isWorkerMode = true
 
     private val appViewModel: AppViewModel by activityViewModels()
-    // Worker notifications - matches the 6 Figma icon types
+
     private val workerNotifications = listOf(
         NotificationItem(
             title = "נדרש אישור לעבודה ב\"מיט-בר\"",
@@ -46,7 +46,7 @@ class NotificationsFragment : Fragment() {
         ),
         NotificationItem(
             title = "דירוג עבודה ב\"חומוס מצמיה\"",
-            dateTime = "הזמינו אותך להעריך את העבודה על מיה",
+            dateTime = "דירוגים מעלים את הסיכוי למצוא עבודה",
             timeAgo = "לפני יום וחצי",
             status = NotificationStatus.RATING
         ),
@@ -64,7 +64,6 @@ class NotificationsFragment : Fragment() {
         )
     )
 
-    // Employer notifications - placeholder for later
     private val employerNotifications = listOf<NotificationItem>()
 
     override fun onCreateView(
@@ -82,6 +81,10 @@ class NotificationsFragment : Fragment() {
         setupList()
         setupToggle()
         setupSearch()
+
+        // Show toggle only if user has posted a job
+        val showToggle = arguments?.getBoolean("showToggle", false) ?: false
+        binding.toggleContainer.visibility = if (showToggle) View.VISIBLE else View.GONE
     }
 
     private fun setupList() {
@@ -89,7 +92,14 @@ class NotificationsFragment : Fragment() {
             items = workerNotifications,
             onApprove = { /* TODO: approve action */ },
             onCancel = { /* TODO: cancel action */ },
-            onRate = { /* TODO: open rating screen */ }
+            onRate = { item ->
+                // Extract business name from title e.g. "דירוג עבודה ב\"חומוס מצמיה\""
+                val businessName = item.title
+                    .substringAfter("ב\"")
+                    .removeSuffix("\"")
+                RatingDialog.newInstance(businessName)
+                    .show(childFragmentManager, "RatingDialog")
+            }
         )
         binding.rvNotifications.layoutManager = LinearLayoutManager(requireContext())
         binding.rvNotifications.adapter = adapter
@@ -116,7 +126,6 @@ class NotificationsFragment : Fragment() {
         binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         binding.toggleEmployer.background = null
         binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
-
         adapter.updateItems(workerNotifications)
     }
 
@@ -126,7 +135,6 @@ class NotificationsFragment : Fragment() {
         binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         binding.toggleWorker.background = null
         binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
-
         adapter.updateItems(employerNotifications)
     }
 

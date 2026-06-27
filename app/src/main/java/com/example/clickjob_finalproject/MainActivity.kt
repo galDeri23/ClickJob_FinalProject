@@ -68,5 +68,13 @@ class MainActivity : AppCompatActivity() {
             bottomNav.itemTextColor = colorList
         }
     }
+    fun hideBottomNav() {
+        findViewById<BottomNavigationView>(R.id.bottom_navigation).visibility = android.view.View.GONE
+    }
+
+    fun showBottomNav() {
+        findViewById<BottomNavigationView>(R.id.bottom_navigation).visibility = android.view.View.VISIBLE
+    }
+
 
 }

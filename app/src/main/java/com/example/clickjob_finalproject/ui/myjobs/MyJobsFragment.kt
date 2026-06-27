@@ -21,6 +21,7 @@ import com.example.clickjob_finalproject.adapters.EmployerJobsAdapter
 import com.example.clickjob_finalproject.adapters.JobTabType
 import com.example.clickjob_finalproject.adapters.MyJobItem
 import com.example.clickjob_finalproject.adapters.MyJobsAdapter
+import com.example.clickjob_finalproject.adapters.TimerType
 import com.example.clickjob_finalproject.databinding.FragmentMyJobsBinding
 
 class MyJobsFragment : Fragment() {
@@ -34,10 +35,9 @@ class MyJobsFragment : Fragment() {
     // ===== Worker data =====
     private val workerActive = mutableListOf(
         MyJobItem("שם משרה", "שם חברה", "50 ש h/00", "2.2 ק״מ", "מחר", "הפקה ואירועים", needsApproval = true),
-        MyJobItem("שם משרה", "שם חברה", "50 ש h/00", "2.2 ק״מ", "מחר", "מסעדות", needsApproval = true),
-        MyJobItem("שם משרה", "שם חברה", "50 ש h/00", "2.2 ק״מ", "מחר", "מכירות ואופנה", needsApproval = true)
+        MyJobItem("שם משרה", "שם חברה", "50 ש h/00", "2.2 ק״מ", "מחר", "מסעדות", timerType = TimerType.SOON),
+        MyJobItem("שם משרה", "שם חברה", "50 ש h/00", "2.2 ק״מ", "מחר", "מכירות ואופנה", timerType = TimerType.PENDING)
     )
-    private val workerPending = mutableListOf<MyJobItem>()
     private val workerHistory = mutableListOf(
         MyJobItem("שם משרה", "שם חברה", "50 ש h/00", "2.2 ק״מ", "אתמול", "אחזקה"),
         MyJobItem("שם משרה", "שם חברה", "50 ש h/00", "2.2 ק״מ", "אתמול", "בניין וייצור")
@@ -78,9 +78,18 @@ class MyJobsFragment : Fragment() {
         setupToggle()
         setupPostJobButtons()
 
+        // Show toggle if coming from "post job" in home screen
+        val showToggle = arguments?.getBoolean("showToggle", false) ?: false
+        if (showToggle) {
+            binding.toggleContainer.visibility = View.VISIBLE
+            viewModel.isWorkerMode = false
+            viewModel.currentTab = JobTabType.ACTIVE
+        }
+
         val openEmployerHistory = arguments?.getBoolean("openEmployerHistory", false) ?: false
         if (openEmployerHistory) {
             arguments?.remove("openEmployerHistory")
+            binding.toggleContainer.visibility = View.VISIBLE
             viewModel.isWorkerMode = false
             viewModel.currentTab = JobTabType.HISTORY
         }
@@ -94,8 +103,6 @@ class MyJobsFragment : Fragment() {
     }
 
     private fun setupKeyboard() {
-        binding.etSearch.isFocusable = false
-        binding.etSearch.isFocusableInTouchMode = false
         binding.root.setOnClickListener {
             val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE)
                     as InputMethodManager
@@ -109,7 +116,6 @@ class MyJobsFragment : Fragment() {
             tabType = JobTabType.ACTIVE,
             onApproveClick = { item ->
                 workerActive.remove(item)
-                workerPending.add(item.copy(needsApproval = false, countdownMillis = 18000000L))
                 updateTabLabels()
                 workerAdapter.updateItems(workerActive.toList(), JobTabType.ACTIVE)
             }
@@ -124,10 +130,23 @@ class MyJobsFragment : Fragment() {
             tabType = JobTabType.ACTIVE,
             onQrClick = { /* TODO: open camera for QR scan */ },
             onDuplicateClick = { item ->
-                // TODO: navigate to PostJobFragment
+                // Navigate to PostJobFragment with job details prefilled
+                val bundle = Bundle().apply {
+                    putString("jobTitle", item.title)
+                    putString("jobCompany", item.company)
+                    putString("jobPrice", item.price)
+                    putInt("workersNeeded", item.workersNeeded)
+                    putString("jobDescription", "")
+                    putString("jobPhone", "")
+                    putString("jobAddress", "")
+                    putString("jobLink", "")
+                }
+                findNavController().navigate(
+                    R.id.action_myJobsFragment_to_postJobFragment,
+                    bundle
+                )
             },
             onItemClick = { item ->
-                // Navigate to WorkerSortingFragment only from PENDING tab
                 if (viewModel.currentTab == JobTabType.PENDING) {
                     val bundle = Bundle().apply {
                         putString("jobTitle", item.title)
@@ -145,22 +164,22 @@ class MyJobsFragment : Fragment() {
     }
 
     private fun setupPostJobButtons() {
-        binding.cardPostJob.setOnClickListener {
-            // TODO: navigate to PostJobFragment (empty)
-        }
+        // Empty history card → navigate to PostJobFragment (empty)
         binding.cardEmptyHistory.setOnClickListener {
-            // TODO: navigate to PostJobFragment (empty)
+            findNavController().navigate(R.id.action_myJobsFragment_to_postJobFragment)
+        }
+
+        // Post job button → navigate to PostJobFragment (empty)
+        binding.cardPostJob.setOnClickListener {
+            findNavController().navigate(R.id.action_myJobsFragment_to_postJobFragment)
         }
     }
 
     private fun setupTabs() {
+        // Only 2 tabs: active and history
         binding.tabActive.setOnClickListener {
             viewModel.currentTab = JobTabType.ACTIVE
             applyTab(JobTabType.ACTIVE)
-        }
-        binding.tabPending.setOnClickListener {
-            viewModel.currentTab = JobTabType.PENDING
-            applyTab(JobTabType.PENDING)
         }
         binding.tabHistory.setOnClickListener {
             viewModel.currentTab = JobTabType.HISTORY
@@ -169,22 +188,21 @@ class MyJobsFragment : Fragment() {
     }
 
     private fun applyTab(tab: JobTabType) {
-        val tabs = listOf(binding.tabActive, binding.tabPending, binding.tabHistory)
-        tabs.forEach { setTabUnselected(it) }
+        listOf(binding.tabActive, binding.tabHistory).forEach { setTabUnselected(it) }
 
         binding.rvJobs.visibility = View.VISIBLE
 
         when (tab) {
             JobTabType.ACTIVE  -> setTabSelected(binding.tabActive)
-            JobTabType.PENDING -> setTabSelected(binding.tabPending)
             JobTabType.HISTORY -> setTabSelected(binding.tabHistory)
+            else -> {}
         }
 
         if (viewModel.isWorkerMode) {
             val items = when (tab) {
                 JobTabType.ACTIVE  -> workerActive.toList()
-                JobTabType.PENDING -> workerPending.toList()
                 JobTabType.HISTORY -> workerHistory.toList()
+                else -> workerActive.toList()
             }
             workerAdapter.updateItems(items, tab)
             binding.cardPostJob.visibility      = View.GONE
@@ -270,18 +288,15 @@ class MyJobsFragment : Fragment() {
     private fun updateTabLabels() {
         if (viewModel.isWorkerMode) {
             binding.tabActive.text  = "פעילות (${workerActive.size})"
-            binding.tabPending.text = "בהמתנה (${workerPending.size})"
             binding.tabHistory.text = "היסטוריה"
         } else {
             binding.tabActive.text  = "מאוישות (${employerActive.size})"
-            binding.tabPending.text = "בטיפול (${employerPending.size})"
             binding.tabHistory.text = "היסטוריה"
         }
     }
 
     private fun updateTabColors(isPink: Boolean) {
-        listOf(binding.tabActive, binding.tabPending, binding.tabHistory)
-            .forEach { setTabUnselected(it) }
+        listOf(binding.tabActive, binding.tabHistory).forEach { setTabUnselected(it) }
         val selectedDrawable = if (isPink) R.drawable.bg_tab_selected else R.drawable.bg_tab_selected_teal
         binding.tabActive.background = ContextCompat.getDrawable(requireContext(), selectedDrawable)
         binding.tabActive.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
