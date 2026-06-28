@@ -58,13 +58,7 @@ class HomeFragment : Fragment() {
 
     private fun setupUpcomingShifts() {
         // TODO: replace with the real list of upcoming shifts (from ViewModel/repository).
-        // Temporarily filled with sample data so you can see the carousel + dots;
-        // switch back to emptyList<ShiftItem>() to see the "no upcoming shifts" card.
-        val items = listOf(
-            ShiftItem("תגבור מלצרות", "אולם אירועים אירוסין", "07:00–15:00", "25/06/26","גדרה, שמואל יוסף 13"),
-            ShiftItem("שם משרה", "שם חברה", "15:00–23:00", "dd/mm/yy","גדרה, שמואל יוסף 13"),
-            ShiftItem("שם משרה", "שם חברה", "08:00–16:00", "25/06/26","גדרה, שמואל יוסף 13")
-        )
+        val items = emptyList<ShiftItem>()
 
         // No open shifts -> hide section title, carousel and dots, show the prompt card instead
         if (items.isEmpty()) {

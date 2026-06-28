@@ -56,11 +56,7 @@ class MyJobsFragment : Fragment() {
     )
 
     // TEMP: employer history with dummy data for testing
-    private val employerHistory = mutableListOf(
-        EmployerJobItem("מלצרית לחתונה", "שם חברה", 7, 7, category = "מסעדות"),
-        EmployerJobItem("שיעור פרטי לילדה", "שם חברה", 3, 3, category = "חינוך והוראה")
-    )
-
+    private val employerHistory = mutableListOf<EmployerJobItem>()
     private lateinit var workerAdapter: MyJobsAdapter
     private lateinit var employerAdapter: EmployerJobsAdapter
 

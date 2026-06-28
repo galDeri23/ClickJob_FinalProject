@@ -60,8 +60,8 @@
     <!-- Illustration image -->
     <ImageView
         android:id="@+id/ivIllustration"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="263dp"
+        android:layout_height="312dp"
         android:src="@drawable/img_register_illustration"
         android:scaleType="fitCenter"
         android:layout_gravity="center"

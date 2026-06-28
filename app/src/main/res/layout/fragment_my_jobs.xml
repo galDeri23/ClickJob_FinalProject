@@ -156,7 +156,7 @@
         android:layout_height="221dp"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="12dp"
-        android:visibility="gone"
+        android:visibility="visible"
         app:cardCornerRadius="16dp"
         app:cardElevation="4dp"
         app:cardBackgroundColor="@color/white"
@@ -171,25 +171,35 @@
 
             <ImageView
                 android:id="@+id/imgEmptyCharacter"
-                android:layout_width="74dp"
-                android:layout_height="155dp"
-                android:layout_marginTop="25dp"
-                android:layout_marginEnd="28dp"
+                android:layout_width="89dp"
+                android:layout_height="213dp"
+                android:layout_marginEnd="20dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/img_rating_character"
+                android:src="@drawable/img_post_job_character"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.508" />
-
+            <!-- Shadow ellipse -->
+            <ImageView
+                android:id="@+id/imgShadow"
+                android:layout_width="120dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ellipse"
+                android:scaleType="fitXY"
+                android:layout_marginEnd="20dp"
+                app:layout_constraintBottom_toBottomOf="@id/imgEmptyCharacter"
+                app:layout_constraintStart_toStartOf="@id/imgEmptyCharacter"
+                app:layout_constraintEnd_toEndOf="@id/imgEmptyCharacter"/>
             <TextView
                 android:id="@+id/tvEmptyText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
+                android:layout_marginEnd="8dp"
                 android:text="עדיין לא פרסמת משרה ראשונה?\nבואו ניצור ביחד "
-                android:textColor="@color/black"
-                android:textSize="17sp"
+                android:textColor="@color/DarkDeep"
+                android:textSize="20sp"
                 android:fontFamily="@font/ploni_medium_aaa"
                 android:gravity="center"
                 app:layout_constraintTop_toTopOf="parent"

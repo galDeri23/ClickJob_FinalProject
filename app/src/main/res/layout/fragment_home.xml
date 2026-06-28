@@ -137,13 +137,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:layoutDirection="rtl"
-            android:visibility="gone">
+            android:layoutDirection="ltr"
+            android:visibility="visible">
 
-            <!-- The actual card: MaterialCardView gives us the rounded corners +
-                 elevation shadow "for free", same as every other card in the app.
-                 Background is transparent so the gradient View inside can show
-                 through, clipped to the card's rounded corners. -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardNoShiftsBg"
                 android:layout_width="0dp"
@@ -163,10 +159,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Character illustration, overlapping the top edge of the card.
-                 It's a sibling of the MaterialCardView (not a child), because
-                 MaterialCardView clips its children to its rounded corners -
-                 a child here could never poke out above the card. -->
             <ImageView
                 android:id="@+id/imgNoShiftsCharacter"
                 android:layout_width="193dp"
@@ -186,10 +178,9 @@
                 android:id="@+id/tvNoShiftsTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
                 android:layout_marginEnd="16dp"
                 android:elevation="4dp"
-                android:text="מחפשים עבודה להיום?"
+                android:text="  מחפשים עבודה להיום?"
                 android:textColor="@color/text_dark"
                 android:fontFamily="@font/ploni_bold_aaa"
                 android:textStyle="bold"
@@ -207,7 +198,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:elevation="4dp"
-                android:text="מצאו עבודות בקליק"
+                android:text="   מצאו עבודות בקליק"
                 android:textColor="@color/text_dark"
                 android:fontFamily="@font/ploni_bold_aaa"
                 android:textSize="20sp"
