@@ -102,9 +102,11 @@
             <!-- Edit pencil: left side (end in RTL) -->
             <ImageView
                 android:id="@+id/btnEdit"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
                 android:src="@drawable/ic_edit"
+                android:background="@drawable/bg_back_button"
+                android:elevation="5dp"
                 android:padding="4dp"
                 android:contentDescription="עריכה"
                 app:tint="@color/DarkDeep"
@@ -113,96 +115,75 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- ===== Contact buttons: טלפון (right) + סושיאל (left) ===== -->
-        <!-- Icon-only square, label below outside the square -->
-
         <LinearLayout
             android:id="@+id/contactRow"
-            android:layout_width="150dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_gravity="center_horizontal"
+            android:layout_marginHorizontal="20dp"
             android:layout_marginTop="28dp"
             android:gravity="center_vertical">
 
-
-
-            <!-- טלפון (right in RTL layout = first child) -->
+            <!-- טלפון -->
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:id="@+id/btnPhone"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:background="@drawable/bg_contact_button"
+                android:clickable="true"
+                android:focusable="true">
 
-                <!-- Square box with icon only -->
-                <LinearLayout
-                    android:id="@+id/btnPhone"
-                    android:layout_width="37dp"
-                    android:layout_height="37dp"
-                    android:gravity="center"
-                    android:background="@color/white"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_phone"
-                        android:contentDescription="טלפון" />
-
-                </LinearLayout>
-
-                <!-- Label below the box -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
                     android:text="טלפון"
                     android:textColor="@color/text_dark"
                     android:textSize="14sp"
-                    android:fontFamily="@font/ploni_regular_aaa" />
+                    android:fontFamily="@font/ploni_regular_aaa"
+                    android:layout_marginEnd="8dp"/>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_phone"
+                    android:contentDescription="טלפון"/>
 
             </LinearLayout>
-            <!-- סושיאל (left in RTL layout = second child) -->
+
+            <!-- סושיאל -->
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:id="@+id/btnSocial"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
                 android:gravity="center"
-                android:layout_marginStart="65dp">
+                android:background="@drawable/bg_contact_button"
+                android:clickable="true"
+                android:focusable="true">
 
-                <!-- Square box with icon only -->
-                <LinearLayout
-                    android:id="@+id/btnSocial"
-                    android:layout_width="37dp"
-                    android:layout_height="37dp"
-                    android:gravity="center"
-                    android:background="@color/white"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_instagram"
-                        android:contentDescription="סושיאל" />
-
-                </LinearLayout>
-
-                <!-- Label below the box -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
                     android:text="סושיאל"
                     android:textColor="@color/text_dark"
                     android:textSize="14sp"
-                    android:fontFamily="@font/ploni_regular_aaa" />
+                    android:fontFamily="@font/ploni_regular_aaa"
+                    android:layout_marginEnd="8dp"/>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_instagram"
+                    android:contentDescription="סושיאל"/>
 
             </LinearLayout>
 
         </LinearLayout>
-
         <!-- ===== Skills sections ===== -->
 
         <LinearLayout
@@ -323,7 +304,7 @@
             android:id="@+id/btnLogout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="36dp"
+            android:layout_marginTop="70dp"
             android:layout_marginStart="20dp"
             android:layout_gravity="start"
             android:text="התנתקות"

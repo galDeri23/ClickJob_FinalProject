@@ -12,6 +12,9 @@ import com.example.clickjob_finalproject.R
 
 enum class JobTabType { ACTIVE, PENDING, HISTORY }
 
+// Timer type for worker active tab
+enum class TimerType { NONE, SOON, PENDING }
+
 data class MyJobItem(
     val title: String,
     val company: String,
@@ -20,7 +23,7 @@ data class MyJobItem(
     val day: String,
     val category: String,
     val needsApproval: Boolean = false,
-    // Pending tab: countdown in milliseconds
+    val timerType: TimerType = TimerType.NONE,
     val countdownMillis: Long = 0L
 )
 
@@ -31,15 +34,16 @@ class MyJobsAdapter(
 ) : RecyclerView.Adapter<MyJobsAdapter.MyJobViewHolder>() {
 
     inner class MyJobViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val cardRoot    = itemView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardRoot)
-        val imgCategory = itemView.findViewById<ImageView>(R.id.imgCategory)
-        val tvJobTitle  = itemView.findViewById<TextView>(R.id.tvJobTitle)
-        val tvCompany   = itemView.findViewById<TextView>(R.id.tvCompanyName)
-        val tvDistance  = itemView.findViewById<TextView>(R.id.tvDistance)
-        val tvDay       = itemView.findViewById<TextView>(R.id.tvDay)
-        val tvPrice     = itemView.findViewById<TextView>(R.id.tvPrice)
-        val btnApprove  = itemView.findViewById<TextView>(R.id.btnApprove)
-        val tvTimer     = itemView.findViewById<TextView>(R.id.tvTimer)
+        val cardRoot      = itemView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardRoot)
+        val imgCategory   = itemView.findViewById<ImageView>(R.id.imgCategory)
+        val tvJobTitle    = itemView.findViewById<TextView>(R.id.tvJobTitle)
+        val tvCompany     = itemView.findViewById<TextView>(R.id.tvCompanyName)
+        val tvDistance    = itemView.findViewById<TextView>(R.id.tvDistance)
+        val tvDay         = itemView.findViewById<TextView>(R.id.tvDay)
+        val tvPrice       = itemView.findViewById<TextView>(R.id.tvPrice)
+        val btnApprove    = itemView.findViewById<TextView>(R.id.btnApprove)
+        val tvTimerSoon   = itemView.findViewById<TextView>(R.id.tvTimerSoon)
+        val tvTimerPending = itemView.findViewById<TextView>(R.id.tvTimerPending)
         var countDownTimer: CountDownTimer? = null
     }
 
@@ -62,57 +66,44 @@ class MyJobsAdapter(
         // Cancel any running timer before rebinding
         holder.countDownTimer?.cancel()
 
+        // Hide all badges by default
+        holder.btnApprove.visibility     = View.GONE
+        holder.tvTimerSoon.visibility    = View.GONE
+        holder.tvTimerPending.visibility = View.GONE
+
         when (tabType) {
             JobTabType.ACTIVE -> {
-                // White card background
+                holder.cardRoot.alpha = 1f
                 holder.cardRoot.setCardBackgroundColor(Color.WHITE)
 
-                // Show approve button only for items that need it
-                if (item.needsApproval) {
-                    holder.btnApprove.visibility = View.VISIBLE
-                    holder.btnApprove.setOnClickListener { onApproveClick(item) }
-                } else {
-                    holder.btnApprove.visibility = View.GONE
-                }
-                holder.tvTimer.visibility = View.GONE
-            }
-
-            JobTabType.PENDING -> {
-                // White card background
-                holder.cardRoot.setCardBackgroundColor(Color.WHITE)
-                holder.btnApprove.visibility = View.GONE
-
-                // Show countdown timer
-                if (item.countdownMillis > 0) {
-                    holder.tvTimer.visibility = View.VISIBLE
-                    startTimer(holder, item.countdownMillis)
-                } else {
-                    holder.tvTimer.visibility = View.GONE
+                when {
+                    // Show approve button
+                    item.needsApproval -> {
+                        holder.btnApprove.visibility = View.VISIBLE
+                        holder.btnApprove.setOnClickListener { onApproveClick(item) }
+                    }
+                    // Show "בעוד יום" gray badge
+                    item.timerType == TimerType.SOON -> {
+                        holder.tvTimerSoon.visibility = View.VISIBLE
+                    }
+                    // Show "בהמתנה" pink badge
+                    item.timerType == TimerType.PENDING -> {
+                        holder.tvTimerPending.visibility = View.VISIBLE
+                    }
                 }
             }
 
             JobTabType.HISTORY -> {
-                // Beige/cream card background for history
-                holder.cardRoot.setCardBackgroundColor(Color.parseColor("#FFF8F0"))
-                holder.btnApprove.visibility = View.GONE
-                holder.tvTimer.visibility = View.GONE
+                // Dimmed appearance for history
+                holder.cardRoot.alpha = 0.5f
+                holder.cardRoot.setCardBackgroundColor(Color.WHITE)
+            }
+
+            else -> {
+                holder.cardRoot.alpha = 1f
+                holder.cardRoot.setCardBackgroundColor(Color.WHITE)
             }
         }
-    }
-
-    // Countdown timer displayed as HH:MM:SS:mm
-    private fun startTimer(holder: MyJobViewHolder, millis: Long) {
-        holder.countDownTimer = object : CountDownTimer(millis, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                val hours   = millisUntilFinished / 3600000
-                val minutes = (millisUntilFinished % 3600000) / 60000
-                val seconds = (millisUntilFinished % 60000) / 1000
-                holder.tvTimer.text = String.format("%02d:%02d:%02d", hours, minutes, seconds)
-            }
-            override fun onFinish() {
-                holder.tvTimer.text = "00:00:00"
-            }
-        }.start()
     }
 
     fun updateItems(newItems: List<MyJobItem>, newTabType: JobTabType) {

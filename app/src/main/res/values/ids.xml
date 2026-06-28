@@ -10,4 +10,7 @@
     <item name="rvBestMatch" type="id" />
     <item name="tvSectionUrgent" type="id" />
     <item name="rvUrgent" type="id" />
+    <item name="tvTime" type="id" />
+    <item name="tvJobName" type="id" />
+    <item name="ivQrCode" type="id" />
 </resources>

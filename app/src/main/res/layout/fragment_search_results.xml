@@ -8,7 +8,7 @@
     android:background="@color/screen_bg"
     android:layoutDirection="rtl">
 
-    <!-- Header: title on right, back arrow on left -->
+    <!-- Header -->
     <LinearLayout
         android:id="@+id/headerLayout"
         android:layout_width="0dp"
@@ -43,7 +43,7 @@
 
     </LinearLayout>
 
-    <!-- Tabs row: each tab has its own box, all inside a light gray container -->
+    <!-- Tabs row -->
     <LinearLayout
         android:id="@+id/tabsRow"
         android:layout_width="0dp"
@@ -112,17 +112,45 @@
 
     </LinearLayout>
 
+    <!-- Results count -->
+    <TextView
+        android:id="@+id/tvResultsCount"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="10dp"
+        android:text="תוצאות חיפוש (0)"
+        android:textSize="14sp"
+        android:fontFamily="@font/ploni_regular_aaa"
+        android:textColor="@color/gray04"
+        android:gravity="start"
+        app:layout_constraintTop_toBottomOf="@id/tabsRow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Selected categories chips -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupCategories"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="6dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tvResultsCount"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <!-- Results list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvResults"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:paddingHorizontal="16dp"
         android:paddingBottom="16dp"
         android:clipToPadding="false"
         tools:listitem="@layout/item_result_card"
-        app:layout_constraintTop_toBottomOf="@id/tabsRow"
+        app:layout_constraintTop_toBottomOf="@id/chipGroupCategories"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

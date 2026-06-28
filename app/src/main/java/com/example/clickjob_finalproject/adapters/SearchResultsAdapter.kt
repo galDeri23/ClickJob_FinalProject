@@ -13,7 +13,6 @@ data class ResultItem(
     val price: String,
     val address: String,
     val day: String,
-    val rating: String,
     val distance: String,
     val category: String = "מסעדות"
 )
@@ -30,7 +29,6 @@ class SearchResultsAdapter(
         val tvJobTitle: TextView    = itemView.findViewById(R.id.tvJobTitle)
         val tvAddress: TextView     = itemView.findViewById(R.id.tvAddress)
         val tvDay: TextView         = itemView.findViewById(R.id.tvDay)
-        val tvRating: TextView      = itemView.findViewById(R.id.tvRating)
         val tvDistance: TextView    = itemView.findViewById(R.id.tvDistance)
     }
 
@@ -48,7 +46,6 @@ class SearchResultsAdapter(
         holder.tvJobTitle.text = item.title
         holder.tvAddress.text  = item.address
         holder.tvDay.text      = item.day
-        holder.tvRating.text   = item.rating
         holder.tvDistance.text = item.distance
         holder.imgCategory.setImageResource(getCategoryCircleImage(item.category))
     }

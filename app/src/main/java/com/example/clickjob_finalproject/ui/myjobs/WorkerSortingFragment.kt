@@ -66,7 +66,7 @@ class WorkerSortingFragment : Fragment() {
         val jobCard = view.findViewById<View>(R.id.jobCard)
         jobCard.post {
             jobCard.findViewById<TextView>(R.id.tvJobTitle)?.text = jobTitle
-            jobCard.findViewById<TextView>(R.id.tvDatePrice)?.text = jobCompany
+            jobCard.findViewById<TextView>(R.id.tvCompanyName)?.text = jobCompany
             jobCard.findViewById<View>(R.id.bottomRow)?.visibility = View.GONE
             jobCard.findViewById<View>(R.id.progressWorkers)?.visibility = View.GONE
             jobCard.findViewById<ShapeableImageView>(R.id.imgCategory)

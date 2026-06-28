@@ -170,7 +170,10 @@ class SearchFragment : Fragment() {
 
     private fun setupSearchButton() {
         binding.btnSearch.setOnClickListener {
-            findNavController().navigate(R.id.action_searchFragment_to_searchResultsFragment)
+            val bundle = Bundle().apply {
+                putStringArrayList("selectedCategories", ArrayList(selectedCategories))
+            }
+            findNavController().navigate(R.id.action_searchFragment_to_searchResultsFragment, bundle)
         }
     }
 

@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:padding="14dp">
 
-        <!-- Category image: circle, right side -->
+        <!-- Category image: circle, LEFT side -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgCategory"
             android:layout_width="60dp"
@@ -29,122 +29,149 @@
             app:layout_constraintStart_toStartOf="parent"
             tools:src="@drawable/img_cat_circle_creative" />
 
-        <!-- Approve button: visible only in active tab for first item -->
+        <!-- Variant 1: approve button (dark background) - TOP RIGHT -->
         <TextView
             android:id="@+id/btnApprove"
             android:layout_width="wrap_content"
             android:layout_height="30dp"
-            android:text="אשר ←"
+            android:drawableEnd="@drawable/move"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/white"
+            android:text="אישור"
             android:gravity="center"
             android:paddingHorizontal="14dp"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/white"
             android:textSize="12sp"
             android:fontFamily="@font/ploni_bold_aaa"
-            android:background="@drawable/bg_approve_button"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Timer: visible only in pending tab -->
-        <TextView
-            android:id="@+id/tvTimer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawableStart="@drawable/ic_clock"
-            android:drawablePadding="4dp"
-            android:drawableTint="@color/text_gray"
-            android:gravity="center_vertical"
-            android:textColor="@color/text_gray"
-            android:fontFamily="@font/ploni_regular_aaa"
-            android:textSize="12sp"
+            android:background="@color/DarkDeep"
             android:visibility="gone"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:text="01:17:50:54" />
+            app:layout_constraintBaseline_toBaselineOf="@id/tvJobTitle"/>
 
-        <!-- Job title -->
+        <!-- Variant 2: "בעוד יום" gray badge - TOP RIGHT -->
+        <TextView
+            android:id="@+id/tvTimerSoon"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:drawableStart="@drawable/ic_clock"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/DarkDeep"
+            android:text="בעוד יום"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:textColor="@color/DarkDeep"
+            android:textSize="12sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:background="@drawable/bg_badge_gray"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@id/tvJobTitle"/>
+
+        <!-- Variant 3: "בהמתנה" pink badge - TOP RIGHT -->
+        <TextView
+            android:id="@+id/tvTimerPending"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:drawableStart="@drawable/ic_clock"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/DarkDeep"
+            android:text="בהמתנה"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:textColor="@color/DarkDeep"
+            android:textSize="12sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:background="@drawable/bg_badge_pink"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@id/tvJobTitle"/>
+
+        <!-- Job title: RIGHT side, below badge -->
         <TextView
             android:id="@+id/tvJobTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
-            android:layout_marginEnd="8dp"
-            android:textColor="#24061E"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/DarkDeep"
             android:fontFamily="@font/ploni_bold_aaa"
-            android:textSize="15sp"
+            android:textSize="16sp"
+            android:gravity="start"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/imgCategory"
             app:layout_constraintEnd_toStartOf="@id/btnApprove"
+            app:layout_constraintStart_toEndOf="@id/imgCategory"
             tools:text="שם משרה" />
 
-        <!-- Company name -->
+        <!-- Company name: RIGHT side -->
         <TextView
             android:id="@+id/tvCompanyName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:textColor="@color/black"
+            android:textColor="@color/DarkDeep"
             android:fontFamily="@font/ploni_regular_aaa"
-            android:textSize="13sp"
+            android:textSize="14sp"
+            android:gravity="start"
             app:layout_constraintTop_toBottomOf="@id/tvJobTitle"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/imgCategory"
-            app:layout_constraintEnd_toStartOf="@id/btnApprove"
             tools:text="שם חברה" />
 
-        <!-- Info row: distance / day / price -->
-        <LinearLayout
-            android:id="@+id/infoRow"
-            android:layout_width="0dp"
+        <!-- Price: RIGHT side, below company -->
+        <TextView
+            android:id="@+id/tvPrice"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="10dp"
-            android:gravity="center_vertical"
+            android:textColor="@color/gray04"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="14sp"
             app:layout_constraintTop_toBottomOf="@id/tvCompanyName"
-            app:layout_constraintStart_toEndOf="@id/imgCategory"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            tools:text="₪50 לשעה" />
 
-            <TextView
-                android:id="@+id/tvDistance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableStart="@drawable/ic_location"
-                android:drawablePadding="3dp"
-                android:drawableTint="@color/text_search"
-                android:gravity="center_vertical"
-                android:textColor="@color/text_search"
-                android:fontFamily="@font/ploni_regular_aaa"
-                android:textSize="12sp"
-                tools:text="2.2 ק״מ" />
+        <!-- Date: RIGHT side, below price -->
+        <TextView
+            android:id="@+id/tvDay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:drawableStart="@drawable/ic_clock"
+            android:drawablePadding="3dp"
+            android:drawableTint="@color/text_search"
+            android:gravity="center_vertical"
+            android:textColor="@color/gray04"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tvPrice"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="א׳, 02/10" />
 
-            <TextView
-                android:id="@+id/tvDay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:drawableStart="@drawable/ic_clock"
-                android:drawablePadding="3dp"
-                android:drawableTint="@color/text_search"
-                android:gravity="center_vertical"
-                android:textColor="@color/text_search"
-                android:fontFamily="@font/ploni_regular_aaa"
-                android:textSize="12sp"
-                tools:text="מחר" />
-
-            <TextView
-                android:id="@+id/tvPrice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:textColor="@color/text_search"
-                android:fontFamily="@font/ploni_regular_aaa"
-                android:textSize="12sp"
-                tools:text="50 ש h/00" />
-
-        </LinearLayout>
+        <!-- Distance: BOTTOM LEFT -->
+        <TextView
+            android:id="@+id/tvDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="4dp"
+            android:drawableStart="@drawable/ic_location"
+            android:drawablePadding="3dp"
+            android:drawableTint="@color/text_search"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:gravity="start"
+            android:textColor="@color/gray04"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tvDay"
+            app:layout_constraintHorizontal_bias="0.039"
+            app:layout_constraintStart_toEndOf="@id/imgCategory"
+            tools:text="2.2 ק״מ" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
