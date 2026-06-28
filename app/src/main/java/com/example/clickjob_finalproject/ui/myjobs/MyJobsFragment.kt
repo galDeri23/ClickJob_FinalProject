@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
@@ -22,6 +23,7 @@ import com.example.clickjob_finalproject.adapters.JobTabType
 import com.example.clickjob_finalproject.adapters.MyJobItem
 import com.example.clickjob_finalproject.adapters.MyJobsAdapter
 import com.example.clickjob_finalproject.adapters.TimerType
+import com.example.clickjob_finalproject.data.repository.UserRepository
 import com.example.clickjob_finalproject.databinding.FragmentMyJobsBinding
 
 class MyJobsFragment : Fragment() {
@@ -55,7 +57,6 @@ class MyJobsFragment : Fragment() {
         EmployerJobItem("מלצרית לחתונה", "שם חברה", 1, 3, countdownMillis = 18000000L, category = "טכנולוגיה")
     )
 
-    // TEMP: employer history with dummy data for testing
     private val employerHistory = mutableListOf<EmployerJobItem>()
     private lateinit var workerAdapter: MyJobsAdapter
     private lateinit var employerAdapter: EmployerJobsAdapter
@@ -79,13 +80,129 @@ class MyJobsFragment : Fragment() {
         setupToggle()
         setupPostJobButtons()
 
-        // TEMP: always show toggle in employer mode for testing
-        binding.toggleContainer.visibility = View.VISIBLE
-        viewModel.isWorkerMode = false
-        viewModel.currentTab = JobTabType.ACTIVE
+        val openEmployerHistory = arguments?.getBoolean("openEmployerHistory", false) ?: false
 
-        applyEmployerMode(animated = false)
-        restoreTab(JobTabType.ACTIVE)
+        if (openEmployerHistory) {
+            binding.toggleContainer.visibility = View.VISIBLE
+            viewModel.isWorkerMode = false
+            applyEmployerMode(animated = false)
+            viewModel.currentTab = JobTabType.HISTORY
+            restoreTab(JobTabType.HISTORY)
+            loadEmployerJobs()
+        } else {
+            checkUserMode()
+        }
+    }
+
+    // Checks Firestore to decide whether to show toggle or worker-only mode
+    private fun checkUserMode() {
+        UserRepository.getUserProfile(
+            onSuccess = { profile ->
+                if (profile.hasPostedJob) {
+                    binding.toggleContainer.visibility = View.VISIBLE
+                    binding.toggleContainer.requestLayout()
+                    val isEmployer = getSavedMode()
+                    viewModel.isWorkerMode = !isEmployer
+                    if (isEmployer) {
+                        applyEmployerMode(animated = false)
+                        loadEmployerJobs()
+                    } else {
+                        applyWorkerMode(animated = false)
+                    }
+                    viewModel.currentTab = JobTabType.ACTIVE
+                    restoreTab(JobTabType.ACTIVE)
+                } else {
+                    binding.toggleContainer.visibility = View.INVISIBLE
+                    viewModel.isWorkerMode = true
+                    applyWorkerMode(animated = false)
+                    viewModel.currentTab = JobTabType.ACTIVE
+                    restoreTab(JobTabType.ACTIVE)
+                }
+            },
+            onFailure = {
+                binding.toggleContainer.visibility = View.INVISIBLE
+                viewModel.isWorkerMode = true
+                applyWorkerMode(animated = false)
+                restoreTab(JobTabType.ACTIVE)
+            }
+        )
+    }
+
+    // Loads employer jobs from Firestore
+    private fun loadEmployerJobs() {
+        UserRepository.getEmployerJobs(
+            onSuccess = { jobs ->
+                val now = System.currentTimeMillis()
+
+                // Convert JobPost list to EmployerJobItem list
+                val employerItems = jobs.map { job ->
+
+                    // Calculate date label
+                    val jobCalendar = java.util.Calendar.getInstance().apply {
+                        timeInMillis = job.date
+                    }
+                    val todayCalendar = java.util.Calendar.getInstance()
+                    val tomorrowCalendar = java.util.Calendar.getInstance().apply {
+                        add(java.util.Calendar.DAY_OF_YEAR, 1)
+                    }
+
+                    val dateLabel = when {
+                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+                        else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
+                    }
+
+                    // Calculate countdown from now until shift start time
+                    val startHour = job.startTime.split(":")[0].toIntOrNull() ?: 0
+                    val shiftStartCalendar = java.util.Calendar.getInstance().apply {
+                        timeInMillis = job.date
+                        set(java.util.Calendar.HOUR_OF_DAY, startHour)
+                        set(java.util.Calendar.MINUTE, 0)
+                        set(java.util.Calendar.SECOND, 0)
+                    }
+                    val countdownMillis = (shiftStartCalendar.timeInMillis - now).coerceAtLeast(0L)
+
+                    EmployerJobItem(
+                        title = job.title,
+                        company = job.company,
+                        workersRegistered = job.workersRegistered,
+                        workersNeeded = job.workersNeeded,
+                        date = dateLabel,
+                        price = job.salary,
+                        category = job.category,
+                        countdownMillis = countdownMillis
+                    )
+                }
+
+                // Update employer active list with real data + dummy data for testing
+                employerActive.clear()
+                employerActive.addAll(employerItems)
+
+                // Add dummy items for testing UI
+                employerActive.addAll(listOf(
+                    EmployerJobItem("מלצרית לחתונה", "שם חברה", 7, 7, category = "מסעדות"),
+                    EmployerJobItem("מלצרית לחתונה", "שם חברה", 2, 6, countdownMillis = 18000000L, category = "אחזקה")
+                ))
+
+                // Refresh adapter if currently in active tab
+                employerAdapter.updateItems(employerActive.toList(), JobTabType.ACTIVE)
+            },
+            onFailure = {
+                Toast.makeText(requireContext(), "שגיאה בטעינת משרות", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    // Saves current mode to SharedPreferences
+    private fun saveUserMode(isEmployer: Boolean) {
+        requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+            .edit().putBoolean("is_employer_mode", isEmployer).apply()
+    }
+
+    // Returns saved mode from SharedPreferences (default: worker)
+    private fun getSavedMode(): Boolean {
+        return requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+            .getBoolean("is_employer_mode", false)
     }
 
     private fun setupKeyboard() {
@@ -233,6 +350,7 @@ class MyJobsFragment : Fragment() {
             if (!viewModel.isWorkerMode) {
                 viewModel.isWorkerMode = true
                 viewModel.currentTab = JobTabType.ACTIVE
+                saveUserMode(isEmployer = false)
                 applyWorkerMode(animated = true)
                 restoreTab(JobTabType.ACTIVE)
             }
@@ -241,6 +359,7 @@ class MyJobsFragment : Fragment() {
             if (viewModel.isWorkerMode) {
                 viewModel.isWorkerMode = false
                 viewModel.currentTab = JobTabType.ACTIVE
+                saveUserMode(isEmployer = true)
                 applyEmployerMode(animated = true)
                 restoreTab(JobTabType.ACTIVE)
             }
@@ -277,7 +396,7 @@ class MyJobsFragment : Fragment() {
             binding.tabActive.text  = "פעילות (${workerActive.size})"
             binding.tabHistory.text = "היסטוריה"
         } else {
-            binding.tabActive.text  = "מאוישות (${employerActive.size})"
+            binding.tabActive.text  = "פעילות (${employerActive.size})"
             binding.tabHistory.text = "היסטוריה"
         }
     }

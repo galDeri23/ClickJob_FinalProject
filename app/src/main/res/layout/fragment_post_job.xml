@@ -101,7 +101,7 @@
                 android:id="@+id/etCompany"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="end"
+                android:gravity="start"
                 android:textSize="14sp"
                 android:fontFamily="@font/ploni_regular_aaa"/>
 
@@ -300,7 +300,7 @@
                 android:id="@+id/etDescription"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:gravity="end|top"
+                android:gravity="start|top"
                 android:textSize="14sp"
                 android:inputType="textMultiLine"
                 android:fontFamily="@font/ploni_regular_aaa"/>

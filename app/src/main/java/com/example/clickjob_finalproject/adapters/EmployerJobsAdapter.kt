@@ -70,8 +70,8 @@ class EmployerJobsAdapter(
         holder.countDownTimer?.cancel()
 
         // Hide all badges by default
-        holder.btnQr.visibility      = View.GONE
-        holder.tvTimer.visibility    = View.GONE
+        holder.btnQr.visibility        = View.GONE
+        holder.tvTimer.visibility      = View.GONE
         holder.btnDuplicate.visibility = View.GONE
         holder.itemView.setOnClickListener(null)
 
@@ -79,11 +79,24 @@ class EmployerJobsAdapter(
             JobTabType.ACTIVE -> {
                 holder.cardRoot.alpha = 1f
                 holder.cardRoot.setCardBackgroundColor(Color.WHITE)
-                holder.btnQr.visibility = View.VISIBLE
                 holder.progressWorkers.progressDrawable =
                     androidx.core.content.ContextCompat.getDrawable(
                         holder.itemView.context, R.drawable.progress_bar_teal)
-                holder.btnQr.setOnClickListener { onQrClick(item) }
+
+                if (item.workersRegistered == item.workersNeeded) {
+                    // Filled - show QR button
+                    holder.btnQr.visibility = View.VISIBLE
+                    holder.tvTimer.visibility = View.GONE
+                    holder.btnQr.setOnClickListener { onQrClick(item) }
+                } else {
+                    // Open - show countdown timer
+                    holder.btnQr.visibility = View.GONE
+                    if (item.countdownMillis > 0) {
+                        holder.tvTimer.visibility = View.VISIBLE
+                        startTimer(holder, item.countdownMillis)
+                    }
+                    holder.itemView.setOnClickListener { onItemClick(item) }
+                }
             }
 
             JobTabType.PENDING -> {
@@ -115,13 +128,41 @@ class EmployerJobsAdapter(
     private fun startTimer(holder: EmployerViewHolder, millis: Long) {
         holder.countDownTimer = object : CountDownTimer(millis, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                val hours   = millisUntilFinished / 3600000
+                val hours = millisUntilFinished / 3600000
                 val minutes = (millisUntilFinished % 3600000) / 60000
                 val seconds = (millisUntilFinished % 60000) / 1000
-                holder.tvTimer.text = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+
+                if (hours >= 1) {
+                    // More than 1 hour left - show "X שעות" in gray
+                    val hoursDisplay = if (minutes >= 30) hours + 0.5 else hours.toDouble()
+                    holder.tvTimer.text = "${hoursDisplay.let {
+                        if (it == it.toLong().toDouble()) it.toLong().toString()
+                        else it.toString()
+                    }} שעה"
+                    holder.tvTimer.setTextColor(
+                        androidx.core.content.ContextCompat.getColor(
+                            holder.itemView.context, R.color.text_dark))
+                    holder.tvTimer.setBackgroundResource(R.drawable.bg_badge_gray)
+                    holder.tvTimer.setCompoundDrawablesWithIntrinsicBounds(
+                        0, 0, R.drawable.ic_clock, 0)
+                } else {
+                    // Less than 1 hour - show "MM:SS" in red with warning icon
+                    holder.tvTimer.text = String.format("%02d:%02d", minutes, seconds)
+                    holder.tvTimer.setTextColor(
+                        androidx.core.content.ContextCompat.getColor(
+                            holder.itemView.context, android.R.color.holo_red_light))
+                    holder.tvTimer.setBackgroundResource(R.drawable.bg_badge_pink)
+                    holder.tvTimer.setCompoundDrawablesWithIntrinsicBounds(
+                        0, 0, R.drawable.ic_warning, 0)
+                }
             }
+
             override fun onFinish() {
-                holder.tvTimer.text = "00:00:00"
+                holder.tvTimer.text = "00:00"
+                holder.tvTimer.setTextColor(
+                    androidx.core.content.ContextCompat.getColor(
+                        holder.itemView.context, android.R.color.holo_red_light))
+                holder.tvTimer.setBackgroundResource(R.drawable.bg_badge_pink)
             }
         }.start()
     }
@@ -149,7 +190,8 @@ class EmployerJobsAdapter(
     }
 
     fun updateItems(newItems: List<EmployerJobItem>, newTabType: JobTabType) {
-        items = newItems
+        // Sort: filled jobs first, then open jobs
+        items = newItems.sortedByDescending { it.workersRegistered == it.workersNeeded }
         tabType = newTabType
         notifyDataSetChanged()
     }

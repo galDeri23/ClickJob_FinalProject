@@ -56,6 +56,31 @@ class MainActivity : AppCompatActivity() {
 
         bottomNav.setupWithNavController(navController)
 
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.homeFragment -> {
+                    navController.navigate(R.id.homeFragment)
+                    true
+                }
+                R.id.myJobsFragment -> {
+                    navController.navigate(R.id.myJobsFragment)
+                    true
+                }
+                R.id.scanFragment -> {
+                    navController.navigate(R.id.scanFragment)
+                    true
+                }
+                R.id.notificationsFragment -> {
+                    navController.navigate(R.id.notificationsFragment)
+                    true
+                }
+                R.id.profileFragment -> {
+                    navController.navigate(R.id.profileFragment)
+                    true
+                }
+                else -> false
+            }
+        }
         // Observe global worker/employer mode and switch bottom nav color accordingly.
         // Pink = worker mode, teal = employer mode.
         appViewModel.isWorkerMode.observe(this) { isWorker ->

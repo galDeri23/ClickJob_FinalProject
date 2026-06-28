@@ -66,7 +66,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation(libs.play.services.auth)
     implementation("com.google.android.gms:play-services-auth:21.2.0")
-
+    implementation(libs.firebase.storage)
     implementation(libs.firebase.firestore)
 
     implementation(libs.camera.core)
@@ -75,5 +75,7 @@ dependencies {
     implementation(libs.camera.view)
 
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+
+    implementation(libs.glide)
 
 }

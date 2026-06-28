@@ -50,7 +50,7 @@
                 android:textSize="14sp"
                 android:fontFamily="@font/ploni_regular_aaa"
                 android:textColor="#333333"
-                android:gravity="end"/>
+                android:gravity="start"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -126,7 +126,7 @@
                 android:textSize="14sp"
                 android:fontFamily="@font/ploni_regular_aaa"
                 android:textColor="#333333"
-                android:gravity="end"/>
+                android:gravity="start"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 

@@ -27,7 +27,6 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var tvSkip: TextView
     private lateinit var tvStepTitle: TextView
     private lateinit var tvStepIndicator: TextView
-    private lateinit var progressBar: ProgressBar
 
     val registerViewModel: RegisterViewModel by viewModels()
 
@@ -143,9 +142,14 @@ class RegisterActivity : AppCompatActivity() {
     private fun saveStep4AndFinish() {
         val fragment = getCurrentFragment() as? RegisterStep4Fragment ?: return
         registerViewModel.cvUrl = fragment.getCvUrl()
+        registerViewModel.cvName = fragment.getCvName()
+
+        val profile = registerViewModel.buildUserProfile()
+        val bio = UserRepository.generateBio(profile)
+        val profileWithBio = profile.copy(bio = bio)
 
         UserRepository.saveUserProfile(
-            profile = registerViewModel.buildUserProfile(),
+            profile = profileWithBio,
             onSuccess = { navigateToMain() },
             onFailure = {
                 Toast.makeText(this, "שגיאה בשמירה, נסי שוב", Toast.LENGTH_SHORT).show()
