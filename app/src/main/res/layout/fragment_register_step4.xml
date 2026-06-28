@@ -57,6 +57,16 @@
 
     </LinearLayout>
 
+    <!-- Shows uploaded file name -->
+    <TextView
+        android:id="@+id/tvFileName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:textSize="13sp"
+        android:fontFamily="@font/ploni_regular_aaa"
+        android:textColor="@color/DarkDeep"
+        android:layout_marginTop="8dp"/>
     <!-- Illustration image -->
     <ImageView
         android:id="@+id/ivIllustration"
@@ -65,6 +75,6 @@
         android:src="@drawable/img_register_illustration"
         android:scaleType="fitCenter"
         android:layout_gravity="center"
-        android:layout_marginTop="280dp"/>
+        android:layout_marginTop="230dp"/>
 
 </LinearLayout>

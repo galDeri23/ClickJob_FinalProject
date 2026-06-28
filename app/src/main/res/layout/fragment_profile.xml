@@ -14,7 +14,13 @@
         android:orientation="vertical"
         android:paddingBottom="32dp">
 
-        <!-- ===== Header ===== -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="200dp"
+            android:visibility="visible" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/headerLayout"
@@ -23,7 +29,6 @@
             android:layout_marginHorizontal="20dp"
             android:layout_marginTop="24dp">
 
-            <!-- Profile photo: right side (start in RTL) -->
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/imgProfile"
                 android:layout_width="80dp"
@@ -34,39 +39,81 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
 
-            <!-- Name -->
+            <ImageView
+                android:id="@+id/ivCameraOverlay"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_camera"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/imgProfile"
+                app:layout_constraintEnd_toEndOf="@id/imgProfile" />
+
             <TextView
                 android:id="@+id/tvName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="14dp"
-                android:text="ברי צקלה"
+                android:text="שם משתמש"
                 android:textColor="@color/text_dark"
-                android:textSize="20sp"
+                android:textSize="22sp"
                 android:fontFamily="@font/ploni_bold_aaa"
                 app:layout_constraintTop_toTopOf="@id/imgProfile"
                 app:layout_constraintStart_toEndOf="@id/imgProfile"
                 app:layout_constraintEnd_toStartOf="@id/btnEdit"
-                app:layout_constraintVertical_chainStyle="packed"
                 app:layout_constraintBottom_toTopOf="@id/tvJobTitle" />
 
-            <!-- Job title -->
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:visibility="gone"
+                android:textSize="18sp"
+                android:fontFamily="@font/ploni_bold_aaa"
+                android:textColor="@color/text_dark"
+                android:background="@drawable/bg_edit_field"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:inputType="textPersonName"
+                app:layout_constraintTop_toTopOf="@id/imgProfile"
+                app:layout_constraintStart_toEndOf="@id/imgProfile"
+                app:layout_constraintEnd_toStartOf="@id/btnEdit"
+                app:layout_constraintBottom_toTopOf="@id/etJobTitle" />
+
             <TextView
                 android:id="@+id/tvJobTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="14dp"
-                android:layout_marginTop="2dp"
-                android:text="מורה לחינוך גופני"
+                android:layout_marginTop="4dp"
+                android:text="תפקיד"
                 android:textColor="@color/gray04"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:fontFamily="@font/ploni_regular_aaa"
                 app:layout_constraintTop_toBottomOf="@id/tvName"
                 app:layout_constraintStart_toEndOf="@id/imgProfile"
                 app:layout_constraintEnd_toStartOf="@id/btnEdit"
                 app:layout_constraintBottom_toTopOf="@id/ratingRow" />
 
-            <!-- Rating row -->
+            <EditText
+                android:id="@+id/etJobTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginTop="4dp"
+                android:visibility="gone"
+                android:textSize="16sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textColor="@color/gray04"
+                android:background="@drawable/bg_edit_field"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:inputType="text"
+                app:layout_constraintTop_toBottomOf="@id/etName"
+                app:layout_constraintStart_toEndOf="@id/imgProfile"
+                app:layout_constraintEnd_toStartOf="@id/btnEdit"
+                app:layout_constraintBottom_toTopOf="@id/ratingRow" />
+
             <LinearLayout
                 android:id="@+id/ratingRow"
                 android:layout_width="wrap_content"
@@ -84,7 +131,7 @@
                     android:layout_height="16dp"
                     android:src="@drawable/ic_star"
                     app:tint="@color/gray04"
-                    android:contentDescription="דירוג" />
+                    android:contentDescription="rating" />
 
                 <TextView
                     android:id="@+id/tvRating"
@@ -96,19 +143,17 @@
                     android:fontFamily="@font/ploni_regular_aaa"
                     android:layout_marginStart="7dp" />
 
-
             </LinearLayout>
 
-            <!-- Edit pencil: left side (end in RTL) -->
             <ImageView
                 android:id="@+id/btnEdit"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:src="@drawable/ic_edit"
                 android:background="@drawable/bg_back_button"
                 android:elevation="5dp"
                 android:padding="4dp"
-                android:contentDescription="עריכה"
+                android:contentDescription="edit"
                 app:tint="@color/DarkDeep"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
@@ -124,7 +169,6 @@
             android:layout_marginTop="28dp"
             android:gravity="center_vertical">
 
-            <!-- טלפון -->
             <LinearLayout
                 android:id="@+id/btnPhone"
                 android:layout_width="0dp"
@@ -150,11 +194,10 @@
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:src="@drawable/ic_phone"
-                    android:contentDescription="טלפון"/>
+                    android:contentDescription="phone"/>
 
             </LinearLayout>
 
-            <!-- סושיאל -->
             <LinearLayout
                 android:id="@+id/btnSocial"
                 android:layout_width="0dp"
@@ -179,21 +222,55 @@
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:src="@drawable/ic_instagram"
-                    android:contentDescription="סושיאל"/>
+                    android:contentDescription="social"/>
 
             </LinearLayout>
 
         </LinearLayout>
-        <!-- ===== Skills sections ===== -->
+
+        <LinearLayout
+            android:id="@+id/editContactRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="16dp"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/etPhone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="טלפון"
+                android:textSize="14sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:background="@drawable/bg_edit_field"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="10dp"
+                android:inputType="phone"
+                android:layout_marginBottom="8dp"/>
+
+            <EditText
+                android:id="@+id/etInstagram"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="קישור לאינסטגרם (אופציונלי)"
+                android:textSize="14sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:background="@drawable/bg_edit_field"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="10dp"
+                android:inputType="textUri"/>
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="54dp"
+            android:layout_marginTop="32dp"
             android:paddingHorizontal="20dp">
 
-            <!-- Hard skills -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -213,7 +290,6 @@
                 app:alignItems="center"
                 app:justifyContent="flex_start" />
 
-            <!-- Soft skills -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -236,69 +312,147 @@
 
         </LinearLayout>
 
-        <!-- ===== קו"ח ומסמכים card (inside scroll, gray rounded card) ===== -->
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/btnDocuments"
+        <!-- Documents section -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="34dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="54dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/gray02">
+            android:layout_marginTop="54dp">
 
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnDocuments"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layoutDirection="rtl"
+                android:layout_height="44dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/gray02">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layoutDirection="rtl"
+                    android:paddingHorizontal="14dp">
+
+                    <ImageView
+                        android:layout_width="19dp"
+                        android:layout_height="19dp"
+                        android:src="@drawable/ic_link"
+                        android:contentDescription="link"
+                        app:tint="@color/text_dark" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:text="קו״ח ומסמכים"
+                        android:textColor="@color/DarkDeepPink"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/ploni_regular_aaa" />
+
+                    <TextView
+                        android:id="@+id/tvDocumentsCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="(0)"
+                        android:textColor="@color/DarkDeepPink"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/ploni_regular_aaa"
+                        android:layout_marginEnd="15dp" />
+
+                    <ImageView
+                        android:id="@+id/ivDocumentsArrow"
+                        android:layout_width="6dp"
+                        android:layout_height="11dp"
+                        android:src="@drawable/ic_arrow_back"
+                        android:contentDescription="open"
+                        app:tint="#4F4F4F" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Expandable documents list -->
+            <LinearLayout
+                android:id="@+id/layoutDocumentsList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:background="@android:color/white"
+                android:paddingVertical="8dp"
                 android:paddingHorizontal="14dp">
 
-                <!-- Link icon + label -->
-                <ImageView
-                    android:layout_width="19dp"
-                    android:layout_height="19dp"
-                    android:src="@drawable/ic_link"
-                    android:contentDescription="קישור"
-                    app:tint="@color/text_dark" />
+                <!-- CV row -->
+                <LinearLayout
+                    android:id="@+id/rowCv"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layoutDirection="rtl">
 
-                <TextView
-                    android:layout_width="0dp"
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_link"
+                        app:tint="@color/DarkDeep"
+                        android:contentDescription="cv" />
+
+                    <TextView
+                        android:id="@+id/tvCvName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:text="קורות חיים"
+                        android:textColor="@color/text_dark"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/ploni_regular_aaa" />
+
+                    <ImageView
+                        android:id="@+id/btnDeleteCv"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_close"
+                        android:visibility="gone"
+                        app:tint="#FF0000"
+                        android:contentDescription="delete" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/gray02" />
+
+                <!-- Additional documents added dynamically -->
+                <LinearLayout
+                    android:id="@+id/layoutAdditionalDocs"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="קוח ומסמכים"
-                    android:textColor="@color/DarkDeepPink"
-                    android:textSize="15sp"
-                    android:fontFamily="@font/ploni_regular_aaa" />
+                    android:orientation="vertical" />
 
-                <!-- Count + arrow on the left -->
+                <!-- Add document button - edit mode only -->
                 <TextView
-                    android:id="@+id/tvDocumentsCount"
+                    android:id="@+id/btnAddDocument"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="(8)"
-                    android:textColor="@color/DarkDeepPink"
+                    android:text="+ הוסף מסמך"
+                    android:textColor="@color/DarkDeep"
                     android:textSize="14sp"
                     android:fontFamily="@font/ploni_regular_aaa"
-                    android:layout_marginEnd="15dp" />
-
-                <ImageView
-                    android:layout_width="6dp"
-                    android:layout_height="11dp"
-                    android:src="@drawable/ic_arrow_back"
-                    android:contentDescription="פתח"
-                    app:tint="#4F4F4F" />
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone" />
 
             </LinearLayout>
 
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- ===== התנתקות - plain text, right-aligned, below the card ===== -->
+        </LinearLayout>
 
         <TextView
             android:id="@+id/btnLogout"

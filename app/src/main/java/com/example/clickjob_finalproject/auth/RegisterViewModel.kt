@@ -26,6 +26,7 @@ class RegisterViewModel : ViewModel() {
 
     // Step 4
     var cvUrl: String = ""
+    var cvName: String = ""
 
     // Build UserProfile from all collected data
     fun buildUserProfile(): UserProfile {

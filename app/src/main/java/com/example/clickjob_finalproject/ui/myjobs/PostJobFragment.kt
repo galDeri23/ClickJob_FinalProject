@@ -9,8 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.ImageView
-import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,49 +17,34 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.clickjob_finalproject.MainActivity
 import com.example.clickjob_finalproject.R
-import com.example.clickjob_finalproject.adapters.EmployerJobItem
-import com.example.clickjob_finalproject.adapters.EmployerJobsAdapter
+import com.example.clickjob_finalproject.data.model.JobPost
+import com.example.clickjob_finalproject.data.repository.UserRepository
+import com.example.clickjob_finalproject.databinding.FragmentPostJobBinding
 import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
 
 class PostJobFragment : Fragment() {
 
-    private lateinit var ivBack: ImageView
-    private lateinit var spinnerCategory: Spinner
-    private lateinit var etCompany: com.google.android.material.textfield.TextInputEditText
-    private lateinit var toggleHourly: TextView
-    private lateinit var toggleDaily: TextView
-    private lateinit var spinnerSalary: Spinner
-    private lateinit var spinnerStartTime: Spinner
-    private lateinit var spinnerEndTime: Spinner
-    private lateinit var spinnerWorkers: Spinner
-    private lateinit var etDescription: com.google.android.material.textfield.TextInputEditText
-    private lateinit var chipGroupRequirements: ChipGroup
-    private lateinit var etPhone: com.google.android.material.textfield.TextInputEditText
-    private lateinit var etAddress: com.google.android.material.textfield.TextInputEditText
-    private lateinit var etLink: com.google.android.material.textfield.TextInputEditText
-    private lateinit var imageContainer: android.widget.FrameLayout
-    private lateinit var ivJobImage: ImageView
-    private lateinit var ivAddImageIcon: ImageView
-    private lateinit var btnPublish: com.google.android.material.button.MaterialButton
+    private var _binding: FragmentPostJobBinding? = null
+    private val binding get() = _binding!!
 
     private var selectedImageUri: Uri? = null
+    private var selectedDate: Long = System.currentTimeMillis()
 
-    // Image picker launcher
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             selectedImageUri = result.data?.data
             selectedImageUri?.let { uri ->
-                ivJobImage.setImageURI(uri)
-                ivJobImage.visibility = View.VISIBLE
-                ivAddImageIcon.visibility = View.GONE
+                binding.ivJobImage.setImageURI(uri)
+                binding.ivJobImage.visibility = View.VISIBLE
+                binding.ivAddImageIcon.visibility = View.GONE
             }
         }
     }
 
-    // Categories with images
     data class CategoryItem(val name: String, val imageRes: Int)
 
     private val categories = listOf(
@@ -89,35 +72,14 @@ class PostJobFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_post_job, container, false)
-
+    ): View {
+        _binding = FragmentPostJobBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Find all views
-        ivBack = view.findViewById(R.id.ivBack)
-        spinnerCategory = view.findViewById(R.id.spinnerCategory)
-        etCompany = view.findViewById(R.id.etCompany)
-        toggleHourly = view.findViewById(R.id.toggleHourly)
-        toggleDaily = view.findViewById(R.id.toggleDaily)
-        spinnerSalary = view.findViewById(R.id.spinnerSalary)
-        spinnerStartTime = view.findViewById(R.id.spinnerStartTime)
-        spinnerEndTime = view.findViewById(R.id.spinnerEndTime)
-        spinnerWorkers = view.findViewById(R.id.spinnerWorkers)
-        etDescription = view.findViewById(R.id.etDescription)
-        chipGroupRequirements = view.findViewById(R.id.chipGroupRequirements)
-        etPhone = view.findViewById(R.id.etPhone)
-        etAddress = view.findViewById(R.id.etAddress)
-        etLink = view.findViewById(R.id.etLink)
-        imageContainer = view.findViewById(R.id.imageContainer)
-        ivJobImage = view.findViewById(R.id.ivJobImage)
-        ivAddImageIcon = view.findViewById(R.id.ivAddImageIcon)
-        btnPublish = view.findViewById(R.id.btnPublish)
-
-        // Hide bottom navigation bar
         (activity as? MainActivity)?.hideBottomNav()
 
         setupBackButton()
@@ -126,21 +88,18 @@ class PostJobFragment : Fragment() {
         setupSalaryToggle()
         setupChips()
         setupImageUpload()
+        setupCalendar()
         setupButtons()
 
-        // If duplicating an existing job, fill in details
-        arguments?.let { args ->
-            prefillFromBundle(args)
-        }
+        arguments?.let { args -> prefillFromBundle(args) }
     }
 
     private fun setupBackButton() {
-        ivBack.setOnClickListener {
+        binding.ivBack.setOnClickListener {
             findNavController().navigateUp()
         }
     }
 
-    // Custom adapter for category spinner with images
     private inner class CategorySpinnerAdapter(
         context: Context,
         private val items: List<CategoryItem>
@@ -159,80 +118,64 @@ class PostJobFragment : Fragment() {
                 .inflate(R.layout.item_category_spinner, parent, false)
 
             val item = items[position]
-            val tvName = view.findViewById<TextView>(R.id.tvCategoryName)
-            val imgCategory = view.findViewById<ImageView>(R.id.imgCategory)
-
-            tvName.text = item.name
-            imgCategory.setImageResource(item.imageRes)
+            view.findViewById<TextView>(R.id.tvCategoryName).text = item.name
+            view.findViewById<android.widget.ImageView>(R.id.imgCategory)
+                .setImageResource(item.imageRes)
 
             return view
         }
     }
 
     private fun setupCategorySpinner() {
-        val adapter = CategorySpinnerAdapter(requireContext(), categories)
-        spinnerCategory.adapter = adapter
+        binding.spinnerCategory.adapter = CategorySpinnerAdapter(requireContext(), categories)
     }
 
     private fun setupSpinners() {
         // Salary spinner
-        val salaryAdapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            salaryOptions
-        )
+        val salaryAdapter = ArrayAdapter(requireContext(),
+            android.R.layout.simple_spinner_item, salaryOptions)
         salaryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerSalary.adapter = salaryAdapter
-        spinnerSalary.setSelection(salaryOptions.indexOf("50"))
+        binding.spinnerSalary.adapter = salaryAdapter
+        binding.spinnerSalary.setSelection(salaryOptions.indexOf("50"))
 
-        // Workers count spinner
-        val workersAdapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            workerCountOptions
-        )
+        // Workers spinner
+        val workersAdapter = ArrayAdapter(requireContext(),
+            android.R.layout.simple_spinner_item, workerCountOptions)
         workersAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerWorkers.adapter = workersAdapter
+        binding.spinnerWorkers.adapter = workersAdapter
 
         // Start time spinner
-        val timeAdapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            timeOptions
-        )
+        val timeAdapter = ArrayAdapter(requireContext(),
+            android.R.layout.simple_spinner_item, timeOptions)
         timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerStartTime.adapter = timeAdapter
-        spinnerStartTime.setSelection(14) // Default 14:00
+        binding.spinnerStartTime.adapter = timeAdapter
+        binding.spinnerStartTime.setSelection(14)
 
         // End time spinner
-        val endTimeAdapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            timeOptions
-        )
+        val endTimeAdapter = ArrayAdapter(requireContext(),
+            android.R.layout.simple_spinner_item, timeOptions)
         endTimeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerEndTime.adapter = endTimeAdapter
-        spinnerEndTime.setSelection(21) // Default 21:00
+        binding.spinnerEndTime.adapter = endTimeAdapter
+        binding.spinnerEndTime.setSelection(21)
     }
 
     private fun setupSalaryToggle() {
-        toggleHourly.setOnClickListener {
-            toggleHourly.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-            toggleHourly.setBackgroundResource(R.drawable.bg_toggle_selected_teal)
-            toggleDaily.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
-            toggleDaily.background = null
+        binding.toggleHourly.setOnClickListener {
+            binding.toggleHourly.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+            binding.toggleHourly.setBackgroundResource(R.drawable.bg_toggle_selected_teal)
+            binding.toggleDaily.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
+            binding.toggleDaily.background = null
         }
 
-        toggleDaily.setOnClickListener {
-            toggleDaily.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-            toggleDaily.setBackgroundResource(R.drawable.bg_toggle_selected_teal)
-            toggleHourly.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
-            toggleHourly.background = null
+        binding.toggleDaily.setOnClickListener {
+            binding.toggleDaily.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+            binding.toggleDaily.setBackgroundResource(R.drawable.bg_toggle_selected_teal)
+            binding.toggleHourly.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
+            binding.toggleHourly.background = null
         }
     }
 
     private fun setupChips() {
-        // Only show "+" chip initially
         val addChip = Chip(requireContext()).apply {
             text = "+"
             isClickable = true
@@ -240,11 +183,9 @@ class PostJobFragment : Fragment() {
             setTextColor(ContextCompat.getColor(requireContext(), R.color.DarkDeep))
             chipStrokeWidth = 1f
             setChipStrokeColorResource(R.color.DarkDeep)
-            setOnClickListener {
-                showAddRequirementDialog()
-            }
+            setOnClickListener { showAddRequirementDialog() }
         }
-        chipGroupRequirements.addView(addChip)
+        binding.chipGroupRequirements.addView(addChip)
     }
 
     private fun showAddRequirementDialog() {
@@ -257,9 +198,7 @@ class PostJobFragment : Fragment() {
             .setView(editText)
             .setPositiveButton("הוסף") { _, _ ->
                 val text = editText.text.toString().trim()
-                if (text.isNotEmpty()) {
-                    addRequirementChip(text)
-                }
+                if (text.isNotEmpty()) addRequirementChip(text)
             }
             .setNegativeButton("ביטול", null)
             .show()
@@ -274,86 +213,138 @@ class PostJobFragment : Fragment() {
             setTextColor(ContextCompat.getColor(requireContext(), R.color.DarkDeep))
             chipStrokeWidth = 1f
             setChipStrokeColorResource(R.color.DarkDeep)
-            setOnCloseIconClickListener {
-                chipGroupRequirements.removeView(this)
-            }
+            setOnCloseIconClickListener { binding.chipGroupRequirements.removeView(this) }
         }
-        // Add before the "+" chip
-        chipGroupRequirements.addView(chip, 0)
+        binding.chipGroupRequirements.addView(chip, 0)
     }
 
     private fun setupImageUpload() {
-        imageContainer.setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK).apply {
-                type = "image/*"
-            }
+        binding.imageContainer.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             imagePickerLauncher.launch(intent)
         }
     }
 
-    private fun setupButtons() {
-        btnPublish.setOnClickListener {
-                saveJob(isDraft = true)
+    private fun setupCalendar() {
+        binding.calendarView.setOnDateChangeListener { _, year, month, day ->
+            val calendar = java.util.Calendar.getInstance()
+            calendar.set(year, month, day)
+            selectedDate = calendar.timeInMillis
+        }
+    }
 
+    private fun setupButtons() {
+        binding.btnPublish.setOnClickListener {
+            if (validateForm()) saveJob()
         }
     }
 
     private fun validateForm(): Boolean {
-        if (etCompany.text.isNullOrEmpty()) {
+        if (binding.etCompany.text.isNullOrEmpty()) {
             Toast.makeText(requireContext(), "יש למלא שם חברה", Toast.LENGTH_SHORT).show()
             return false
         }
-        if (etDescription.text.isNullOrEmpty()) {
+        if (binding.etDescription.text.isNullOrEmpty()) {
             Toast.makeText(requireContext(), "יש למלא אופי עבודה", Toast.LENGTH_SHORT).show()
             return false
         }
         return true
     }
 
-    private fun saveJob(isDraft: Boolean) {
-        val selectedCategory = categories[spinnerCategory.selectedItemPosition]
-        val job = EmployerJobItem(
+    private fun saveJob() {
+        val selectedCategory = categories[binding.spinnerCategory.selectedItemPosition]
+
+        // Collect requirements chips (skip the "+" chip)
+        val requirements = mutableListOf<String>()
+        for (i in 0 until binding.chipGroupRequirements.childCount) {
+            val chip = binding.chipGroupRequirements.getChildAt(i) as? Chip
+            if (chip?.text.toString() != "+") {
+                chip?.text?.let { requirements.add(it.toString()) }
+            }
+        }
+
+        val salaryType = if (binding.toggleHourly.background != null) "hourly" else "daily"
+
+        val job = JobPost(
             title = selectedCategory.name,
-            company = etCompany.text.toString(),
-            workersRegistered = 0,
-            workersNeeded = spinnerWorkers.selectedItem.toString().toIntOrNull() ?: 1,
-            date = "${spinnerStartTime.selectedItem}-${spinnerEndTime.selectedItem}",
-            price = spinnerSalary.selectedItem.toString(),
-            category = selectedCategory.name
+            company = binding.etCompany.text.toString().trim(),
+            category = selectedCategory.name,
+            salaryType = salaryType,
+            salary = binding.spinnerSalary.selectedItem.toString(),
+            date = selectedDate,
+            startTime = binding.spinnerStartTime.selectedItem.toString(),
+            endTime = binding.spinnerEndTime.selectedItem.toString(),
+            workersNeeded = binding.spinnerWorkers.selectedItem.toString().toIntOrNull() ?: 1,
+            description = binding.etDescription.text.toString().trim(),
+            requirements = requirements,
+            phone = binding.etPhone.text.toString().trim(),
+            address = binding.etAddress.text.toString().trim(),
+            link = binding.etLink.text.toString().trim()
         )
 
-        if (isDraft) {
-            Toast.makeText(requireContext(), "הטיוטה נשמרה", Toast.LENGTH_SHORT).show()
+        binding.btnPublish.isEnabled = false
+
+        if (selectedImageUri != null) {
+            uploadImageAndSave(job)
         } else {
-            // TODO: save to Firestore
-            Toast.makeText(requireContext(), "המשרה פורסמה בהצלחה!", Toast.LENGTH_SHORT).show()
-            findNavController().navigateUp()
+            saveToFirestore(job)
         }
+    }
+
+    private fun uploadImageAndSave(job: JobPost) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val storageRef = FirebaseStorage.getInstance()
+            .reference.child("job_images/$userId/${System.currentTimeMillis()}.jpg")
+
+        storageRef.putFile(selectedImageUri!!)
+            .addOnSuccessListener {
+                storageRef.downloadUrl.addOnSuccessListener { uri ->
+                    saveToFirestore(job.copy(imageUrl = uri.toString()))
+                }
+            }
+            .addOnFailureListener {
+                binding.btnPublish.isEnabled = true
+                Toast.makeText(requireContext(), "שגיאה בהעלאת התמונה", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun saveToFirestore(job: JobPost) {
+        UserRepository.saveJobPost(
+            job = job,
+            onSuccess = {
+                Toast.makeText(requireContext(), "המשרה פורסמה בהצלחה!", Toast.LENGTH_SHORT).show()
+                findNavController().navigateUp()
+            },
+            onFailure = {
+                binding.btnPublish.isEnabled = true
+                Toast.makeText(requireContext(), "שגיאה בפרסום, נסי שוב", Toast.LENGTH_SHORT).show()
+            }
+        )
     }
 
     private fun prefillFromBundle(args: Bundle) {
         args.getString("jobTitle")?.let { title ->
             val index = categories.indexOfFirst { it.name == title }
-            if (index >= 0) spinnerCategory.setSelection(index)
+            if (index >= 0) binding.spinnerCategory.setSelection(index)
         }
-        args.getString("jobCompany")?.let { etCompany.setText(it) }
+        args.getString("jobCompany")?.let { binding.etCompany.setText(it) }
         args.getString("jobPrice")?.let { price ->
             val index = salaryOptions.indexOf(price)
-            if (index >= 0) spinnerSalary.setSelection(index)
+            if (index >= 0) binding.spinnerSalary.setSelection(index)
         }
         args.getInt("workersNeeded", 1).let { count ->
             val index = workerCountOptions.indexOf(count.toString())
-            if (index >= 0) spinnerWorkers.setSelection(index)
+            if (index >= 0) binding.spinnerWorkers.setSelection(index)
         }
-        args.getString("jobDescription")?.let { etDescription.setText(it) }
-        args.getString("jobPhone")?.let { etPhone.setText(it) }
-        args.getString("jobAddress")?.let { etAddress.setText(it) }
-        args.getString("jobLink")?.let { etLink.setText(it) }
+        args.getString("jobDescription")?.let { binding.etDescription.setText(it) }
+        args.getString("jobPhone")?.let { binding.etPhone.setText(it) }
+        args.getString("jobAddress")?.let { binding.etAddress.setText(it) }
+        args.getString("jobLink")?.let { binding.etLink.setText(it) }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // Show bottom navigation bar again when leaving
         (activity as? MainActivity)?.showBottomNav()
+        _binding = null
     }
 }
