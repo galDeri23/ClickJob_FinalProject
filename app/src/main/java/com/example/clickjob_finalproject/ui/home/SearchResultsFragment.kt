@@ -7,14 +7,20 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.clickjob_finalproject.R
 import com.example.clickjob_finalproject.adapters.ResultItem
 import com.example.clickjob_finalproject.adapters.SearchResultsAdapter
+import com.example.clickjob_finalproject.data.repository.UserRepository
 import com.example.clickjob_finalproject.databinding.FragmentSearchResultsBinding
 import com.google.android.material.chip.Chip
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class SearchResultsFragment : Fragment() {
 
@@ -22,17 +28,8 @@ class SearchResultsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var adapter: SearchResultsAdapter
-
-    // Selected categories received from SearchFragment
     private val selectedCategories = mutableListOf<String>()
-
-    private val allItems = listOf(
-        ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "2.2 ק״מ", "אבטחה וביטחון"),
-        ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "2.2 ק״מ", "משלוחים ותחבורה"),
-        ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "2.2 ק״מ", "חינוך והוראה"),
-        ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "2.2 ק״מ", "בעלי חיים"),
-        ResultItem("שם משרה", "₪50", "נופי הכפר 93, כפר מנחם", "יום שני, 28.09", "2.2 ק״מ", "הפקה ואירועים")
-    )
+    private var allItems = listOf<ResultItem>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,16 +43,15 @@ class SearchResultsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Get selected categories from SearchFragment
         arguments?.getStringArrayList("selectedCategories")?.let {
             selectedCategories.addAll(it)
         }
 
         setupBackButton()
-        setupResultsList()
+        setupAdapter()
         setupTabs()
         setupCategoryChips()
-        updateResultsCount()
+        loadJobs()
     }
 
     private fun setupBackButton() {
@@ -64,10 +60,54 @@ class SearchResultsFragment : Fragment() {
         }
     }
 
-    private fun setupResultsList() {
-        adapter = SearchResultsAdapter(allItems)
+    private fun setupAdapter() {
+        adapter = SearchResultsAdapter(emptyList()) { item ->
+            val args = bundleOf("jobId" to item.id)
+            findNavController().navigate(
+                R.id.action_searchResultsFragment_to_jobDetailsFragment, args
+            )
+        }
         binding.rvResults.layoutManager = LinearLayoutManager(requireContext())
         binding.rvResults.adapter = adapter
+    }
+
+    // Loads jobs from Firestore filtered by selected categories
+    private fun loadJobs() {
+        UserRepository.searchJobs(
+            categories = selectedCategories,
+            onSuccess = { jobs ->
+                val todayCalendar = Calendar.getInstance()
+                val tomorrowCalendar = Calendar.getInstance().apply {
+                    add(Calendar.DAY_OF_YEAR, 1)
+                }
+
+                allItems = jobs.map { job ->
+                    val jobCalendar = Calendar.getInstance().apply { timeInMillis = job.date }
+                    val dateLabel = when {
+                        jobCalendar.get(Calendar.DAY_OF_YEAR) == todayCalendar.get(Calendar.DAY_OF_YEAR) -> "היום"
+                        jobCalendar.get(Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(Calendar.DAY_OF_YEAR) -> "מחר"
+                        else -> SimpleDateFormat("dd/MM", Locale.getDefault()).format(Date(job.date))
+                    }
+
+                    ResultItem(
+                        id = job.id,
+                        title = job.title,
+                        price = "₪${job.salary}",
+                        salary = job.salary.toIntOrNull() ?: 0,
+                        address = job.address,
+                        day = dateLabel,
+                        distance = "",
+                        category = job.category,
+                        isUrgent = job.isUrgent,
+                        date = job.date
+                    )
+                }
+
+                adapter.updateItems(allItems)
+                updateResultsCount(allItems.size)
+            },
+            onFailure = { }
+        )
     }
 
     private fun setupCategoryChips() {
@@ -84,37 +124,69 @@ class SearchResultsFragment : Fragment() {
             val chip = Chip(requireContext()).apply {
                 text = category
                 isCloseIconVisible = true
-                isClickable = false
+                isClickable = true
                 setChipBackgroundColorResource(R.color.white)
                 setTextColor(ContextCompat.getColor(requireContext(), R.color.DarkDeep))
                 setCloseIconTintResource(R.color.DarkDeep)
                 chipStrokeWidth = 1f
                 setChipStrokeColorResource(R.color.DarkDeep)
+                textStartPadding = 8f
+                textEndPadding = 8f
 
                 setOnCloseIconClickListener {
-                    // Remove category and refresh chips
                     selectedCategories.remove(category)
                     setupCategoryChips()
-                    updateResultsCount()
+                    loadJobs()
                 }
             }
             binding.chipGroupCategories.addView(chip)
         }
     }
 
-    private fun updateResultsCount() {
-        binding.tvResultsCount.text = "תוצאות חיפוש (${allItems.size})"
+    private fun updateResultsCount(count: Int) {
+        binding.tvResultsCount.text = "תוצאות חיפוש ($count)"
     }
 
     private fun setupTabs() {
         val tabs = listOf(binding.tabAll, binding.tabNear, binding.tabHighSalary, binding.tabUrgent)
 
-        tabs.forEach { tab ->
-            tab.setOnClickListener {
-                tabs.forEach { setTabUnselected(it) }
-                setTabSelected(tab)
-                adapter.updateItems(allItems)
-            }
+        // Default - select "all" tab
+        setTabSelected(binding.tabAll)
+        tabs.drop(1).forEach { setTabUnselected(it) }
+
+        binding.tabAll.setOnClickListener {
+            tabs.forEach { setTabUnselected(it) }
+            setTabSelected(binding.tabAll)
+            // Sort by date - closest first
+            val sorted = allItems.sortedBy { it.date }
+            adapter.updateItems(sorted)
+            updateResultsCount(sorted.size)
+        }
+
+        binding.tabNear.setOnClickListener {
+            tabs.forEach { setTabUnselected(it) }
+            setTabSelected(binding.tabNear)
+            // Sort by distance (currently empty - TODO when location is added)
+            adapter.updateItems(allItems)
+            updateResultsCount(allItems.size)
+        }
+
+        binding.tabHighSalary.setOnClickListener {
+            tabs.forEach { setTabUnselected(it) }
+            setTabSelected(binding.tabHighSalary)
+            // Sort by salary - highest first
+            val sorted = allItems.sortedByDescending { it.salary }
+            adapter.updateItems(sorted)
+            updateResultsCount(sorted.size)
+        }
+
+        binding.tabUrgent.setOnClickListener {
+            tabs.forEach { setTabUnselected(it) }
+            setTabSelected(binding.tabUrgent)
+            // Filter urgent only
+            val urgent = allItems.filter { it.isUrgent }
+            adapter.updateItems(urgent)
+            updateResultsCount(urgent.size)
         }
     }
 

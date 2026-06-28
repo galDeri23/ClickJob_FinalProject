@@ -28,5 +28,6 @@ data class UserProfile(
     val ratingsCount: Int = 0,
     val profileImageUrl: String = "",
     val hasPostedJob: Boolean = false,
+    val jobMatches: List<JobMatch> = emptyList(),
     val createdAt: Long = System.currentTimeMillis()
 )

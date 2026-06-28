@@ -265,6 +265,9 @@ class PostJobFragment : Fragment() {
 
         val salaryType = if (binding.toggleHourly.background != null) "hourly" else "daily"
 
+        // Mark as urgent if shift starts within 48 hours
+        val isUrgent = (selectedDate - System.currentTimeMillis()) < 48 * 60 * 60 * 1000L
+
         val job = JobPost(
             title = selectedCategory.name,
             company = binding.etCompany.text.toString().trim(),
@@ -279,7 +282,8 @@ class PostJobFragment : Fragment() {
             requirements = requirements,
             phone = binding.etPhone.text.toString().trim(),
             address = binding.etAddress.text.toString().trim(),
-            link = binding.etLink.text.toString().trim()
+            link = binding.etLink.text.toString().trim(),
+            isUrgent = isUrgent
         )
 
         binding.btnPublish.isEnabled = false

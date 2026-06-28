@@ -1,69 +1,64 @@
 package com.example.clickjob_finalproject.ui.home
+
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import com.example.clickjob_finalproject.R
+import com.example.clickjob_finalproject.data.repository.UserRepository
+import com.example.clickjob_finalproject.databinding.FragmentJobDetailsBinding
 import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-class JobDetailsFragment : Fragment(R.layout.fragment_job_details) {
+class JobDetailsFragment : Fragment() {
 
+    private var _binding: FragmentJobDetailsBinding? = null
+    private val binding get() = _binding!!
 
     private var bottomNav: View? = null
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentJobDetailsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val jobId = arguments?.getString("jobId")
 
-        // --- Find views ---
-
-        val imgHeader = view.findViewById<ImageView>(R.id.imgHeader)
-        val btnBack = view.findViewById<ImageButton>(R.id.btnBack)
-        val btnFavorite = view.findViewById<ImageButton>(R.id.btnFavorite)
-        val btnShare = view.findViewById<ImageButton>(R.id.btnShare)
-
-        val imgLogo = view.findViewById<ImageView>(R.id.imgLogo)
-        val tvCompanyName = view.findViewById<TextView>(R.id.tvCompanyName)
-        val tvCategory = view.findViewById<TextView>(R.id.tvCategory)
-
-        val btnEmployerProfile = view.findViewById<View>(R.id.btnEmployerProfile)
-        val btnAddress = view.findViewById<View>(R.id.btnAddress)
-        val tvAddress = view.findViewById<TextView>(R.id.tvAddress)
-
-        val chipGroupRequirements = view.findViewById<ChipGroup>(R.id.chipGroupRequirements)
-        val btnApply = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnApply)
-
-        // --- Sample data (replace later with real data from arguments / ViewModel) ---
-
-        tvCompanyName.text = "wat-san"
-        tvCategory.text = "מסעדנות ואירוח"
-        tvAddress.text = "כתובת"
-
-        // This is exactly the place to plug in a real list of requirements per job.
-        // The number of chips is NOT fixed - bindRequirementChips() clears the group
-        // and adds one Chip per string, so 1, 5, or 10 requirements all work the same way.
-        val requirements = listOf(
-            "שליטה בצ'ופסטיקס",
-            "ניסיון באירוח",
-            "שירותיות"
-        )
-        bindRequirementChips(chipGroupRequirements, requirements)
-
-        // --- Click listeners (just enough so nothing crashes) ---
-
-        btnBack.setOnClickListener {
+        if (jobId.isNullOrEmpty()) {
+            Toast.makeText(requireContext(), "שגיאה בטעינת המשרה", Toast.LENGTH_SHORT).show()
             findNavController().popBackStack()
+            return
         }
 
+        setupBackButton()
+        setupFavoriteButton()
+        loadJob(jobId)
+    }
+
+    private fun setupBackButton() {
+        binding.btnBack.setOnClickListener {
+            findNavController().popBackStack()
+        }
+    }
+
+    private fun setupFavoriteButton() {
         var isFavorite = false
-        btnFavorite.setOnClickListener {
+        binding.btnFavorite.setOnClickListener {
             isFavorite = !isFavorite
             Toast.makeText(
                 requireContext(),
@@ -71,54 +66,116 @@ class JobDetailsFragment : Fragment(R.layout.fragment_job_details) {
                 Toast.LENGTH_SHORT
             ).show()
         }
-
-        btnShare.setOnClickListener {
-            Toast.makeText(requireContext(), "שיתוף משרה (TODO: לחבר Intent.ACTION_SEND)", Toast.LENGTH_SHORT).show()
-        }
-
-        btnEmployerProfile.setOnClickListener {
-            Toast.makeText(requireContext(), "מעבר לפרופיל מעסיק (TODO)", Toast.LENGTH_SHORT).show()
-        }
-
-        btnAddress.setOnClickListener {
-            Toast.makeText(requireContext(), "פתיחת מפה לכתובת (TODO)", Toast.LENGTH_SHORT).show()
-        }
-
-        btnApply.setOnClickListener {
-            Toast.makeText(requireContext(), "המועמדות נשלחה!", Toast.LENGTH_SHORT).show()
-        }
     }
 
-    /**
-     * Clears the ChipGroup and adds one Chip per requirement string.
-     * Call this with a different-sized list for every job - the layout
-     * doesn't need to change, the chips just wrap to as many rows as needed.
-     */
-    private fun bindRequirementChips(chipGroup: ChipGroup, requirements: List<String>) {
-        chipGroup.removeAllViews()
 
+    // Loads job details from Firestore and populates the UI
+    private fun loadJob(jobId: String) {
+        UserRepository.getJobById(
+            jobId = jobId,
+            onSuccess = { job ->
+                binding.tvCompanyName.text = job.company
+                binding.tvCategory.text = job.category
+                binding.tvAddress.text = job.address
+                binding.tvDescription.text = job.description
+
+                // Format date and time
+                val dateStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    .format(Date(job.date))
+                binding.tvDay1.text = "$dateStr  ${job.startTime} - ${job.endTime}"
+
+                // Load job image if exists
+                if (job.imageUrl.isNotEmpty()) {
+                    Glide.with(this)
+                        .load(job.imageUrl)
+                        .centerCrop()
+                        .into(binding.imgHeader)
+                }
+
+                // Requirements chips
+                bindRequirementChips(job.requirements)
+
+                // Share button
+                binding.btnShare.setOnClickListener {
+                    val shareText = "משרה ב-${job.company}: ${job.title}\n" +
+                            "קטגוריה: ${job.category}\n" +
+                            "שכר: ₪${job.salary} לשעה\n" +
+                            "כתובת: ${job.address}"
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, shareText)
+                    }
+                    startActivity(Intent.createChooser(intent, "שתף משרה"))
+                }
+
+                // Apply button
+                binding.btnApply.setOnClickListener {
+                    Toast.makeText(requireContext(), "המועמדות נשלחה!", Toast.LENGTH_SHORT).show()
+                }
+
+                // Address button - open maps
+                binding.btnAddress.setOnClickListener {
+                    if (job.address.isNotEmpty()) {
+                        val encodedAddress = Uri.encode(job.address)
+                        // Try Waze first, fallback to Google Maps
+                        try {
+                            val wazeUri = Uri.parse("waze://?q=$encodedAddress&navigate=yes")
+                            val wazeIntent = Intent(Intent.ACTION_VIEW, wazeUri)
+                            startActivity(wazeIntent)
+                        } catch (e: Exception) {
+                            val mapsUri = Uri.parse("geo:0,0?q=$encodedAddress")
+                            val mapsIntent = Intent(Intent.ACTION_VIEW, mapsUri)
+                            startActivity(mapsIntent)
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "לא הוזנה כתובת", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                // Employer profile button
+                binding.btnEmployerProfile.setOnClickListener {
+                    if (job.link.isNotEmpty()) {
+                        val url = if (job.link.startsWith("http")) job.link else "https://${job.link}"
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(requireContext(), "לא הוזן קישור לעסק", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+            onFailure = {
+                Toast.makeText(requireContext(), "שגיאה בטעינת המשרה", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    private fun bindRequirementChips(requirements: List<String>) {
+        binding.chipGroupRequirements.removeAllViews()
         for (requirement in requirements) {
-            val chip = Chip(chipGroup.context).apply {
+            val chip = Chip(requireContext()).apply {
                 text = requirement
                 isClickable = false
                 isCheckable = false
                 chipBackgroundColor = android.content.res.ColorStateList.valueOf(0xFFEFEFEF.toInt())
                 chipStrokeWidth = 0f
             }
-            chipGroup.addView(chip)
+            binding.chipGroupRequirements.addView(chip)
         }
     }
 
-    // Hide the bottom nav bar while this screen is on top
     override fun onResume() {
         super.onResume()
         bottomNav = requireActivity().findViewById(R.id.bottom_navigation)
         bottomNav?.visibility = View.GONE
     }
 
-    // Restore it as soon as we leave this screen (back press, navigating away, etc.)
     override fun onPause() {
         super.onPause()
         bottomNav?.visibility = View.VISIBLE
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -35,7 +35,11 @@
         android:id="@+id/searchResultsFragment"
         android:name="com.example.clickjob_finalproject.ui.home.SearchResultsFragment"
         android:label="fragment_search_results"
-        tools:layout="@layout/fragment_search_results" />
+        tools:layout="@layout/fragment_search_results">
+        <action
+            android:id="@+id/action_searchResultsFragment_to_jobDetailsFragment"
+            app:destination="@id/JobDetailsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/postJobFragment"

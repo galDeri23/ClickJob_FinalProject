@@ -1,5 +1,6 @@
 package com.example.clickjob_finalproject.data.repository
 
+import com.example.clickjob_finalproject.data.model.JobMatch
 import com.example.clickjob_finalproject.data.model.JobPost
 import com.example.clickjob_finalproject.data.model.UserProfile
 import com.google.android.gms.tasks.TaskExecutors
@@ -95,6 +96,80 @@ object UserRepository {
             .get()
             .addOnSuccessListener { documents ->
                 val jobs = documents.mapNotNull { it.toObject(JobPost::class.java) }
+                onSuccess(jobs)
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+    fun getUrgentJobs(
+        onSuccess: (List<JobPost>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("jobs")
+            .whereEqualTo("isUrgent", true)
+            .limit(10)
+            .get()
+            .addOnSuccessListener { documents ->
+                val jobs = documents.mapNotNull { it.toObject(JobPost::class.java) }
+                onSuccess(jobs)
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    fun getBestMatchJobs(
+        jobMatches: List<JobMatch>,
+        onSuccess: (List<Pair<JobPost, Int>>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        if (jobMatches.isEmpty()) {
+            onSuccess(emptyList())
+            return
+        }
+
+        val jobIds = jobMatches.map { it.jobId }
+        db.collection("jobs")
+            .whereIn("id", jobIds)
+            .get()
+            .addOnSuccessListener { documents ->
+                val jobs = documents.mapNotNull { it.toObject(JobPost::class.java) }
+                // Pair each job with its match percent
+                val result = jobs.mapNotNull { job ->
+                    val match = jobMatches.find { it.jobId == job.id }
+                    if (match != null) Pair(job, match.matchPercent) else null
+                }.sortedByDescending { it.second }.take(10)
+                onSuccess(result)
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+    fun getJobById(
+        jobId: String,
+        onSuccess: (JobPost) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("jobs")
+            .document(jobId)
+            .get()
+            .addOnSuccessListener { document ->
+                val job = document.toObject(JobPost::class.java)
+                if (job != null) onSuccess(job)
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    fun searchJobs(
+        categories: List<String>,
+        onSuccess: (List<JobPost>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        var query = db.collection("jobs") as com.google.firebase.firestore.Query
+
+        if (categories.isNotEmpty()) {
+            query = query.whereIn("category", categories)
+        }
+
+        query.get()
+            .addOnSuccessListener { documents ->
+                val jobs = documents.mapNotNull { it.toObject(JobPost::class.java) }
+                    .sortedBy { it.date } // Sort by date - closest first
                 onSuccess(jobs)
             }
             .addOnFailureListener { onFailure(it) }
