@@ -1,5 +1,7 @@
 package com.example.clickjob_finalproject.data.model
 
+import com.google.firebase.firestore.PropertyName
+
 data class JobPost(
     val id: String = "",
     val employerId: String = "",
@@ -19,6 +21,8 @@ data class JobPost(
     val address: String = "",
     val link: String = "",
     val imageUrl: String = "",
-    val isUrgent: Boolean = false,
+    @get:PropertyName("isUrgent")
+    @set:PropertyName("isUrgent")
+    var isUrgent: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )

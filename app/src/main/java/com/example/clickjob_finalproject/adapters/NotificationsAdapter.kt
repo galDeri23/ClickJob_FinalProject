@@ -23,17 +23,22 @@ enum class NotificationStatus {
 }
 
 data class NotificationItem(
+    val id: String = "",
     val title: String,
     val dateTime: String,
     val timeAgo: String,
-    val status: NotificationStatus
+    val status: NotificationStatus,
+    val jobId: String = "",
+    val applicationId: String = "",
+    val isRated: Boolean = false
 )
 
 class NotificationsAdapter(
     private var items: List<NotificationItem>,
     private val onApprove: (NotificationItem) -> Unit = {},
     private val onCancel: (NotificationItem) -> Unit = {},
-    private val onRate: (NotificationItem) -> Unit = {}
+    private val onRate: (NotificationItem) -> Unit = {},
+    private val onItemClick: (NotificationItem) -> Unit = {}
 ) : RecyclerView.Adapter<NotificationsAdapter.NotificationViewHolder>() {
 
     inner class NotificationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -61,18 +66,19 @@ class NotificationsAdapter(
         holder.tvDateTime.text = item.dateTime
         holder.tvTimeAgo.text  = item.timeAgo
 
-        // Reset state before applying per-type rules
         holder.actionsRow.visibility = View.GONE
         holder.btnSingle.visibility  = View.GONE
         holder.cardRoot.setCardBackgroundColor(
             ContextCompat.getColor(holder.itemView.context, R.color.white)
         )
 
+        // Card click - navigate to job details
+        holder.itemView.setOnClickListener { onItemClick(item) }
+
         when (item.status) {
             NotificationStatus.ALERT -> {
                 holder.imgStatus.setImageResource(R.drawable.ic_status_alert)
                 holder.actionsRow.visibility = View.VISIBLE
-                // Light pink background for items needing approval
                 holder.cardRoot.setCardBackgroundColor("#FDF5F9".toColorInt())
                 holder.btnApprove.setOnClickListener { onApprove(item) }
                 holder.btnCancel.setOnClickListener { onCancel(item) }
@@ -96,9 +102,12 @@ class NotificationsAdapter(
 
             NotificationStatus.RATING -> {
                 holder.imgStatus.setImageResource(R.drawable.ic_status_star)
-                holder.btnSingle.visibility = View.VISIBLE
-                holder.btnSingle.text = "דירוג"
-                holder.btnSingle.setOnClickListener { onRate(item) }
+                // Hide rating button if already rated
+                if (!item.isRated) {
+                    holder.btnSingle.visibility = View.VISIBLE
+                    holder.btnSingle.text = "דירוג"
+                    holder.btnSingle.setOnClickListener { onRate(item) }
+                }
             }
         }
     }

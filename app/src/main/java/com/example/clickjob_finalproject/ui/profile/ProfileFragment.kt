@@ -270,7 +270,9 @@ class ProfileFragment : Fragment() {
 
         binding.btnLogout.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
-            Toast.makeText(requireContext(), "התנתקת בהצלחה", Toast.LENGTH_SHORT).show()
+            val intent = Intent(requireContext(), com.example.clickjob_finalproject.auth.LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
         }
     }
 

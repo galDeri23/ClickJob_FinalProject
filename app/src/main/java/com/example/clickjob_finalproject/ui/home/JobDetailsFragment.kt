@@ -1,6 +1,7 @@
 package com.example.clickjob_finalproject.ui.home
 
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -38,6 +39,11 @@ class JobDetailsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val jobId = arguments?.getString("jobId")
+        val applicationId = arguments?.getString("applicationId")
+        val isViewOnly = arguments?.getBoolean("isViewOnly", false) ?: false
+        if (isViewOnly) {
+            binding.btnApply.visibility = View.GONE
+        }
 
         if (jobId.isNullOrEmpty()) {
             Toast.makeText(requireContext(), "שגיאה בטעינת המשרה", Toast.LENGTH_SHORT).show()
@@ -47,7 +53,7 @@ class JobDetailsFragment : Fragment() {
 
         setupBackButton()
         setupFavoriteButton()
-        loadJob(jobId)
+        loadJob(jobId, applicationId)
     }
 
     private fun setupBackButton() {
@@ -68,9 +74,7 @@ class JobDetailsFragment : Fragment() {
         }
     }
 
-
-    // Loads job details from Firestore and populates the UI
-    private fun loadJob(jobId: String) {
+    private fun loadJob(jobId: String, applicationId: String?) {
         UserRepository.getJobById(
             jobId = jobId,
             onSuccess = { job ->
@@ -79,12 +83,10 @@ class JobDetailsFragment : Fragment() {
                 binding.tvAddress.text = job.address
                 binding.tvDescription.text = job.description
 
-                // Format date and time
                 val dateStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                     .format(Date(job.date))
                 binding.tvDay1.text = "$dateStr  ${job.startTime} - ${job.endTime}"
 
-                // Load job image if exists
                 if (job.imageUrl.isNotEmpty()) {
                     Glide.with(this)
                         .load(job.imageUrl)
@@ -92,10 +94,8 @@ class JobDetailsFragment : Fragment() {
                         .into(binding.imgHeader)
                 }
 
-                // Requirements chips
                 bindRequirementChips(job.requirements)
 
-                // Share button
                 binding.btnShare.setOnClickListener {
                     val shareText = "משרה ב-${job.company}: ${job.title}\n" +
                             "קטגוריה: ${job.category}\n" +
@@ -108,36 +108,76 @@ class JobDetailsFragment : Fragment() {
                     startActivity(Intent.createChooser(intent, "שתף משרה"))
                 }
 
-                // Apply button
-                binding.btnApply.setOnClickListener {
-                    Toast.makeText(requireContext(), "המועמדות נשלחה!", Toast.LENGTH_SHORT).show()
+                // Show confirm or apply button based on applicationId
+                if (!applicationId.isNullOrEmpty()) {
+                    // Came from notification/my jobs - show confirm button
+                    binding.btnApply.text = "אישור עבודה"
+                    binding.btnApply.setBackgroundColor(Color.parseColor("#24061E"))
+                    binding.btnApply.setOnClickListener {
+                        binding.btnApply.isEnabled = false
+                        UserRepository.getJobApplications(
+                            jobId = jobId,
+                            onSuccess = { applications ->
+                                val application = applications.find { it.id == applicationId }
+                                if (application == null) {
+                                    binding.btnApply.isEnabled = true
+                                    return@getJobApplications
+                                }
+                                UserRepository.confirmJob(
+                                    application = application,
+                                    job = job,
+                                    onSuccess = {
+                                        Toast.makeText(requireContext(), "העבודה אושרה! ✓", Toast.LENGTH_SHORT).show()
+                                        findNavController().popBackStack()
+                                    },
+                                    onFailure = {
+                                        binding.btnApply.isEnabled = true
+                                        Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            },
+                            onFailure = {
+                                binding.btnApply.isEnabled = true
+                            }
+                        )
+                    }
+                } else {
+                    // Came from search/home - show apply button
+                    binding.btnApply.text = "הגשת מועמדות/אישור עבודה"
+                    binding.btnApply.setOnClickListener {
+                        binding.btnApply.isEnabled = false
+                        UserRepository.applyToJob(
+                            job = job,
+                            onSuccess = {
+                                binding.btnApply.text = "המועמדות נשלחה ✓"
+                                Toast.makeText(requireContext(), "המועמדות נשלחה בהצלחה!", Toast.LENGTH_SHORT).show()
+                            },
+                            onFailure = {
+                                binding.btnApply.isEnabled = true
+                                Toast.makeText(requireContext(), "שגיאה בשליחת המועמדות", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
                 }
 
-                // Address button - open maps
                 binding.btnAddress.setOnClickListener {
                     if (job.address.isNotEmpty()) {
                         val encodedAddress = Uri.encode(job.address)
-                        // Try Waze first, fallback to Google Maps
                         try {
                             val wazeUri = Uri.parse("waze://?q=$encodedAddress&navigate=yes")
-                            val wazeIntent = Intent(Intent.ACTION_VIEW, wazeUri)
-                            startActivity(wazeIntent)
+                            startActivity(Intent(Intent.ACTION_VIEW, wazeUri))
                         } catch (e: Exception) {
-                            val mapsUri = Uri.parse("geo:0,0?q=$encodedAddress")
-                            val mapsIntent = Intent(Intent.ACTION_VIEW, mapsUri)
-                            startActivity(mapsIntent)
+                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=$encodedAddress")))
                         }
                     } else {
                         Toast.makeText(requireContext(), "לא הוזנה כתובת", Toast.LENGTH_SHORT).show()
                     }
                 }
 
-                // Employer profile button
                 binding.btnEmployerProfile.setOnClickListener {
                     if (job.link.isNotEmpty()) {
                         val url = if (job.link.startsWith("http")) job.link else "https://${job.link}"
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        startActivity(intent)
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                     } else {
                         Toast.makeText(requireContext(), "לא הוזן קישור לעסק", Toast.LENGTH_SHORT).show()
                     }

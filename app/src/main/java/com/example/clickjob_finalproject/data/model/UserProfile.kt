@@ -29,5 +29,6 @@ data class UserProfile(
     val profileImageUrl: String = "",
     val hasPostedJob: Boolean = false,
     val jobMatches: List<JobMatch> = emptyList(),
+    val upcomingShifts: List<String> = emptyList(),
     val createdAt: Long = System.currentTimeMillis()
 )

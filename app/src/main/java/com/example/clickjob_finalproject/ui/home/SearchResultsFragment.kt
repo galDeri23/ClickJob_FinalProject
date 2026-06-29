@@ -96,7 +96,7 @@ class SearchResultsFragment : Fragment() {
                         salary = job.salary.toIntOrNull() ?: 0,
                         address = job.address,
                         day = dateLabel,
-                        distance = "",
+                        distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
                         category = job.category,
                         isUrgent = job.isUrgent,
                         date = job.date

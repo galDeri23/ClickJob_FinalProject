@@ -1,21 +1,19 @@
 package com.example.clickjob_finalproject.adapters
 
 import android.graphics.Color
-import android.os.CountDownTimer
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.clickjob_finalproject.R
+import com.example.clickjob_finalproject.databinding.ItemMyJobCardBinding
 
 enum class JobTabType { ACTIVE, PENDING, HISTORY }
-
-// Timer type for worker active tab
 enum class TimerType { NONE, SOON, PENDING }
 
 data class MyJobItem(
+    val id: String = "",
+    val jobId: String = "",
+    val applicationId: String = "",
     val title: String,
     val company: String,
     val price: String,
@@ -24,84 +22,81 @@ data class MyJobItem(
     val category: String,
     val needsApproval: Boolean = false,
     val timerType: TimerType = TimerType.NONE,
-    val countdownMillis: Long = 0L
+    val shiftStartMillis: Long = 0L,
+    val shiftEndMillis: Long = 0L
 )
 
 class MyJobsAdapter(
     private var items: List<MyJobItem>,
     private var tabType: JobTabType = JobTabType.ACTIVE,
-    private val onApproveClick: (MyJobItem) -> Unit = {}
+    private val onApproveClick: (MyJobItem) -> Unit = {},
+    private val onItemClick: (MyJobItem) -> Unit = {}
 ) : RecyclerView.Adapter<MyJobsAdapter.MyJobViewHolder>() {
 
-    inner class MyJobViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val cardRoot      = itemView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardRoot)
-        val imgCategory   = itemView.findViewById<ImageView>(R.id.imgCategory)
-        val tvJobTitle    = itemView.findViewById<TextView>(R.id.tvJobTitle)
-        val tvCompany     = itemView.findViewById<TextView>(R.id.tvCompanyName)
-        val tvDistance    = itemView.findViewById<TextView>(R.id.tvDistance)
-        val tvDay         = itemView.findViewById<TextView>(R.id.tvDay)
-        val tvPrice       = itemView.findViewById<TextView>(R.id.tvPrice)
-        val btnApprove    = itemView.findViewById<TextView>(R.id.btnApprove)
-        val tvTimerSoon   = itemView.findViewById<TextView>(R.id.tvTimerSoon)
-        val tvTimerPending = itemView.findViewById<TextView>(R.id.tvTimerPending)
-        var countDownTimer: CountDownTimer? = null
-    }
+    inner class MyJobViewHolder(val binding: ItemMyJobCardBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyJobViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_my_job_card, parent, false)
-        return MyJobViewHolder(view)
+        val binding = ItemMyJobCardBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+        return MyJobViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: MyJobViewHolder, position: Int) {
+        val binding = holder.binding
         val item = items[position]
 
-        holder.tvJobTitle.text = item.title
-        holder.tvCompany.text  = item.company
-        holder.tvDistance.text = item.distance
-        holder.tvDay.text      = item.day
-        holder.tvPrice.text    = item.price
-        holder.imgCategory.setImageResource(getCategoryImage(item.category))
-
-        // Cancel any running timer before rebinding
-        holder.countDownTimer?.cancel()
+        binding.tvJobTitle.text = item.title
+        binding.tvCompanyName.text = item.company
+        binding.tvDistance.text = item.distance
+        binding.tvDay.text = item.day
+        binding.tvPrice.text = item.price
+        binding.imgCategory.setImageResource(getCategoryImage(item.category))
 
         // Hide all badges by default
-        holder.btnApprove.visibility     = View.GONE
-        holder.tvTimerSoon.visibility    = View.GONE
-        holder.tvTimerPending.visibility = View.GONE
+        binding.btnApprove.visibility     = android.view.View.GONE
+        binding.tvTimerSoon.visibility    = android.view.View.GONE
+        binding.tvTimerPending.visibility = android.view.View.GONE
+        binding.root.setOnClickListener(null)
 
         when (tabType) {
             JobTabType.ACTIVE -> {
-                holder.cardRoot.alpha = 1f
-                holder.cardRoot.setCardBackgroundColor(Color.WHITE)
+                binding.cardRoot.alpha = 1f
+                binding.cardRoot.setCardBackgroundColor(Color.WHITE)
 
                 when {
-                    // Show approve button
                     item.needsApproval -> {
-                        holder.btnApprove.visibility = View.VISIBLE
-                        holder.btnApprove.setOnClickListener { onApproveClick(item) }
+                        binding.btnApprove.visibility = android.view.View.VISIBLE
+                        binding.btnApprove.setOnClickListener { onApproveClick(item) }
+                        binding.root.setOnClickListener { onItemClick(item) }
                     }
-                    // Show "בעוד יום" gray badge
                     item.timerType == TimerType.SOON -> {
-                        holder.tvTimerSoon.visibility = View.VISIBLE
+                        binding.tvTimerSoon.visibility = android.view.View.VISIBLE
+                        val now = System.currentTimeMillis()
+                        val diff = item.shiftStartMillis - now
+                        val hours = diff / 3600000
+                        val days = hours / 24
+                        binding.tvTimerSoon.text = when {
+                            days >= 1 -> "בעוד $days ימים"
+                            hours >= 1 -> "בעוד $hours שעות"
+                            else -> "בעוד ${diff / 60000} דקות"
+                        }
                     }
-                    // Show "בהמתנה" pink badge
                     item.timerType == TimerType.PENDING -> {
-                        holder.tvTimerPending.visibility = View.VISIBLE
+                        binding.tvTimerPending.visibility = android.view.View.VISIBLE
                     }
                 }
             }
 
             JobTabType.HISTORY -> {
-                // Dimmed appearance for history
-                holder.cardRoot.alpha = 0.5f
-                holder.cardRoot.setCardBackgroundColor(Color.WHITE)
+                binding.cardRoot.alpha = 0.5f
+                binding.cardRoot.setCardBackgroundColor(Color.WHITE)
             }
 
             else -> {
-                holder.cardRoot.alpha = 1f
-                holder.cardRoot.setCardBackgroundColor(Color.WHITE)
+                binding.cardRoot.alpha = 1f
+                binding.cardRoot.setCardBackgroundColor(Color.WHITE)
             }
         }
     }

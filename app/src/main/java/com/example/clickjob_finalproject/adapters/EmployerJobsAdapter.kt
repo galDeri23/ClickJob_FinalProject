@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.clickjob_finalproject.R
 
 data class EmployerJobItem(
+    val id: String = "",
     val title: String,
     val company: String,
     val workersRegistered: Int,
@@ -114,7 +115,7 @@ class EmployerJobsAdapter(
 
             JobTabType.HISTORY -> {
                 // Dimmed appearance for history
-                holder.cardRoot.alpha = 0.5f
+                holder.cardRoot.alpha = 1f
                 holder.cardRoot.setCardBackgroundColor(Color.WHITE)
                 holder.btnDuplicate.visibility = View.VISIBLE
                 holder.progressWorkers.progressDrawable =
@@ -138,7 +139,7 @@ class EmployerJobsAdapter(
                     holder.tvTimer.text = "${hoursDisplay.let {
                         if (it == it.toLong().toDouble()) it.toLong().toString()
                         else it.toString()
-                    }} שעה"
+                    }} שעות"
                     holder.tvTimer.setTextColor(
                         androidx.core.content.ContextCompat.getColor(
                             holder.itemView.context, R.color.text_dark))

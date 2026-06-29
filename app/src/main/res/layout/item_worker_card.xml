@@ -53,6 +53,7 @@
             android:textSize="14sp"
             android:fontFamily="@font/ploni_regular_aaa"
             android:textColor="@color/DarkDeep"
+            android:maxLines="2"
             app:layout_constraintTop_toBottomOf="@+id/tvWorkerName"
             app:layout_constraintStart_toEndOf="@+id/imgWorker"
             app:layout_constraintEnd_toStartOf="@+id/btnCancel"
@@ -92,21 +93,6 @@
             app:layout_constraintStart_toEndOf="@+id/imgWorker"
             tools:text="0525381648"/>
 
-        <!-- Email -->
-        <TextView
-            android:id="@+id/tvEmail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:drawableStart="@drawable/ic_mail"
-            android:drawablePadding="4dp"
-            android:drawableTint="@color/gray04"
-            android:textSize="14sp"
-            android:fontFamily="@font/ploni_regular_aaa"
-            android:textColor="@color/gray04"
-            app:layout_constraintTop_toTopOf="@+id/tvPhone"
-            app:layout_constraintStart_toEndOf="@+id/tvPhone"
-            tools:text="מייל"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

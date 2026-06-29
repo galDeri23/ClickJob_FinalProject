@@ -91,7 +91,11 @@ class PostJobFragment : Fragment() {
         setupCalendar()
         setupButtons()
 
-        arguments?.let { args -> prefillFromBundle(args) }
+        // Only prefill if duplicating from existing job
+        val duplicateJobId = arguments?.getString("duplicateJobId")
+        if (!duplicateJobId.isNullOrEmpty()) {
+            prefillFromJobId(duplicateJobId)
+        }
     }
 
     private fun setupBackButton() {
@@ -131,27 +135,23 @@ class PostJobFragment : Fragment() {
     }
 
     private fun setupSpinners() {
-        // Salary spinner
         val salaryAdapter = ArrayAdapter(requireContext(),
             android.R.layout.simple_spinner_item, salaryOptions)
         salaryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerSalary.adapter = salaryAdapter
         binding.spinnerSalary.setSelection(salaryOptions.indexOf("50"))
 
-        // Workers spinner
         val workersAdapter = ArrayAdapter(requireContext(),
             android.R.layout.simple_spinner_item, workerCountOptions)
         workersAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerWorkers.adapter = workersAdapter
 
-        // Start time spinner
         val timeAdapter = ArrayAdapter(requireContext(),
             android.R.layout.simple_spinner_item, timeOptions)
         timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerStartTime.adapter = timeAdapter
         binding.spinnerStartTime.setSelection(14)
 
-        // End time spinner
         val endTimeAdapter = ArrayAdapter(requireContext(),
             android.R.layout.simple_spinner_item, timeOptions)
         endTimeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -254,7 +254,6 @@ class PostJobFragment : Fragment() {
     private fun saveJob() {
         val selectedCategory = categories[binding.spinnerCategory.selectedItemPosition]
 
-        // Collect requirements chips (skip the "+" chip)
         val requirements = mutableListOf<String>()
         for (i in 0 until binding.chipGroupRequirements.childCount) {
             val chip = binding.chipGroupRequirements.getChildAt(i) as? Chip
@@ -264,8 +263,6 @@ class PostJobFragment : Fragment() {
         }
 
         val salaryType = if (binding.toggleHourly.background != null) "hourly" else "daily"
-
-        // Mark as urgent if shift starts within 48 hours
         val isUrgent = (selectedDate - System.currentTimeMillis()) < 48 * 60 * 60 * 1000L
 
         val job = JobPost(
@@ -326,24 +323,48 @@ class PostJobFragment : Fragment() {
         )
     }
 
-    private fun prefillFromBundle(args: Bundle) {
-        args.getString("jobTitle")?.let { title ->
-            val index = categories.indexOfFirst { it.name == title }
-            if (index >= 0) binding.spinnerCategory.setSelection(index)
-        }
-        args.getString("jobCompany")?.let { binding.etCompany.setText(it) }
-        args.getString("jobPrice")?.let { price ->
-            val index = salaryOptions.indexOf(price)
-            if (index >= 0) binding.spinnerSalary.setSelection(index)
-        }
-        args.getInt("workersNeeded", 1).let { count ->
-            val index = workerCountOptions.indexOf(count.toString())
-            if (index >= 0) binding.spinnerWorkers.setSelection(index)
-        }
-        args.getString("jobDescription")?.let { binding.etDescription.setText(it) }
-        args.getString("jobPhone")?.let { binding.etPhone.setText(it) }
-        args.getString("jobAddress")?.let { binding.etAddress.setText(it) }
-        args.getString("jobLink")?.let { binding.etLink.setText(it) }
+    // Loads job data from Firestore and fills the form (duplicate mode only)
+    private fun prefillFromJobId(jobId: String) {
+        UserRepository.getJobById(
+            jobId = jobId,
+            onSuccess = { job ->
+                val index = categories.indexOfFirst { it.name == job.category }
+                if (index >= 0) binding.spinnerCategory.setSelection(index)
+
+                binding.etCompany.setText(job.company)
+
+                val salaryIndex = salaryOptions.indexOf(job.salary)
+                if (salaryIndex >= 0) binding.spinnerSalary.setSelection(salaryIndex)
+
+                val workersIndex = workerCountOptions.indexOf(job.workersNeeded.toString())
+                if (workersIndex >= 0) binding.spinnerWorkers.setSelection(workersIndex)
+
+                val startIndex = timeOptions.indexOf(job.startTime)
+                if (startIndex >= 0) binding.spinnerStartTime.setSelection(startIndex)
+
+                val endIndex = timeOptions.indexOf(job.endTime)
+                if (endIndex >= 0) binding.spinnerEndTime.setSelection(endIndex)
+
+                binding.etDescription.setText(job.description)
+                binding.etPhone.setText(job.phone)
+                binding.etAddress.setText(job.address)
+                binding.etLink.setText(job.link)
+
+                // Set salary type toggle
+                if (job.salaryType == "daily") {
+                    binding.toggleDaily.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                    binding.toggleDaily.setBackgroundResource(R.drawable.bg_toggle_selected_teal)
+                    binding.toggleHourly.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
+                    binding.toggleHourly.background = null
+                }
+
+                // Add requirements chips
+                job.requirements.forEach { addRequirementChip(it) }
+            },
+            onFailure = {
+                Toast.makeText(requireContext(), "שגיאה בטעינת נתוני המשרה", Toast.LENGTH_SHORT).show()
+            }
+        )
     }
 
     override fun onDestroyView() {

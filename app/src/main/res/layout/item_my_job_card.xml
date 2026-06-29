@@ -118,6 +118,7 @@
             android:fontFamily="@font/ploni_regular_aaa"
             android:textSize="14sp"
             android:gravity="start"
+            android:textDirection="rtl"
             app:layout_constraintTop_toBottomOf="@id/tvJobTitle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/imgCategory"
