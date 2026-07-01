@@ -25,14 +25,13 @@ class RegisterStep3Fragment : Fragment() {
             "טורקית", "אמהרית", "רומנית"
         ),
         "רישיונות" to listOf(
-            "רישיון B", "רישיון C", "רישיון D", "רישיון A",
+            "רישיון B", "רישיון C", "רישיון D", "רישיון A", "רישיון לנשק",
             "רישיון 1", "רישיון מלגזה", "רישיון טרקטור", "רישיון כלי עבודה כבדים"
         ),
         "תעודות" to listOf(
             "בגרות", "תואר ראשון", "תואר שני", "תעודת הוראה",
-            "תעודת הצלה", "תעודת עזרה ראשונה", "תעודת מגישה",
-            "תעודת ברמן", "תעודת שמירה", "תעודת כשרות",
-            "תעודת בטיחות", "תעודת מחשבים"
+            "תעודת הצלה", "תעודת עזרה ראשונה",
+            "תעודת ברמן", "תעודת שמירה"
         ),
         "תוכנות" to listOf(
             "Excel", "Word", "PowerPoint", "Photoshop", "Illustrator",
@@ -54,9 +53,7 @@ class RegisterStep3Fragment : Fragment() {
         "אחר" to emptyList()
     )
 
-    // Index of "אחר" row — no predefined chips, free text only
     private val OTHER_INDEX = 6
-    // Index of job categories — no "אחר +" chip
     private val JOB_CATEGORIES_INDEX = 4
 
     override fun onCreateView(
@@ -85,6 +82,7 @@ class RegisterStep3Fragment : Fragment() {
             val header = row.findViewById<LinearLayout>(R.id.llHeader)
             val content = row.findViewById<LinearLayout>(R.id.llContent)
             val title = row.findViewById<TextView>(R.id.tvCategoryTitle)
+            val selectedSummary = row.findViewById<TextView>(R.id.tvSelectedSummary)
             val chipGroup = row.findViewById<ChipGroup>(R.id.chipGroup)
             val chipGroupCustom = row.findViewById<ChipGroup>(R.id.chipGroupCustom)
             val arrow = row.findViewById<ImageView>(R.id.ivArrow)
@@ -95,7 +93,6 @@ class RegisterStep3Fragment : Fragment() {
             title.text = categories[index].first
 
             if (index == OTHER_INDEX) {
-                // "אחר" row - free text input only, no predefined chips
                 chipAddOther.visibility = View.GONE
                 tilOtherInput.visibility = View.VISIBLE
                 chipGroupCustom.visibility = View.VISIBLE
@@ -103,35 +100,55 @@ class RegisterStep3Fragment : Fragment() {
                 etOtherInput.setOnEditorActionListener { _, actionId, _ ->
                     if (actionId == EditorInfo.IME_ACTION_DONE) {
                         val text = etOtherInput.text.toString().trim()
+
                         if (text.isNotEmpty()) {
-                            addCustomChip(text, chipGroupCustom)
+                            addCustomChip(
+                                text = text,
+                                chipGroup = chipGroupCustom,
+                                selectedSummary = selectedSummary,
+                                regularChipGroup = chipGroup
+                            )
                             etOtherInput.text?.clear()
                         }
+
                         true
-                    } else false
+                    } else {
+                        false
+                    }
                 }
             } else {
-                // Regular rows - predefined chips
                 categories[index].second.forEach { chipText ->
                     val chip = Chip(requireContext())
                     chip.text = chipText
                     chip.isCheckable = true
                     chip.textSize = 13f
+
+                    chip.setOnCheckedChangeListener { _, _ ->
+                        updateSelectedSummary(
+                            chipGroup = chipGroup,
+                            chipGroupCustom = chipGroupCustom,
+                            selectedSummary = selectedSummary
+                        )
+                    }
+
                     chipGroup.addView(chip)
                 }
 
-                // Hide "אחר +" for job categories
                 if (index == JOB_CATEGORIES_INDEX) {
                     chipAddOther.visibility = View.GONE
                 } else {
                     chipAddOther.visibility = View.VISIBLE
+
                     chipAddOther.setOnClickListener {
-                        showAddCustomDialog(chipGroup)
+                        showAddCustomDialog(
+                            chipGroup = chipGroup,
+                            chipGroupCustom = chipGroupCustom,
+                            selectedSummary = selectedSummary
+                        )
                     }
                 }
             }
 
-            // Toggle expand/collapse
             header.setOnClickListener {
                 if (content.visibility == View.GONE) {
                     content.visibility = View.VISIBLE
@@ -139,12 +156,22 @@ class RegisterStep3Fragment : Fragment() {
                 } else {
                     content.visibility = View.GONE
                     arrow.rotation = 0f
+
+                    updateSelectedSummary(
+                        chipGroup = chipGroup,
+                        chipGroupCustom = chipGroupCustom,
+                        selectedSummary = selectedSummary
+                    )
                 }
             }
         }
     }
 
-    private fun showAddCustomDialog(chipGroup: ChipGroup) {
+    private fun showAddCustomDialog(
+        chipGroup: ChipGroup,
+        chipGroupCustom: ChipGroup,
+        selectedSummary: TextView
+    ) {
         val input = TextInputEditText(requireContext())
         input.hint = "הוסף..."
         input.gravity = android.view.Gravity.END
@@ -154,23 +181,88 @@ class RegisterStep3Fragment : Fragment() {
             .setView(input)
             .setPositiveButton("הוסף") { _, _ ->
                 val text = input.text.toString().trim()
+
                 if (text.isNotEmpty()) {
-                    addCustomChip(text, chipGroup)
+                    addCustomChip(
+                        text = text,
+                        chipGroup = chipGroupCustom,
+                        selectedSummary = selectedSummary,
+                        regularChipGroup = chipGroup
+                    )
                 }
             }
             .setNegativeButton("ביטול", null)
             .show()
     }
 
-    private fun addCustomChip(text: String, chipGroup: ChipGroup) {
+    private fun addCustomChip(
+        text: String,
+        chipGroup: ChipGroup,
+        selectedSummary: TextView,
+        regularChipGroup: ChipGroup
+    ) {
         val chip = Chip(requireContext())
         chip.text = text
         chip.isCheckable = true
         chip.isChecked = true
         chip.textSize = 13f
         chip.isCloseIconVisible = true
-        chip.setOnCloseIconClickListener { chipGroup.removeView(chip) }
+
+        chip.setOnCheckedChangeListener { _, _ ->
+            updateSelectedSummary(
+                chipGroup = regularChipGroup,
+                chipGroupCustom = chipGroup,
+                selectedSummary = selectedSummary
+            )
+        }
+
+        chip.setOnCloseIconClickListener {
+            chipGroup.removeView(chip)
+
+            updateSelectedSummary(
+                chipGroup = regularChipGroup,
+                chipGroupCustom = chipGroup,
+                selectedSummary = selectedSummary
+            )
+        }
+
         chipGroup.addView(chip)
+
+        updateSelectedSummary(
+            chipGroup = regularChipGroup,
+            chipGroupCustom = chipGroup,
+            selectedSummary = selectedSummary
+        )
+    }
+
+    private fun updateSelectedSummary(
+        chipGroup: ChipGroup,
+        chipGroupCustom: ChipGroup,
+        selectedSummary: TextView
+    ) {
+        val selected = mutableListOf<String>()
+
+        for (i in 0 until chipGroup.childCount) {
+            val chip = chipGroup.getChildAt(i) as? Chip
+            if (chip?.isChecked == true) {
+                selected.add(chip.text.toString())
+            }
+        }
+
+        for (i in 0 until chipGroupCustom.childCount) {
+            val chip = chipGroupCustom.getChildAt(i) as? Chip
+            if (chip?.isChecked == true) {
+                selected.add(chip.text.toString())
+            }
+        }
+
+        if (selected.isEmpty()) {
+            selectedSummary.visibility = View.GONE
+            selectedSummary.text = ""
+        } else {
+            selectedSummary.visibility = View.VISIBLE
+            selectedSummary.text = selected.joinToString(", ")
+        }
     }
 
     fun getSelectedSkills(): Step3Data {
@@ -181,14 +273,21 @@ class RegisterStep3Fragment : Fragment() {
             val chipGroup = row.findViewById<ChipGroup>(R.id.chipGroup)
             val chipGroupCustom = row.findViewById<ChipGroup>(R.id.chipGroupCustom)
             val selected = mutableListOf<String>()
+
             for (i in 0 until chipGroup.childCount) {
                 val chip = chipGroup.getChildAt(i) as? Chip
-                if (chip?.isChecked == true) selected.add(chip.text.toString())
+                if (chip?.isChecked == true) {
+                    selected.add(chip.text.toString())
+                }
             }
+
             for (i in 0 until chipGroupCustom.childCount) {
                 val chip = chipGroupCustom.getChildAt(i) as? Chip
-                if (chip?.isChecked == true) selected.add(chip.text.toString())
+                if (chip?.isChecked == true) {
+                    selected.add(chip.text.toString())
+                }
             }
+
             return selected
         }
 
@@ -196,10 +295,12 @@ class RegisterStep3Fragment : Fragment() {
             val row = view.findViewById<LinearLayout>(R.id.rowOther)
             val chipGroupCustom = row.findViewById<ChipGroup>(R.id.chipGroupCustom)
             val selected = mutableListOf<String>()
+
             for (i in 0 until chipGroupCustom.childCount) {
                 val chip = chipGroupCustom.getChildAt(i) as? Chip
                 selected.add(chip?.text.toString())
             }
+
             return selected
         }
 

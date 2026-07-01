@@ -1,5 +1,6 @@
 package com.example.clickjob_finalproject.data.repository
 
+import android.util.Log
 import com.example.clickjob_finalproject.data.model.Application
 import com.example.clickjob_finalproject.data.model.JobMatch
 import com.example.clickjob_finalproject.data.model.JobPost
@@ -21,7 +22,7 @@ object UserRepository {
         onFailure: (Exception) -> Unit
     ) {
         val userId = auth.currentUser?.uid ?: return
-        db.collection("users")
+        db.collection("candidates")
             .document(userId)
             .set(profile, SetOptions.merge())
             .addOnSuccessListener(TaskExecutors.MAIN_THREAD) { onSuccess() }
@@ -33,23 +34,22 @@ object UserRepository {
         onNotExists: () -> Unit
     ) {
         val userId = auth.currentUser?.uid ?: return
-        db.collection("users")
+        db.collection("candidates")
             .document(userId)
             .get()
             .addOnSuccessListener(TaskExecutors.MAIN_THREAD) { document ->
                 if (document.exists()) onExists() else onNotExists()
             }
     }
+
     fun generateBio(profile: UserProfile): String {
         val parts = mutableListOf<String>()
-
         if (profile.name.isNotEmpty()) parts.add("שמי ${profile.name}")
         if (profile.jobCategories.isNotEmpty()) parts.add("מחפש עבודה בתחומים: ${profile.jobCategories.joinToString(", ")}")
         if (profile.availableDays.isNotEmpty()) parts.add("זמין בימים: ${profile.availableDays.joinToString(", ")}")
         if (profile.languages.isNotEmpty()) parts.add("שפות: ${profile.languages.joinToString(", ")}")
         if (profile.softSkills.isNotEmpty()) parts.add("כישורים: ${profile.softSkills.joinToString(", ")}")
         if (profile.address.isNotEmpty()) parts.add("מתגורר ב${profile.address}")
-
         return parts.joinToString(". ")
     }
 
@@ -58,7 +58,7 @@ object UserRepository {
         onFailure: (Exception) -> Unit
     ) {
         val userId = auth.currentUser?.uid ?: return
-        db.collection("users")
+        db.collection("candidates")
             .document(userId)
             .get()
             .addOnSuccessListener { document ->
@@ -79,8 +79,7 @@ object UserRepository {
 
         jobRef.set(jobWithId)
             .addOnSuccessListener {
-                // Mark user as having posted a job
-                db.collection("users").document(userId)
+                db.collection("candidates").document(userId)
                     .update("hasPostedJob", true)
                     .addOnSuccessListener { onSuccess(jobRef.id) }
                     .addOnFailureListener { onFailure(it) }
@@ -102,6 +101,7 @@ object UserRepository {
             }
             .addOnFailureListener { onFailure(it) }
     }
+
     fun getUrgentJobs(
         onSuccess: (List<JobPost>) -> Unit,
         onFailure: (Exception) -> Unit
@@ -111,10 +111,15 @@ object UserRepository {
             .limit(10)
             .get()
             .addOnSuccessListener { documents ->
+                Log.d("DEBUG", "Urgent jobs count: ${documents.size()}")
                 val jobs = documents.mapNotNull { it.toObject(JobPost::class.java) }
+                Log.d("DEBUG", "Urgent jobs mapped: ${jobs.size}")
                 onSuccess(jobs)
             }
-            .addOnFailureListener { onFailure(it) }
+            .addOnFailureListener {
+                Log.e("DEBUG", "Error: ${it.message}")
+                onFailure(it)
+            }
     }
 
     fun getBestMatchJobs(
@@ -133,7 +138,6 @@ object UserRepository {
             .get()
             .addOnSuccessListener { documents ->
                 val jobs = documents.mapNotNull { it.toObject(JobPost::class.java) }
-                // Pair each job with its match percent
                 val result = jobs.mapNotNull { job ->
                     val match = jobMatches.find { it.jobId == job.id }
                     if (match != null) Pair(job, match.matchPercent) else null
@@ -142,6 +146,7 @@ object UserRepository {
             }
             .addOnFailureListener { onFailure(it) }
     }
+
     fun getJobById(
         jobId: String,
         onSuccess: (JobPost) -> Unit,
@@ -163,28 +168,24 @@ object UserRepository {
         onFailure: (Exception) -> Unit
     ) {
         var query = db.collection("jobs") as com.google.firebase.firestore.Query
-
         if (categories.isNotEmpty()) {
             query = query.whereIn("category", categories)
         }
-
         query.get()
             .addOnSuccessListener { documents ->
                 val jobs = documents.mapNotNull { it.toObject(JobPost::class.java) }
-                    .sortedBy { it.date } // Sort by date - closest first
+                    .sortedBy { it.date }
                 onSuccess(jobs)
             }
             .addOnFailureListener { onFailure(it) }
     }
-    // Submit a job application
+
     fun applyToJob(
         job: JobPost,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
         val userId = auth.currentUser?.uid ?: return
-
-        // Get worker profile first
         getUserProfile(
             onSuccess = { profile ->
                 val appRef = db.collection("applications").document()
@@ -198,10 +199,8 @@ object UserRepository {
                     workerBio = profile.jobCategories.firstOrNull() ?: "",
                     workerProfileImageUrl = profile.profileImageUrl
                 )
-
                 appRef.set(application)
                     .addOnSuccessListener {
-                        // Check if this is the 5th applicant - notify employer
                         checkAndNotifyEmployer(job)
                         onSuccess()
                     }
@@ -211,7 +210,6 @@ object UserRepository {
         )
     }
 
-    // Check if 5 applicants submitted - send notification to employer
     private fun checkAndNotifyEmployer(job: JobPost) {
         db.collection("applications")
             .whereEqualTo("jobId", job.id)
@@ -235,7 +233,6 @@ object UserRepository {
             }
     }
 
-    // Get all applications for a specific job
     fun getJobApplications(
         jobId: String,
         onSuccess: (List<Application>) -> Unit,
@@ -251,7 +248,6 @@ object UserRepository {
             .addOnFailureListener { onFailure(it) }
     }
 
-    // Employer approves an applicant
     fun approveApplicant(
         application: Application,
         job: JobPost,
@@ -262,7 +258,6 @@ object UserRepository {
             .document(application.id)
             .update("status", "employer_approved")
             .addOnSuccessListener {
-                // Send notification to worker
                 val notifRef = db.collection("notifications").document()
                 val dateStr = java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.getDefault())
                     .format(java.util.Date(job.date))
@@ -283,7 +278,6 @@ object UserRepository {
             .addOnFailureListener { onFailure(it) }
     }
 
-    // Worker confirms the job (double check)
     fun confirmJob(
         application: Application,
         job: JobPost,
@@ -294,17 +288,14 @@ object UserRepository {
             .document(application.id)
             .update("status", "confirmed")
             .addOnSuccessListener {
-                // Update workers registered count on job
                 db.collection("jobs")
                     .document(job.id)
                     .update("workersRegistered", job.workersRegistered + 1)
 
-                // Save job to worker's upcoming shifts
-                db.collection("users")
+                db.collection("candidates")
                     .document(application.workerId)
                     .update("upcomingShifts", com.google.firebase.firestore.FieldValue.arrayUnion(job.id))
 
-                // Send CONFIRMED notification to worker with shift details
                 val dateStr = java.text.SimpleDateFormat("dd.MM.yy", java.util.Locale.getDefault())
                     .format(java.util.Date(job.date))
                 val workerNotifRef = db.collection("notifications").document()
@@ -320,7 +311,6 @@ object UserRepository {
                 )
                 workerNotifRef.set(workerNotification)
 
-                // Send WORKER_CONFIRMED notification to employer
                 val employerNotifRef = db.collection("notifications").document()
                 val employerNotification = Notification(
                     id = employerNotifRef.id,
@@ -339,7 +329,7 @@ object UserRepository {
             }
             .addOnFailureListener { onFailure(it) }
     }
-    // Worker rejects the job
+
     fun rejectJob(
         application: Application,
         job: JobPost,
@@ -350,7 +340,6 @@ object UserRepository {
             .document(application.id)
             .update("status", "rejected")
             .addOnSuccessListener {
-                // Send notification to employer
                 val notifRef = db.collection("notifications").document()
                 val notification = Notification(
                     id = notifRef.id,
@@ -370,7 +359,6 @@ object UserRepository {
             .addOnFailureListener { onFailure(it) }
     }
 
-    // Get notifications for current user
     fun getNotifications(
         role: String,
         onSuccess: (List<Notification>) -> Unit,
@@ -389,7 +377,7 @@ object UserRepository {
             }
             .addOnFailureListener { onFailure(it) }
     }
-    // Mark all notifications as read
+
     fun markNotificationsAsRead(role: String) {
         val userId = auth.currentUser?.uid ?: return
         db.collection("notifications")
@@ -406,7 +394,6 @@ object UserRepository {
             }
     }
 
-    // Rate a worker
     fun rateWorker(
         workerId: String,
         score: Double,
@@ -414,17 +401,15 @@ object UserRepository {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        db.collection("users").document(workerId)
+        db.collection("candidates").document(workerId)
             .get()
             .addOnSuccessListener { document ->
                 val profile = document.toObject(UserProfile::class.java) ?: return@addOnSuccessListener
                 val newCount = profile.ratingsCount + 1
                 val newRating = ((profile.rating * profile.ratingsCount) + score) / newCount
-
-                db.collection("users").document(workerId)
+                db.collection("candidates").document(workerId)
                     .update(mapOf("rating" to newRating, "ratingsCount" to newCount))
                     .addOnSuccessListener {
-                        // Mark notification as rated
                         db.collection("notifications").document(notificationId)
                             .update("isRated", true)
                             .addOnSuccessListener { onSuccess() }
@@ -434,7 +419,6 @@ object UserRepository {
             .addOnFailureListener { onFailure(it) }
     }
 
-    // Rate an employer
     fun rateEmployer(
         employerId: String,
         score: Double,
@@ -442,17 +426,15 @@ object UserRepository {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        db.collection("users").document(employerId)
+        db.collection("candidates").document(employerId)
             .get()
             .addOnSuccessListener { document ->
                 val profile = document.toObject(UserProfile::class.java) ?: return@addOnSuccessListener
                 val newCount = profile.ratingsCount + 1
                 val newRating = ((profile.rating * profile.ratingsCount) + score) / newCount
-
-                db.collection("users").document(employerId)
+                db.collection("candidates").document(employerId)
                     .update(mapOf("rating" to newRating, "ratingsCount" to newCount))
                     .addOnSuccessListener {
-                        // Mark notification as rated
                         db.collection("notifications").document(notificationId)
                             .update("isRated", true)
                             .addOnSuccessListener { onSuccess() }
@@ -486,7 +468,7 @@ object UserRepository {
         onSuccess: (UserProfile) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        db.collection("users")
+        db.collection("candidates")
             .document(userId)
             .get()
             .addOnSuccessListener { document ->
@@ -505,20 +487,18 @@ object UserRepository {
             .whereEqualTo("workerId", userId)
             .get()
             .addOnSuccessListener { documents ->
-                val applications = documents.mapNotNull {
-                    it.toObject(Application::class.java)
-                }
+                val applications = documents.mapNotNull { it.toObject(Application::class.java) }
                 onSuccess(applications)
             }
             .addOnFailureListener { onFailure(it) }
     }
+
     fun recordWorkerArrival(
         jobId: String,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
         val userId = auth.currentUser?.uid ?: return
-
         db.collection("applications")
             .whereEqualTo("jobId", jobId)
             .whereEqualTo("workerId", userId)
@@ -529,11 +509,9 @@ object UserRepository {
                     onFailure(Exception("No confirmed application found"))
                     return@addOnSuccessListener
                 }
-
                 val appDoc = documents.first()
                 appDoc.reference.update("status", "arrived")
                     .addOnSuccessListener {
-                        // Load job details to build notification
                         db.collection("jobs").document(jobId)
                             .get()
                             .addOnSuccessListener { jobDoc ->
@@ -542,8 +520,6 @@ object UserRepository {
                                 val date = jobDoc.getLong("date") ?: 0L
                                 val dateStr = java.text.SimpleDateFormat("dd.MM.yy", java.util.Locale.getDefault())
                                     .format(java.util.Date(date))
-
-                                // Send PENDING notification to worker (clock icon)
                                 val notifRef = db.collection("notifications").document()
                                 val notification = Notification(
                                     id = notifRef.id,
@@ -566,7 +542,7 @@ object UserRepository {
             }
             .addOnFailureListener { onFailure(it) }
     }
-    // Check if all required workers have arrived - if so move job to history
+
     private fun checkAllWorkersArrived(
         jobId: String,
         onSuccess: () -> Unit,
@@ -586,7 +562,6 @@ object UserRepository {
                     .get()
                     .addOnSuccessListener { arrivedDocs ->
                         if (arrivedDocs.size() >= workersNeeded) {
-                            // All workers arrived - notify employer
                             val employerNotifRef = db.collection("notifications").document()
                             val employerNotif = Notification(
                                 id = employerNotifRef.id,
@@ -600,20 +575,18 @@ object UserRepository {
                             )
                             employerNotifRef.set(employerNotif)
 
-                            // Send RATING notification to employer
                             val employerRatingRef = db.collection("notifications").document()
                             val employerRatingNotif = Notification(
                                 id = employerRatingRef.id,
                                 userId = employerId,
                                 role = "employer",
                                 type = "RATING",
-                                title = "דרג את העובדים ב\"$jobTitle\"",
+                                title = "דרג את העובדים במשרת $jobTitle",
                                 dateTime = "דירוגים עוזרים לעובדים למצוא עבודה",
                                 jobId = jobId
                             )
                             employerRatingRef.set(employerRatingNotif)
 
-                            // Send RATING notification to each worker
                             arrivedDocs.forEach { arrivedDoc ->
                                 val workerId = arrivedDoc.getString("workerId") ?: return@forEach
                                 val workerRatingRef = db.collection("notifications").document()
@@ -635,19 +608,18 @@ object UserRepository {
             }
             .addOnFailureListener { onFailure(it) }
     }
+
     fun getUpcomingShifts(
         onSuccess: (List<JobPost>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
         val userId = auth.currentUser?.uid ?: return
-
         getUserProfile(
             onSuccess = { profile ->
                 if (profile.upcomingShifts.isEmpty()) {
                     onSuccess(emptyList())
                     return@getUserProfile
                 }
-
                 db.collection("jobs")
                     .whereIn("id", profile.upcomingShifts)
                     .get()
@@ -655,7 +627,6 @@ object UserRepository {
                         val now = System.currentTimeMillis()
                         val jobs = documents.mapNotNull { it.toObject(JobPost::class.java) }
                             .filter { job ->
-                                // Only show future shifts
                                 val endHour = job.endTime.split(":")[0].toIntOrNull() ?: 0
                                 val shiftEndMillis = java.util.Calendar.getInstance().apply {
                                     timeInMillis = job.date

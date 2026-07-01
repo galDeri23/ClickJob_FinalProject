@@ -180,7 +180,7 @@ class RegisterActivity : AppCompatActivity() {
         tvStepTitle.text = stepTitles[step]
         btnNext.text = if (step == 3) "הצג לי משרות מתאימות" else "הבא"
         if (step == 3) {
-            btnNext.setBackgroundResource(R.color.DarkDeep)
+            btnNext.setBackgroundResource(R.color.brand_pink)
         }
         tvSkip.visibility = if (step == 0) View.GONE else View.VISIBLE
     }

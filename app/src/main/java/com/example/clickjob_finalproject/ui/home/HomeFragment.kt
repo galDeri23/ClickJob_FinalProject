@@ -1,6 +1,7 @@
 package com.example.clickjob_finalproject.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,6 +45,7 @@ class HomeFragment : Fragment() {
         binding.scrollView.visibility = View.INVISIBLE
         loadedCount = 0
 
+
         setupSearchBar()
         setupJobPosting()
         setupEmptyShiftCard()
@@ -56,6 +58,7 @@ class HomeFragment : Fragment() {
     // Called when each section finishes loading
     private fun onSectionLoaded() {
         loadedCount++
+        Log.d("HOME_DEBUG", "onSectionLoaded called, count = $loadedCount")
         if (loadedCount >= totalToLoad) {
             binding.progressBar.visibility = View.GONE
             binding.scrollView.visibility = View.VISIBLE
@@ -194,36 +197,56 @@ class HomeFragment : Fragment() {
                             add(java.util.Calendar.DAY_OF_YEAR, 1)
                         }
 
-                        val items = jobsWithMatch.map { (job, matchPercent) ->
-                            val jobCalendar = java.util.Calendar.getInstance().apply {
-                                timeInMillis = job.date
-                            }
-                            val dateLabel = when {
-                                jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
-                                jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
-                                else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
-                            }
-                            JobItem(
-                                title = job.title,
-                                company = job.company,
-                                price = "₪${job.salary}",
-                                rating = "",
-                                distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
-                                date = dateLabel,
-                                matchPercent = "$matchPercent%",
-                                isUrgent = job.isUrgent,
-                                category = job.category,
-                                id = job.id
+                        val employerIds = jobsWithMatch.map { it.first.employerId }.distinct()
+                        val employerRatings = mutableMapOf<String, String>()
+                        var loadedEmployers = 0
+
+                        employerIds.forEach { employerId ->
+                            UserRepository.getUserProfileById(
+                                userId = employerId,
+                                onSuccess = { empProfile ->
+                                    if (empProfile.rating > 0) {
+                                        employerRatings[employerId] = String.format("%.1f", empProfile.rating)
+                                    }
+                                    loadedEmployers++
+                                    if (loadedEmployers == employerIds.size) {
+                                        val items = jobsWithMatch.map { (job, matchPercent) ->
+                                            val jobCalendar = java.util.Calendar.getInstance().apply {
+                                                timeInMillis = job.date
+                                            }
+                                            val dateLabel = when {
+                                                jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+                                                jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+                                                else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
+                                            }
+                                            JobItem(
+                                                title = job.title,
+                                                company = job.company,
+                                                price = "₪${job.salary}",
+                                                rating = employerRatings[job.employerId] ?: "",
+                                                distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
+                                                date = dateLabel,
+                                                matchPercent = "$matchPercent%",
+                                                isUrgent = job.isUrgent,
+                                                category = job.category,
+                                                id = job.id
+                                            )
+                                        }
+                                        binding.tvSectionBestMatch.visibility = View.VISIBLE
+                                        binding.rvBestMatch.visibility        = View.VISIBLE
+                                        binding.rvBestMatch.layoutManager = LinearLayoutManager(
+                                            requireContext(), LinearLayoutManager.HORIZONTAL, false
+                                        )
+                                        binding.rvBestMatch.adapter = JobAdapter(items) { job -> openJobDetails(job) }
+                                        onSectionLoaded()
+                                    }
+                                },
+                                onFailure = {
+                                    loadedEmployers++
+                                    if (loadedEmployers == employerIds.size) onSectionLoaded()
+                                }
                             )
                         }
-
-                        binding.tvSectionBestMatch.visibility = View.VISIBLE
-                        binding.rvBestMatch.visibility        = View.VISIBLE
-                        binding.rvBestMatch.layoutManager = LinearLayoutManager(
-                            requireContext(), LinearLayoutManager.HORIZONTAL, false
-                        )
-                        binding.rvBestMatch.adapter = JobAdapter(items) { job -> openJobDetails(job) }
-                        onSectionLoaded()
                     },
                     onFailure = { onSectionLoaded() }
                 )
@@ -247,36 +270,60 @@ class HomeFragment : Fragment() {
                     add(java.util.Calendar.DAY_OF_YEAR, 1)
                 }
 
-                val items = jobs.map { job ->
-                    val jobCalendar = java.util.Calendar.getInstance().apply {
-                        timeInMillis = job.date
-                    }
-                    val dateLabel = when {
-                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
-                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
-                        else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
-                    }
-                    JobItem(
-                        title = job.title,
-                        company = job.company,
-                        price = "₪${job.salary}",
-                        rating = "",
-                        distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
-                        date = dateLabel,
-                        matchPercent = null,
-                        isUrgent = true,
-                        category = job.category,
-                        id = job.id
+                // Load employer ratings
+                val employerIds = jobs.map { it.employerId }.distinct()
+                Log.d("DEBUG", "Total employerIds: ${employerIds.size}")
+                Log.d("DEBUG", "EmployerIds: $employerIds")
+                val employerRatings = mutableMapOf<String, String>()
+                var loadedEmployers = 0
+
+                employerIds.forEach { employerId ->
+                    UserRepository.getUserProfileById(
+                        userId = employerId,
+                        onSuccess = { profile ->
+                            if (profile.rating > 0) {
+                                employerRatings[employerId] = String.format("%.1f", profile.rating)
+                            }
+                            loadedEmployers++
+                            if (loadedEmployers == employerIds.size) {
+                                val items = jobs.map { job ->
+                                    val jobCalendar = java.util.Calendar.getInstance().apply {
+                                        timeInMillis = job.date
+                                    }
+                                    val dateLabel = when {
+                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+                                        else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
+                                    }
+                                    JobItem(
+                                        title = job.title,
+                                        company = job.company,
+                                        price = "₪${job.salary}",
+                                        rating = employerRatings[job.employerId] ?: "",
+                                        distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
+                                        date = dateLabel,
+                                        matchPercent = null,
+                                        isUrgent = true,
+                                        category = job.category,
+                                        id = job.id
+                                    )
+                                }
+                                binding.tvSectionUrgent.visibility = View.VISIBLE
+                                binding.rvUrgent.visibility        = View.VISIBLE
+                                binding.rvUrgent.layoutManager = LinearLayoutManager(
+                                    requireContext(), LinearLayoutManager.HORIZONTAL, false
+                                )
+                                binding.rvUrgent.adapter = JobAdapter(items) { job -> openJobDetails(job) }
+                                onSectionLoaded()
+                            }
+                        },
+                        onFailure = { e ->
+                            Log.e("DEBUG", "Failed to load employer $employerId: ${e.message}")
+                            loadedEmployers++
+                            if (loadedEmployers == employerIds.size) onSectionLoaded()
+                        }
                     )
                 }
-
-                binding.tvSectionUrgent.visibility = View.VISIBLE
-                binding.rvUrgent.visibility        = View.VISIBLE
-                binding.rvUrgent.layoutManager = LinearLayoutManager(
-                    requireContext(), LinearLayoutManager.HORIZONTAL, false
-                )
-                binding.rvUrgent.adapter = JobAdapter(items) { job -> openJobDetails(job) }
-                onSectionLoaded()
             },
             onFailure = { onSectionLoaded() }
         )
