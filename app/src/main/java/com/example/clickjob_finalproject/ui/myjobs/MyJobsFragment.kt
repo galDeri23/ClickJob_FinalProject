@@ -203,9 +203,14 @@ class MyJobsFragment : Fragment() {
                             pending--
                             if (pending == 0) {
                                 workerActive.clear()
-                                workerActive.addAll(activeItems)
+                                workerActive.addAll(
+                                    activeItems.sortedBy { it.shiftStartMillis }
+                                )
+
                                 workerHistory.clear()
-                                workerHistory.addAll(historyItems)
+                                workerHistory.addAll(
+                                    historyItems.sortedByDescending { it.shiftStartMillis }
+                                )
                                 if (viewModel.isWorkerMode) {
                                     workerAdapter.updateItems(workerActive.toList(), JobTabType.ACTIVE)
                                 }

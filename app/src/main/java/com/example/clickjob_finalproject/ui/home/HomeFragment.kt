@@ -286,7 +286,9 @@ class HomeFragment : Fragment() {
                             }
                             loadedEmployers++
                             if (loadedEmployers == employerIds.size) {
-                                val items = jobs.map { job ->
+                                val items = jobs
+                                    .sortedBy { it.date }
+                                    .map { job ->
                                     val jobCalendar = java.util.Calendar.getInstance().apply {
                                         timeInMillis = job.date
                                     }

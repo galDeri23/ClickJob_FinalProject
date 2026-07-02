@@ -10,7 +10,9 @@ data class JobPost(
     val category: String = "",
     val salaryType: String = "hourly", // "hourly" or "daily"
     val salary: String = "",
-    val date: Long = 0L,
+    val workFrequency: String = "",
+    val date: Long = 0L,      // Start date of the job
+    val endDate: Long = 0L,   // End date - equals date for single-day jobs
     val startTime: String = "",
     val endTime: String = "",
     val workersNeeded: Int = 1,
@@ -24,5 +26,6 @@ data class JobPost(
     @get:PropertyName("isUrgent")
     @set:PropertyName("isUrgent")
     var isUrgent: Boolean = false,
+    var ratingNotificationsSent: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )

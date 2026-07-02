@@ -31,6 +31,9 @@ class SearchResultsFragment : Fragment() {
     private val selectedCategories = mutableListOf<String>()
     private var allItems = listOf<ResultItem>()
 
+    // User's city from profile - used by the "near" tab
+    private var userCity: String = ""
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -51,6 +54,7 @@ class SearchResultsFragment : Fragment() {
         setupAdapter()
         setupTabs()
         setupCategoryChips()
+        loadUserCity()
         loadJobs()
     }
 
@@ -69,6 +73,16 @@ class SearchResultsFragment : Fragment() {
         }
         binding.rvResults.layoutManager = LinearLayoutManager(requireContext())
         binding.rvResults.adapter = adapter
+    }
+
+    // Loads the user's city once for the "near" tab sorting
+    private fun loadUserCity() {
+        UserRepository.getUserProfile(
+            onSuccess = { profile ->
+                userCity = profile.city
+            },
+            onFailure = { }
+        )
     }
 
     // Loads jobs from Firestore filtered by selected categories
@@ -120,18 +134,32 @@ class SearchResultsFragment : Fragment() {
 
         binding.chipGroupCategories.visibility = View.VISIBLE
 
-        selectedCategories.forEach { category ->
+        selectedCategories.toList().forEach { category ->
             val chip = Chip(requireContext()).apply {
                 text = category
                 isCloseIconVisible = true
-                isClickable = true
-                setChipBackgroundColorResource(R.color.white)
+                isClickable = false
+                isCheckable = false
+
+                // Figma style: light gray pill, no stroke, dark text
+                chipBackgroundColor = android.content.res.ColorStateList.valueOf(
+                    android.graphics.Color.parseColor("#E9E7E9")
+                )
+                chipStrokeWidth = 0f
                 setTextColor(ContextCompat.getColor(requireContext(), R.color.DarkDeep))
-                setCloseIconTintResource(R.color.DarkDeep)
-                chipStrokeWidth = 1f
-                setChipStrokeColorResource(R.color.DarkDeep)
-                textStartPadding = 8f
-                textEndPadding = 8f
+                textSize = 13f
+                typeface = ResourcesCompat.getFont(requireContext(), R.font.ploni_regular_aaa)
+
+                // Fully rounded pill shape
+                chipCornerRadius = 50f
+
+                // Small dark close icon
+                closeIconTint = android.content.res.ColorStateList.valueOf(
+                    ContextCompat.getColor(requireContext(), R.color.DarkDeep)
+                )
+                closeIconSize = 16f * resources.displayMetrics.density / 2.5f
+                chipStartPadding = 10f
+                chipEndPadding = 10f
 
                 setOnCloseIconClickListener {
                     selectedCategories.remove(category)
@@ -166,9 +194,13 @@ class SearchResultsFragment : Fragment() {
         binding.tabNear.setOnClickListener {
             tabs.forEach { setTabUnselected(it) }
             setTabSelected(binding.tabNear)
-            // Sort by distance (currently empty - TODO when location is added)
-            adapter.updateItems(allItems)
-            updateResultsCount(allItems.size)
+            // Jobs in the user's city first, then the rest, each group by date
+            val sorted = allItems.sortedWith(
+                compareByDescending<ResultItem> { userCity.isNotEmpty() && it.distance == userCity }
+                    .thenBy { it.date }
+            )
+            adapter.updateItems(sorted)
+            updateResultsCount(sorted.size)
         }
 
         binding.tabHighSalary.setOnClickListener {
@@ -183,8 +215,8 @@ class SearchResultsFragment : Fragment() {
         binding.tabUrgent.setOnClickListener {
             tabs.forEach { setTabUnselected(it) }
             setTabSelected(binding.tabUrgent)
-            // Filter urgent only
-            val urgent = allItems.filter { it.isUrgent }
+            // Filter urgent only, closest date first
+            val urgent = allItems.filter { it.isUrgent }.sortedBy { it.date }
             adapter.updateItems(urgent)
             updateResultsCount(urgent.size)
         }

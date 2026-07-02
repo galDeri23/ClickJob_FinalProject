@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -14,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.clickjob_finalproject.R
 import com.example.clickjob_finalproject.data.model.Application
+import com.example.clickjob_finalproject.data.model.JobPost
 import com.example.clickjob_finalproject.data.repository.UserRepository
 import com.example.clickjob_finalproject.databinding.FragmentWorkerProfileBinding
 import com.google.android.flexbox.FlexboxLayout
@@ -28,6 +28,7 @@ class WorkerProfileFragment : Fragment() {
     private var jobId: String = ""
     private var isDocumentsExpanded = false
     private var currentApplication: Application? = null
+    private var bottomNav: View? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,12 +48,36 @@ class WorkerProfileFragment : Fragment() {
 
         setupBackButton()
         loadWorkerProfile()
+        loadApplicationStatus()
     }
 
     private fun setupBackButton() {
         binding.ivBack.setOnClickListener {
             findNavController().popBackStack()
         }
+    }
+
+    // Loads the application to adjust the approve button by its status
+    private fun loadApplicationStatus() {
+        if (applicationId.isEmpty() || jobId.isEmpty()) return
+
+        UserRepository.getJobApplications(
+            jobId = jobId,
+            onSuccess = { applications ->
+                currentApplication = applications.find { it.id == applicationId }
+                when (currentApplication?.status) {
+                    "employer_approved" -> {
+                        binding.btnApproveWorker.isEnabled = false
+                        binding.btnApproveWorker.text = "ממתין לאישור העובד"
+                    }
+                    "confirmed" -> {
+                        binding.btnApproveWorker.isEnabled = false
+                        binding.btnApproveWorker.text = "העובד אושר ✓"
+                    }
+                }
+            },
+            onFailure = { }
+        )
     }
 
     // Loads worker profile from Firestore
@@ -171,27 +196,46 @@ class WorkerProfileFragment : Fragment() {
         UserRepository.getJobById(
             jobId = jobId,
             onSuccess = { job ->
-                // Get application details
-                UserRepository.getJobApplications(
-                    jobId = jobId,
-                    onSuccess = { applications ->
-                        val application = applications.find { it.id == applicationId } ?: return@getJobApplications
-                        UserRepository.approveApplicant(
-                            application = application,
-                            job = job,
-                            onSuccess = {
-                                Toast.makeText(requireContext(), "העובד אושר!", Toast.LENGTH_SHORT).show()
-                                findNavController().popBackStack()
-                            },
-                            onFailure = {
-                                Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
+                val application = currentApplication
+                if (application != null) {
+                    doApprove(application, job)
+                } else {
+                    // Fallback: fetch the application if it was not loaded yet
+                    UserRepository.getJobApplications(
+                        jobId = jobId,
+                        onSuccess = { applications ->
+                            val found = applications.find { it.id == applicationId }
+                            if (found == null) {
+                                Toast.makeText(requireContext(), "המועמדות לא נמצאה", Toast.LENGTH_SHORT).show()
+                                return@getJobApplications
                             }
-                        )
-                    },
-                    onFailure = { }
-                )
+                            doApprove(found, job)
+                        },
+                        onFailure = {
+                            Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
             },
-            onFailure = { }
+            onFailure = {
+                Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    private fun doApprove(application: Application, job: JobPost) {
+        binding.btnApproveWorker.isEnabled = false
+        UserRepository.approveApplicant(
+            application = application,
+            job = job,
+            onSuccess = {
+                Toast.makeText(requireContext(), "העובד אושר!", Toast.LENGTH_SHORT).show()
+                findNavController().popBackStack()
+            },
+            onFailure = {
+                binding.btnApproveWorker.isEnabled = true
+                Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
+            }
         )
     }
 
@@ -218,6 +262,17 @@ class WorkerProfileFragment : Fragment() {
         }
         chip.layoutParams = lp
         container.addView(chip)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        bottomNav = requireActivity().findViewById(R.id.bottom_navigation)
+        bottomNav?.visibility = View.GONE
+    }
+
+    override fun onPause() {
+        super.onPause()
+        bottomNav?.visibility = View.VISIBLE
     }
 
     override fun onDestroyView() {

@@ -34,6 +34,7 @@ class WorkerDetailsDialog : DialogFragment() {
                     putFloat("rating", worker.rating)
                     putString("profileImageUrl", worker.profileImageUrl)
                     putString("bio", worker.bio)
+                    putBoolean("isPending", worker.isPending)
                 }
             }
         }
@@ -55,6 +56,7 @@ class WorkerDetailsDialog : DialogFragment() {
         val role = arguments?.getString("role") ?: ""
         val rating = arguments?.getFloat("rating") ?: 0f
         val profileImageUrl = arguments?.getString("profileImageUrl") ?: ""
+        val isPending = arguments?.getBoolean("isPending") ?: false
 
         view.findViewById<TextView>(R.id.tvWorkerName).text = name
         view.findViewById<TextView>(R.id.tvWorkerRole).text = role
@@ -62,14 +64,25 @@ class WorkerDetailsDialog : DialogFragment() {
 
         val imgProfile = view.findViewById<ImageView>(R.id.imgWorkerProfile)
         if (profileImageUrl.isNotEmpty()) {
-            Glide.with(this).load(profileImageUrl).circleCrop().into(imgProfile)
+            Glide.with(this)
+                .load(profileImageUrl)
+                .circleCrop()
+                .placeholder(R.drawable.bari)
+                .error(R.drawable.bari)
+                .into(imgProfile)
         }
 
         view.findViewById<ImageView>(R.id.btnClose).setOnClickListener {
             dismiss()
         }
 
-        view.findViewById<MaterialButton>(R.id.btnApprove).setOnClickListener {
+        // Approve button: disabled when already approved and waiting for the worker
+        val btnApprove = view.findViewById<MaterialButton>(R.id.btnApprove)
+        if (isPending) {
+            btnApprove.isEnabled = false
+            btnApprove.text = "ממתין לאישור העובד"
+        }
+        btnApprove.setOnClickListener {
             onApprove?.invoke()
             dismiss()
         }
@@ -88,8 +101,10 @@ class WorkerDetailsDialog : DialogFragment() {
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
                 addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                attributes?.blurBehindRadius = 20
+                attributes?.blurBehindRadius = 60
+                setDimAmount(0.2f)
             } else {
                 setDimAmount(0.5f)
             }

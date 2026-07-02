@@ -26,6 +26,24 @@ class JobDetailsFragment : Fragment() {
 
     private var bottomNav: View? = null
 
+    // Maps job category name to its circle image drawable
+    private val categoryImages = mapOf(
+        "מסעדות" to R.drawable.img_cat_circle_hospitality,
+        "אבטחה וביטחון" to R.drawable.img_cat_circle_security,
+        "משלוחים ותחבורה" to R.drawable.img_cat_circle_delivery,
+        "בניין וייצור" to R.drawable.img_cat_circle_construction,
+        "חינוך והוראה" to R.drawable.img_cat_circle_education,
+        "בעלי חיים" to R.drawable.img_cat_circle_pets,
+        "אפסנאות ולוגיסטיקה" to R.drawable.img_cat_circle_logistics,
+        "רפואה ובריאות" to R.drawable.img_cat_circle_health,
+        "הפקה ואירועים" to R.drawable.img_cat_circle_events,
+        "טכנולוגיה" to R.drawable.img_cat_circle_tech,
+        "שירות לקוחות" to R.drawable.img_cat_circle_service,
+        "מכירות ואופנה" to R.drawable.img_cat_circle_sales,
+        "עיצוב וקריאייטיב" to R.drawable.img_cat_circle_creative,
+        "אחזקה" to R.drawable.img_cat_circle_maintenance
+    )
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -78,14 +96,31 @@ class JobDetailsFragment : Fragment() {
         UserRepository.getJobById(
             jobId = jobId,
             onSuccess = { job ->
+                // Business card: job title, company name, address
+                binding.tvJobTitle.text = job.title
                 binding.tvCompanyName.text = job.company
-                binding.tvCategory.text = job.category
-                binding.tvAddress.text = job.address
+                binding.tvAddressCard.text = job.address
                 binding.tvDescription.text = job.description
 
-                val dateStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                    .format(Date(job.date))
-                binding.tvDay1.text = "$dateStr  ${job.startTime} - ${job.endTime}"
+                // Category circle image
+                val categoryImage = categoryImages[job.category]
+                if (categoryImage != null) {
+                    binding.imgLogo.setImageResource(categoryImage)
+                }
+
+                // Salary box
+                binding.tvSalary.text = "₪${job.salary}"
+                binding.tvSalaryType.text = if (job.salaryType == "daily") "ליום" else "לשעה"
+
+                // Timing: date range or single day + hours
+                binding.tvTiming.text = buildTimingText(job.date, job.endDate, job.startTime, job.endTime)
+
+                // Job type based on work frequency
+                binding.tvJobType.text = when (job.workFrequency) {
+                    "חד פעמי" -> "עבודה חד פעמית"
+                    "רציף" -> "עבודה רציפה, לאורך תקופה"
+                    else -> "לא צוין"
+                }
 
                 if (job.imageUrl.isNotEmpty()) {
                     Glide.with(this)
@@ -99,7 +134,7 @@ class JobDetailsFragment : Fragment() {
                 binding.btnShare.setOnClickListener {
                     val shareText = "משרה ב-${job.company}: ${job.title}\n" +
                             "קטגוריה: ${job.category}\n" +
-                            "שכר: ₪${job.salary} לשעה\n" +
+                            "שכר: ₪${job.salary} ${if (job.salaryType == "daily") "ליום" else "לשעה"}\n" +
                             "כתובת: ${job.address}"
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
@@ -112,7 +147,7 @@ class JobDetailsFragment : Fragment() {
                 if (!applicationId.isNullOrEmpty()) {
                     // Came from notification/my jobs - show confirm button
                     binding.btnApply.text = "אישור עבודה"
-                    binding.btnApply.setBackgroundColor(Color.parseColor("#24061E"))
+                    binding.btnApply.setBackgroundColor(Color.parseColor("DarkDeep"))
                     binding.btnApply.setOnClickListener {
                         binding.btnApply.isEnabled = false
                         UserRepository.getJobApplications(
@@ -143,7 +178,7 @@ class JobDetailsFragment : Fragment() {
                     }
                 } else {
                     // Came from search/home - show apply button
-                    binding.btnApply.text = "הגשת מועמדות/אישור עבודה"
+                    binding.btnApply.text = "הגשת מועמדות"
                     binding.btnApply.setOnClickListener {
                         binding.btnApply.isEnabled = false
                         UserRepository.applyToJob(
@@ -187,6 +222,24 @@ class JobDetailsFragment : Fragment() {
                 Toast.makeText(requireContext(), "שגיאה בטעינת המשרה", Toast.LENGTH_SHORT).show()
             }
         )
+    }
+
+    // Builds the timing line: single day or date range, with hours
+    private fun buildTimingText(startDate: Long, endDate: Long, startTime: String, endTime: String): String {
+        val format = SimpleDateFormat("dd/MM", Locale.getDefault())
+        val startStr = format.format(Date(startDate))
+
+        // Fallback for old jobs without endDate
+        val effectiveEnd = if (endDate > 0L) endDate else startDate
+        val endStr = format.format(Date(effectiveEnd))
+
+        val dateText = if (startStr == endStr) {
+            "בתאריך $startStr"
+        } else {
+            "בתאריך $startStr-$endStr"
+        }
+
+        return "$dateText, שעות $startTime-$endTime"
     }
 
     private fun bindRequirementChips(requirements: List<String>) {

@@ -59,7 +59,7 @@
             app:layout_constraintEnd_toStartOf="@+id/btnCancel"
             tools:text="פרטים על התפקיד"/>
 
-        <!-- Cancel button (shown in התקבלו tab) -->
+        <!-- Cancel button -->
         <TextView
             android:id="@+id/btnCancel"
             android:layout_width="wrap_content"
@@ -70,11 +70,31 @@
             android:textColor="@color/brand_pink"
             android:background="@drawable/bg_outline_button_pink"
             android:paddingHorizontal="12dp"
+            android:gravity="center"
             android:paddingVertical="4dp"
             android:visibility="gone"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@+id/tvWorkerName"/>
+
+        <TextView
+            android:id="@+id/tvTimerPending"
+            android:layout_width="wrap_content"
+            android:layout_height="25dp"
+            android:drawableStart="@drawable/ic_clock"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/DarkDeep"
+            android:text="בהמתנה"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:textColor="@color/DarkDeep"
+            android:textSize="12sp"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:background="@drawable/bg_badge_pink"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@id/tvWorkerName"/>
 
         <!-- Phone -->
         <TextView

@@ -19,7 +19,8 @@ data class WorkerItem(
     val bio: String = "",
     val profileImageUrl: String = "",
     val rating: Float = 0f,
-    val isAccepted: Boolean = false
+    val isAccepted: Boolean = false,
+    val isPending: Boolean = false // Employer approved, waiting for worker confirmation
 )
 
 class WorkerSortingAdapter(
@@ -35,6 +36,7 @@ class WorkerSortingAdapter(
         val tvRole: TextView    = view.findViewById(R.id.tvWorkerRole)
         val tvPhone: TextView   = view.findViewById(R.id.tvPhone)
         val btnCancel: TextView = view.findViewById(R.id.btnCancel)
+        val tvTimerPending: TextView = view.findViewById(R.id.tvTimerPending)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -60,7 +62,13 @@ class WorkerSortingAdapter(
             holder.imgWorker.setImageResource(R.drawable.user)
         }
 
-        holder.btnCancel.visibility = if (showCancelButton) View.VISIBLE else View.GONE
+        // "Pending" badge: employer approved, waiting for worker's confirmation
+        holder.tvTimerPending.visibility = if (worker.isPending) View.VISIBLE else View.GONE
+
+        // Cancel button hidden when the pending badge occupies the same spot
+        holder.btnCancel.visibility =
+            if (showCancelButton && !worker.isPending) View.VISIBLE else View.GONE
+
         holder.itemView.setOnClickListener { onWorkerClick(worker) }
         holder.btnCancel.setOnClickListener { onCancelClick(worker) }
     }

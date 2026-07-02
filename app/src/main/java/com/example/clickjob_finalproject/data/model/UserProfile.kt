@@ -10,6 +10,7 @@ data class UserProfile(
     val phone: String = "",
     val email: String = "",
     val address: String = "",
+    var city: String = "",
     val searchRadius: Int = 0,
     val availableDays: List<String> = emptyList(),
     val languages: List<String> = emptyList(),

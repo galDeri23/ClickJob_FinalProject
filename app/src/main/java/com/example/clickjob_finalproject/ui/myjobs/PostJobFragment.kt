@@ -21,8 +21,11 @@ import com.example.clickjob_finalproject.data.model.JobPost
 import com.example.clickjob_finalproject.data.repository.UserRepository
 import com.example.clickjob_finalproject.databinding.FragmentPostJobBinding
 import com.google.android.material.chip.Chip
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class PostJobFragment : Fragment() {
 
@@ -30,7 +33,8 @@ class PostJobFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var selectedImageUri: Uri? = null
-    private var selectedDate: Long = System.currentTimeMillis()
+    private var startDate: Long = System.currentTimeMillis()
+    private var endDate: Long = System.currentTimeMillis()
 
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -88,7 +92,7 @@ class PostJobFragment : Fragment() {
         setupSalaryToggle()
         setupChips()
         setupImageUpload()
-        setupCalendar()
+        setupDateRangePicker()
         setupButtons()
 
         // Only prefill if duplicating from existing job
@@ -225,12 +229,33 @@ class PostJobFragment : Fragment() {
         }
     }
 
-    private fun setupCalendar() {
-        binding.calendarView.setOnDateChangeListener { _, year, month, day ->
-            val calendar = java.util.Calendar.getInstance()
-            calendar.set(year, month, day)
-            selectedDate = calendar.timeInMillis
+    private fun setupDateRangePicker() {
+        binding.etDateRange.setOnClickListener {
+            val picker = MaterialDatePicker.Builder.dateRangePicker()
+                .setTitleText("בחר תאריך או טווח")
+                .setSelection(
+                    androidx.core.util.Pair(startDate, endDate)
+                )
+                .build()
+
+            picker.addOnPositiveButtonClickListener { range ->
+                startDate = range.first ?: System.currentTimeMillis()
+                endDate = range.second ?: startDate
+                updateDateRangeText()
+            }
+
+            picker.show(parentFragmentManager, "dateRangePicker")
         }
+    }
+
+    private fun updateDateRangeText() {
+        val format = SimpleDateFormat("d.M.yyyy", Locale.getDefault())
+        val startText = format.format(startDate)
+        val endText = format.format(endDate)
+
+        binding.etDateRange.setText(
+            if (startText == endText) startText else "$startText - $endText"
+        )
     }
 
     private fun setupButtons() {
@@ -240,6 +265,10 @@ class PostJobFragment : Fragment() {
     }
 
     private fun validateForm(): Boolean {
+        if (binding.etJobTitle.text.isNullOrEmpty()) {
+            Toast.makeText(requireContext(), "יש למלא שם משרה", Toast.LENGTH_SHORT).show()
+            return false
+        }
         if (binding.etCompany.text.isNullOrEmpty()) {
             Toast.makeText(requireContext(), "יש למלא שם חברה", Toast.LENGTH_SHORT).show()
             return false
@@ -263,15 +292,18 @@ class PostJobFragment : Fragment() {
         }
 
         val salaryType = if (binding.toggleHourly.background != null) "hourly" else "daily"
-        val isUrgent = (selectedDate - System.currentTimeMillis()) < 48 * 60 * 60 * 1000L
+        val isUrgent = (startDate - System.currentTimeMillis()) < 48 * 60 * 60 * 1000L
+        val workFrequency = if (binding.rbContinuous.isChecked) "רציף" else "חד פעמי"
 
         val job = JobPost(
-            title = selectedCategory.name,
+            title = binding.etJobTitle.text.toString().trim(),
             company = binding.etCompany.text.toString().trim(),
             category = selectedCategory.name,
             salaryType = salaryType,
             salary = binding.spinnerSalary.selectedItem.toString(),
-            date = selectedDate,
+            workFrequency = workFrequency,
+            date = startDate,
+            endDate = endDate,
             startTime = binding.spinnerStartTime.selectedItem.toString(),
             endTime = binding.spinnerEndTime.selectedItem.toString(),
             workersNeeded = binding.spinnerWorkers.selectedItem.toString().toIntOrNull() ?: 1,
@@ -332,6 +364,20 @@ class PostJobFragment : Fragment() {
                 if (index >= 0) binding.spinnerCategory.setSelection(index)
 
                 binding.etCompany.setText(job.company)
+                binding.etJobTitle.setText(job.title)
+
+                // Restore work frequency selection
+                if (job.workFrequency == "חד פעמי") {
+                    binding.rbOneTime.isChecked = true
+
+                } else {
+                    binding.rbContinuous.isChecked = true
+                }
+
+                // Restore date range (fallback for old jobs without endDate)
+                startDate = job.date
+                endDate = if (job.endDate > 0L) job.endDate else job.date
+                updateDateRangeText()
 
                 val salaryIndex = salaryOptions.indexOf(job.salary)
                 if (salaryIndex >= 0) binding.spinnerSalary.setSelection(salaryIndex)

@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.example.clickjob_finalproject.data.repository.UserRepository
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -43,6 +44,9 @@ class MainActivity : AppCompatActivity() {
         }
         //SeedUsers.seedAll()
         //SeedData.seedAll()
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            UserRepository.checkFinishedShiftsAndCreateRatingNotifications()
+        }
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController

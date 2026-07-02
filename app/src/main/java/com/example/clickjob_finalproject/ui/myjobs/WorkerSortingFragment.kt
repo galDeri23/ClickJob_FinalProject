@@ -35,6 +35,7 @@ class WorkerSortingFragment : Fragment() {
     private var appliedWorkers = listOf<WorkerItem>()
     private var acceptedWorkers = listOf<WorkerItem>()
     private var allApplications = listOf<Application>()
+    private var bottomNav: View? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -97,12 +98,14 @@ class WorkerSortingFragment : Fragment() {
             onSuccess = { applications ->
                 allApplications = applications
 
+                // Applied tab: pending + employer_approved (waiting for worker's double-check)
                 appliedWorkers = applications
-                    .filter { it.status == "pending" }
-                    .map { it.toWorkerItem() }
+                    .filter { it.status == "pending" || it.status == "employer_approved" }
+                    .map { it.toWorkerItem(isPending = it.status == "employer_approved") }
 
+                // Accepted tab: only workers who confirmed the job themselves
                 acceptedWorkers = applications
-                    .filter { it.status == "employer_approved" || it.status == "confirmed" }
+                    .filter { it.status == "confirmed" }
                     .map { it.toWorkerItem(isAccepted = true) }
 
                 // Update tab labels with real counts
@@ -120,7 +123,10 @@ class WorkerSortingFragment : Fragment() {
         )
     }
 
-    private fun Application.toWorkerItem(isAccepted: Boolean = false): WorkerItem {
+    private fun Application.toWorkerItem(
+        isAccepted: Boolean = false,
+        isPending: Boolean = false
+    ): WorkerItem {
         return WorkerItem(
             applicationId = id,
             workerId = workerId,
@@ -130,7 +136,8 @@ class WorkerSortingFragment : Fragment() {
             email = "",
             bio = workerBio,
             profileImageUrl = workerProfileImageUrl,
-            isAccepted = isAccepted
+            isAccepted = isAccepted,
+            isPending = isPending
         )
     }
 
@@ -181,36 +188,60 @@ class WorkerSortingFragment : Fragment() {
         UserRepository.getJobById(
             jobId = jobId,
             onSuccess = { job ->
-                WorkerDetailsDialog.newInstance(
-                    worker = worker,
-                    onApprove = {
-                        UserRepository.approveApplicant(
-                            application = application,
-                            job = job,
-                            onSuccess = {
-                                Toast.makeText(requireContext(), "המועמד אושר!", Toast.LENGTH_SHORT).show()
-                                loadApplications()
-                            },
-                            onFailure = {
-                                Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
-                            }
+                // Fetch the worker's live profile for accurate rating, role and image
+                UserRepository.getUserProfileById(
+                    userId = worker.workerId,
+                    onSuccess = { profile ->
+                        val enrichedWorker = worker.copy(
+                            name = profile.name.ifEmpty { worker.name },
+                            role = profile.jobCategories.firstOrNull() ?: worker.bio,
+                            rating = profile.rating.toFloat(),
+                            profileImageUrl = profile.profileImageUrl.ifEmpty { worker.profileImageUrl }
                         )
+                        openWorkerDialog(enrichedWorker, application, job)
                     },
-                    onMoreDetails = {
-                        val bundle = Bundle().apply {
-                            putString("applicationId", application.id)
-                            putString("workerId", worker.workerId)
-                            putString("jobId", jobId)
-                        }
-                        findNavController().navigate(
-                            R.id.action_workerSortingFragment_to_workerProfileFragment,
-                            bundle
-                        )
+                    onFailure = {
+                        // Fallback: show dialog with the data we already have
+                        openWorkerDialog(worker.copy(role = worker.bio), application, job)
                     }
-                ).show(parentFragmentManager, "worker_details")
+                )
             },
             onFailure = { }
         )
+    }
+
+    private fun openWorkerDialog(
+        worker: WorkerItem,
+        application: Application,
+        job: com.example.clickjob_finalproject.data.model.JobPost
+    ) {
+        WorkerDetailsDialog.newInstance(
+            worker = worker,
+            onApprove = {
+                UserRepository.approveApplicant(
+                    application = application,
+                    job = job,
+                    onSuccess = {
+                        Toast.makeText(requireContext(), "המועמד אושר!", Toast.LENGTH_SHORT).show()
+                        loadApplications()
+                    },
+                    onFailure = {
+                        Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            },
+            onMoreDetails = {
+                val bundle = Bundle().apply {
+                    putString("applicationId", application.id)
+                    putString("workerId", worker.workerId)
+                    putString("jobId", jobId)
+                }
+                findNavController().navigate(
+                    R.id.action_workerSortingFragment_to_workerProfileFragment,
+                    bundle
+                )
+            }
+        ).show(parentFragmentManager, "worker_details")
     }
 
     private fun cancelWorker(worker: WorkerItem) {
@@ -219,7 +250,7 @@ class WorkerSortingFragment : Fragment() {
         UserRepository.getJobById(
             jobId = jobId,
             onSuccess = { job ->
-                UserRepository.rejectJob(
+                UserRepository.cancelWorkerByEmployer(
                     application = application,
                     job = job,
                     onSuccess = {
@@ -233,5 +264,16 @@ class WorkerSortingFragment : Fragment() {
             },
             onFailure = { }
         )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        bottomNav = requireActivity().findViewById(R.id.bottom_navigation)
+        bottomNav?.visibility = View.GONE
+    }
+
+    override fun onPause() {
+        super.onPause()
+        bottomNav?.visibility = View.VISIBLE
     }
 }

@@ -19,6 +19,7 @@ import com.example.clickjob_finalproject.adapters.NotificationsAdapter
 import com.example.clickjob_finalproject.data.model.Notification
 import com.example.clickjob_finalproject.data.repository.UserRepository
 import com.example.clickjob_finalproject.databinding.FragmentNotificationsBinding
+import androidx.core.content.edit
 
 class NotificationsFragment : Fragment() {
 
@@ -185,51 +186,55 @@ class NotificationsFragment : Fragment() {
 
     // Open rating dialog
     private fun handleRate(item: NotificationItem) {
-        val businessName = if (isWorkerMode) {
-            // Worker: "דרג את עבודה ב\"חומוס מצמיה\""
-            item.title.substringAfter("ב\"").removeSuffix("\"")
-        } else {
-            // Employer: "דרג את העובדים במשרת מלצר/ית"
-            item.title.substringAfter("במשרת ")
+        if (item.jobId.isEmpty()) return
+
+        if (isWorkerMode) {
+            UserRepository.getJobById(
+                jobId = item.jobId,
+                onSuccess = { job ->
+                    RatingDialog.newInstance(job.company) { score ->
+                        UserRepository.rateEmployer(
+                            employerId = job.employerId,
+                            score = score,
+                            notificationId = item.id,
+                            onSuccess = { loadNotifications("worker") },
+                            onFailure = { }
+                        )
+                    }.show(childFragmentManager, "RatingDialog")
+                },
+                onFailure = { }
+            )
+            return
         }
 
-        RatingDialog.newInstance(businessName) { score ->
-            if (item.jobId.isNotEmpty()) {
-                if (isWorkerMode) {
-                    UserRepository.getJobById(
-                        jobId = item.jobId,
-                        onSuccess = { job ->
-                            UserRepository.rateEmployer(
-                                employerId = job.employerId,
-                                score = score,
-                                notificationId = item.id,
-                                onSuccess = { loadNotifications("worker") },
-                                onFailure = { }
-                            )
-                        },
-                        onFailure = { }
-                    )
-                } else {
-                    UserRepository.getJobApplications(
-                        jobId = item.jobId,
-                        onSuccess = { applications ->
-                            applications
-                                .filter { it.status == "arrived" }
-                                .forEach { application ->
-                                    UserRepository.rateWorker(
-                                        workerId = application.workerId,
-                                        score = score,
-                                        notificationId = item.id,
-                                        onSuccess = { loadNotifications("employer") },
-                                        onFailure = { }
-                                    )
-                                }
-                        },
-                        onFailure = { }
-                    )
-                }
-            }
-        }.show(childFragmentManager, "RatingDialog")
+        if (item.applicationId.isEmpty()) return
+
+        UserRepository.getApplicationById(
+            applicationId = item.applicationId,
+            onSuccess = { application ->
+                UserRepository.getUserProfileById(
+                    userId = application.workerId,
+                    onSuccess = { profile ->
+                        EmployerRatingDialog.newInstance(
+                            workerName = profile.name,
+                            workerImageUrl = profile.profileImageUrl,
+                            shiftDetails = item.dateTime,
+                            onRatingSubmit = { score ->
+                                UserRepository.rateWorker(
+                                    workerId = application.workerId,
+                                    score = score,
+                                    notificationId = item.id,
+                                    onSuccess = { loadNotifications("employer") },
+                                    onFailure = { }
+                                )
+                            }
+                        ).show(childFragmentManager, "EmployerRatingDialog")
+                    },
+                    onFailure = { }
+                )
+            },
+            onFailure = { }
+        )
     }
     private fun handleItemClick(item: NotificationItem) {
         if (item.jobId.isEmpty()) return
@@ -306,7 +311,7 @@ class NotificationsFragment : Fragment() {
     private fun saveMode(isEmployer: Boolean) {
         requireContext()
             .getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-            .edit().putBoolean("is_employer_mode", isEmployer).apply()
+            .edit { putBoolean("is_employer_mode", isEmployer) }
     }
 
     private fun getSavedMode(): Boolean {

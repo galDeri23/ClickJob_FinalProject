@@ -22,7 +22,7 @@ class SearchFragment : Fragment() {
 
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
-
+    private var bottomNav: View? = null
     data class Category(val name: String, val iconRes: Int)
 
     private val categories by lazy {
@@ -179,6 +179,17 @@ class SearchFragment : Fragment() {
 
     private fun dp(value: Int): Int {
         return (value * resources.displayMetrics.density).toInt()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        bottomNav = requireActivity().findViewById(R.id.bottom_navigation)
+        bottomNav?.visibility = View.GONE
+    }
+
+    override fun onPause() {
+        super.onPause()
+        bottomNav?.visibility = View.VISIBLE
     }
 
     override fun onDestroyView() {

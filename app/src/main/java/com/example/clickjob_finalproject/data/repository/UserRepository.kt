@@ -174,12 +174,12 @@ object UserRepository {
         query.get()
             .addOnSuccessListener { documents ->
                 val jobs = documents.mapNotNull { it.toObject(JobPost::class.java) }
+                    .filter { isJobStillOpen(it) }
                     .sortedBy { it.date }
                 onSuccess(jobs)
             }
             .addOnFailureListener { onFailure(it) }
     }
-
     fun applyToJob(
         job: JobPost,
         onSuccess: () -> Unit,
@@ -347,6 +347,52 @@ object UserRepository {
                     role = "employer",
                     type = "WORKER_CANCELLED",
                     title = "${application.workerName} ביטל/ה את העבודה ב\"${job.company}\"",
+                    dateTime = java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.getDefault())
+                        .format(java.util.Date()),
+                    jobId = job.id,
+                    applicationId = application.id
+                )
+                notifRef.set(notification)
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    // Employer cancels a worker: notifies the worker and rolls back confirmation side effects
+    fun cancelWorkerByEmployer(
+        application: Application,
+        job: JobPost,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("applications")
+            .document(application.id)
+            .update("status", "rejected")
+            .addOnSuccessListener {
+                // Roll back what confirmJob did (relevant when the worker already confirmed)
+                db.collection("jobs")
+                    .document(job.id)
+                    .update(
+                        "workersRegistered",
+                        com.google.firebase.firestore.FieldValue.increment(-1)
+                    )
+
+                db.collection("candidates")
+                    .document(application.workerId)
+                    .update(
+                        "upcomingShifts",
+                        com.google.firebase.firestore.FieldValue.arrayRemove(job.id)
+                    )
+
+                // Notify the worker that the employer cancelled the job
+                val notifRef = db.collection("notifications").document()
+                val notification = Notification(
+                    id = notifRef.id,
+                    userId = application.workerId,
+                    role = "worker",
+                    type = "ALERT",
+                    title = "העבודה ב\"${job.company}\" בוטלה על ידי המעסיק",
                     dateTime = java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.getDefault())
                         .format(java.util.Date()),
                     jobId = job.id,
@@ -643,4 +689,159 @@ object UserRepository {
             onFailure = onFailure
         )
     }
+
+    fun checkFinishedShiftsAndCreateRatingNotifications(
+        onComplete: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        val now = System.currentTimeMillis()
+
+        db.collection("jobs")
+            .get()
+            .addOnSuccessListener { jobDocs ->
+
+                val finishedJobs = jobDocs
+                    .mapNotNull { it.toObject(JobPost::class.java) }
+                    .filter { job ->
+                        !job.ratingNotificationsSent && isShiftEnded(job, now)
+                    }
+
+                if (finishedJobs.isEmpty()) {
+                    onComplete()
+                    return@addOnSuccessListener
+                }
+
+                var completedCount = 0
+
+                finishedJobs.forEach { job ->
+                    createRatingNotificationsForJob(
+                        job = job,
+                        onComplete = {
+                            completedCount++
+                            if (completedCount == finishedJobs.size) {
+                                onComplete()
+                            }
+                        },
+                        onFailure = onFailure
+                    )
+                }
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    private fun isShiftEnded(job: JobPost, now: Long): Boolean {
+        val calendar = java.util.Calendar.getInstance().apply {
+            timeInMillis = if (job.endDate != 0L) job.endDate else job.date
+
+            val parts = job.endTime.split(":")
+            val hour = parts.getOrNull(0)?.toIntOrNull() ?: 0
+            val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
+
+            set(java.util.Calendar.HOUR_OF_DAY, hour)
+            set(java.util.Calendar.MINUTE, minute)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }
+
+        return calendar.timeInMillis < now
+    }
+
+    private fun createRatingNotificationsForJob(
+        job: JobPost,
+        onComplete: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        db.collection("applications")
+            .whereEqualTo("jobId", job.id)
+            .get()
+            .addOnSuccessListener { applicationDocs ->
+
+                val applications = applicationDocs
+                    .mapNotNull { it.toObject(Application::class.java) }
+                    .filter { it.status == "confirmed" || it.status == "arrived" }
+
+                if (applications.isEmpty()) {
+                    db.collection("jobs")
+                        .document(job.id)
+                        .update("ratingNotificationsSent", true)
+                        .addOnSuccessListener { onComplete() }
+                        .addOnFailureListener { onFailure(it) }
+
+                    return@addOnSuccessListener
+                }
+
+                val batch = db.batch()
+
+                applications.forEach { application ->
+
+                    val employerRef = db.collection("notifications").document()
+                    val employerNotification = Notification(
+                        id = employerRef.id,
+                        userId = job.employerId,
+                        role = "employer",
+                        type = "RATING",
+                        title = "דירוג העובד \"${application.workerName}\"",
+                        dateTime = "דירוגים מסייעים למצוא עובדים מתאימים",
+                        jobId = job.id,
+                        applicationId = application.id
+                    )
+                    batch.set(employerRef, employerNotification)
+
+                    if (application.status == "arrived") {
+                        val workerRef = db.collection("notifications").document()
+                        val workerNotification = Notification(
+                            id = workerRef.id,
+                            userId = application.workerId,
+                            role = "worker",
+                            type = "RATING",
+                            title = "דירוג עבודה ב\"${job.company}\"",
+                            dateTime = "דירוגים מעלים את הסיכוי למצוא עבודה",
+                            jobId = job.id,
+                            applicationId = application.id
+                        )
+                        batch.set(workerRef, workerNotification)
+                    }
+                }
+
+                val jobRef = db.collection("jobs").document(job.id)
+                batch.update(jobRef, "ratingNotificationsSent", true)
+
+                batch.commit()
+                    .addOnSuccessListener { onComplete() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    // Returns true if the job can still be applied to (start date+time has not passed)
+    fun isJobStillOpen(job: JobPost): Boolean {
+        val startMillis = java.util.Calendar.getInstance().apply {
+            timeInMillis = job.date
+            val parts = job.startTime.split(":")
+            set(java.util.Calendar.HOUR_OF_DAY, parts.getOrNull(0)?.toIntOrNull() ?: 0)
+            set(java.util.Calendar.MINUTE, parts.getOrNull(1)?.toIntOrNull() ?: 0)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        return startMillis > System.currentTimeMillis()
+    }
+    fun getApplicationById(
+        applicationId: String,
+        onSuccess: (Application) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("applications")
+            .document(applicationId)
+            .get()
+            .addOnSuccessListener { document ->
+                val application = document.toObject(Application::class.java)
+                if (application != null) {
+                    onSuccess(application)
+                } else {
+                    onFailure(Exception("Application not found"))
+                }
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+
 }

@@ -1,6 +1,8 @@
 package com.example.clickjob_finalproject.auth
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -18,6 +20,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.button.MaterialButton
+import android.widget.CheckBox
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
@@ -26,6 +29,7 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var sharedPrefs: SharedPreferences
 
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -44,8 +48,10 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         auth = FirebaseAuth.getInstance()
+        sharedPrefs = getSharedPreferences("loginPrefs", Context.MODE_PRIVATE)
 
-        // If user already logged in → skip to main
+        loadRememberMe()
+
         if (auth.currentUser != null) {
             navigateToMain()
             return
@@ -56,11 +62,40 @@ class LoginActivity : AppCompatActivity() {
         setupClickListeners()
     }
 
+    private fun loadRememberMe() {
+        val rememberMe = sharedPrefs.getBoolean("rememberMe", false)
+
+        val cbRememberMe = findViewById<CheckBox>(R.id.cbRememberMe)
+        val etEmail = findViewById<TextInputEditText>(R.id.etEmail)
+
+        cbRememberMe.isChecked = rememberMe
+
+        if (rememberMe) {
+            etEmail.setText(sharedPrefs.getString("email", ""))
+        }
+    }
+
+    private fun saveRememberMe(email: String) {
+        val cbRememberMe = findViewById<CheckBox>(R.id.cbRememberMe)
+
+        if (cbRememberMe.isChecked) {
+            sharedPrefs.edit()
+                .putBoolean("rememberMe", true)
+                .putString("email", email)
+                .apply()
+        } else {
+            sharedPrefs.edit()
+                .clear()
+                .apply()
+        }
+    }
+
     private fun setupGoogleSignIn() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
+
         googleSignInClient = GoogleSignIn.getClient(this, gso)
     }
 
@@ -70,13 +105,16 @@ class LoginActivity : AppCompatActivity() {
         val spannable = SpannableString(fullText)
         val pinkColor = ContextCompat.getColor(this, R.color.brand_pink)
         val start = fullText.indexOf("רישום")
+
         spannable.setSpan(
             ForegroundColorSpan(pinkColor),
             start,
             fullText.length,
             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
+
         tvRegisterLink.text = spannable
+
         tvRegisterLink.setOnClickListener {
             startActivity(Intent(this, SignUpActivity::class.java))
         }
@@ -101,14 +139,28 @@ class LoginActivity : AppCompatActivity() {
         }
 
         findViewById<TextView>(R.id.tvForgotPassword).setOnClickListener {
-            // TODO: forgot password screen
+            val email = findViewById<TextInputEditText>(R.id.etEmail).text.toString().trim()
+
+            if (email.isEmpty()) {
+                Toast.makeText(this, "הכניסי כתובת מייל כדי לאפס סיסמה", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            auth.sendPasswordResetEmail(email)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "נשלח אלייך מייל לאיפוס סיסמה", Toast.LENGTH_LONG).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "לא הצלחנו לשלוח מייל איפוס. בדקי שהמייל תקין", Toast.LENGTH_LONG).show()
+                }
         }
     }
 
     private fun loginWithEmail(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener {
-                // Check if user already has profile in Firestore
+                saveRememberMe(email)
+
                 UserRepository.checkUserExists(
                     onExists = { navigateToMain() },
                     onNotExists = {
@@ -121,26 +173,28 @@ class LoginActivity : AppCompatActivity() {
                 val message = when (exception.message) {
                     "The password is invalid or the user does not have a password." ->
                         "סיסמא שגויה"
+
                     "There is no user record corresponding to this identifier. The user may have been deleted." ->
                         "משתמש לא קיים"
+
                     else -> "שגיאה בהתחברות, נסי שוב"
                 }
+
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             }
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
+
         auth.signInWithCredential(credential)
             .addOnSuccessListener { result ->
-                // Check if new user or existing user
                 val isNewUser = result.additionalUserInfo?.isNewUser ?: false
+
                 if (isNewUser) {
-                    // New user → go to registration
                     startActivity(Intent(this, RegisterActivity::class.java))
                     finish()
                 } else {
-                    // Existing user → go to main
                     navigateToMain()
                 }
             }
