@@ -222,7 +222,7 @@ object UserRepository {
                         id = notifRef.id,
                         userId = job.employerId,
                         role = "employer",
-                        type = "NEW_CANDIDATES",
+                        type = "ALERT",
                         title = "יש ${documents.size()} מועמדים חדשים למשרה ${job.title}",
                         dateTime = java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.getDefault())
                             .format(java.util.Date()),
@@ -265,11 +265,12 @@ object UserRepository {
                     id = notifRef.id,
                     userId = application.workerId,
                     role = "worker",
-                    type = "ALERT",
+                    type = "CONFIRMED",
                     title = "נדרש אישור לעבודה ב\"${job.company}\"",
                     dateTime = "עבודה ב-$dateStr",
                     jobId = job.id,
-                    applicationId = application.id
+                    applicationId = application.id,
+                    actionRequired = true
                 )
                 notifRef.set(notification)
                     .addOnSuccessListener { onSuccess() }
@@ -290,11 +291,20 @@ object UserRepository {
             .addOnSuccessListener {
                 db.collection("jobs")
                     .document(job.id)
-                    .update("workersRegistered", job.workersRegistered + 1)
+                    .update("workersRegistered", com.google.firebase.firestore.FieldValue.increment(1))
 
                 db.collection("candidates")
                     .document(application.workerId)
                     .update("upcomingShifts", com.google.firebase.firestore.FieldValue.arrayUnion(job.id))
+
+                // Deactivate the original double-check notification so its buttons disappear
+                db.collection("notifications")
+                    .whereEqualTo("applicationId", application.id)
+                    .whereEqualTo("actionRequired", true)
+                    .get()
+                    .addOnSuccessListener { docs ->
+                        docs.forEach { it.reference.update("actionRequired", false) }
+                    }
 
                 val dateStr = java.text.SimpleDateFormat("dd.MM.yy", java.util.Locale.getDefault())
                     .format(java.util.Date(job.date))
@@ -340,6 +350,15 @@ object UserRepository {
             .document(application.id)
             .update("status", "rejected")
             .addOnSuccessListener {
+                // Deactivate the original double-check notification so its buttons disappear
+                db.collection("notifications")
+                    .whereEqualTo("applicationId", application.id)
+                    .whereEqualTo("actionRequired", true)
+                    .get()
+                    .addOnSuccessListener { docs ->
+                        docs.forEach { it.reference.update("actionRequired", false) }
+                    }
+
                 val notifRef = db.collection("notifications").document()
                 val notification = Notification(
                     id = notifRef.id,
@@ -844,4 +863,24 @@ object UserRepository {
             .addOnFailureListener { onFailure(it) }
     }
 
+    fun listenToJobApplications(
+        jobId: String,
+        onUpdate: (List<Application>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ): com.google.firebase.firestore.ListenerRegistration {
+        return db.collection("applications")
+            .whereEqualTo("jobId", jobId)
+            .addSnapshotListener { documents, error ->
+                if (error != null) {
+                    onFailure(error)
+                    return@addSnapshotListener
+                }
+
+                val applications = documents
+                    ?.mapNotNull { it.toObject(Application::class.java) }
+                    ?: emptyList()
+
+                onUpdate(applications)
+            }
+    }
 }

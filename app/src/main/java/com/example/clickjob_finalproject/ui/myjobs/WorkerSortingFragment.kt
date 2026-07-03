@@ -9,25 +9,28 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.clickjob_finalproject.R
 import com.example.clickjob_finalproject.adapters.EmployerJobsAdapter
 import com.example.clickjob_finalproject.adapters.WorkerItem
 import com.example.clickjob_finalproject.adapters.WorkerSortingAdapter
 import com.example.clickjob_finalproject.data.model.Application
+import com.example.clickjob_finalproject.data.model.JobPost
 import com.example.clickjob_finalproject.data.repository.UserRepository
+import com.example.clickjob_finalproject.databinding.FragmentWorkerSortingBinding
 import com.google.android.material.imageview.ShapeableImageView
+import com.google.firebase.firestore.ListenerRegistration
 
 class WorkerSortingFragment : Fragment() {
 
-    private lateinit var rvWorkers: RecyclerView
-    private lateinit var tabApplied: TextView
-    private lateinit var tabAccepted: TextView
+    private var _binding: FragmentWorkerSortingBinding? = null
+    private val binding get() = _binding!!
+
+    private var applicationsListener: ListenerRegistration? = null
 
     private var jobId: String = ""
     private var jobTitle: String = ""
     private var jobCompany: String = ""
-    private var jobCategory: String = "מסעדות"
+    private var jobCategory: String = "מסעדנות"
     private var jobDate: String = ""
     private var jobPrice: String = ""
     private var workersNeeded: Int = 0
@@ -36,23 +39,21 @@ class WorkerSortingFragment : Fragment() {
     private var acceptedWorkers = listOf<WorkerItem>()
     private var allApplications = listOf<Application>()
     private var bottomNav: View? = null
+    private var isAcceptedTabSelected = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_worker_sorting, container, false)
+    ): View {
+        _binding = FragmentWorkerSortingBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        rvWorkers = view.findViewById(R.id.rvWorkers)
-        tabApplied = view.findViewById(R.id.tabApplied)
-        tabAccepted = view.findViewById(R.id.tabAccepted)
-
-        rvWorkers.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvWorkers.layoutManager = LinearLayoutManager(requireContext())
 
         jobId = arguments?.getString("jobId") ?: ""
         jobTitle = arguments?.getString("jobTitle") ?: ""
@@ -64,14 +65,15 @@ class WorkerSortingFragment : Fragment() {
 
         setupJobCard(view)
         setupTabs()
-        setupBackButton(view)
+        setupBackButton()
         loadApplications()
     }
 
     private fun setupJobCard(view: View) {
-        view.findViewById<TextView>(R.id.tvNeededCount).text = "כמה אני צריך: $workersNeeded"
+        binding.tvNeededCount.text = "כמה אני צריך: $workersNeeded"
 
         val jobCard = view.findViewById<View>(R.id.jobCard)
+
         jobCard.post {
             jobCard.findViewById<TextView>(R.id.tvJobTitle)?.text = jobTitle
             jobCard.findViewById<TextView>(R.id.tvCompanyName)?.text = jobCompany
@@ -84,8 +86,8 @@ class WorkerSortingFragment : Fragment() {
         }
     }
 
-    private fun setupBackButton(view: View) {
-        view.findViewById<View>(R.id.ivBack).setOnClickListener {
+    private fun setupBackButton() {
+        binding.ivBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
     }
@@ -93,29 +95,30 @@ class WorkerSortingFragment : Fragment() {
     private fun loadApplications() {
         if (jobId.isEmpty()) return
 
-        UserRepository.getJobApplications(
+        applicationsListener?.remove()
+
+        applicationsListener = UserRepository.listenToJobApplications(
             jobId = jobId,
-            onSuccess = { applications ->
+            onUpdate = { applications ->
                 allApplications = applications
 
-                // Applied tab: pending + employer_approved (waiting for worker's double-check)
                 appliedWorkers = applications
                     .filter { it.status == "pending" || it.status == "employer_approved" }
                     .map { it.toWorkerItem(isPending = it.status == "employer_approved") }
 
-                // Accepted tab: only workers who confirmed the job themselves
                 acceptedWorkers = applications
-                    .filter { it.status == "confirmed" }
+                    .filter { it.status == "confirmed" || it.status == "arrived" }
                     .map { it.toWorkerItem(isAccepted = true) }
 
-                // Update tab labels with real counts
-                tabApplied.text = "הגישו (${appliedWorkers.size})"
-                tabAccepted.text = "התקבלו (${acceptedWorkers.size})"
+                binding.tabApplied.text = "הגישו (${appliedWorkers.size})"
+                binding.tabAccepted.text = "התקבלו (${acceptedWorkers.size})"
+                binding.tvAppliedCount.text = "כמה הגישו: ${applications.size}"
 
-                view?.findViewById<TextView>(R.id.tvAppliedCount)?.text =
-                    "כמה הגישו: ${applications.size}"
-
-                showApplied()
+                if (isAcceptedTabSelected) {
+                    showAccepted()
+                } else {
+                    showApplied()
+                }
             },
             onFailure = {
                 Toast.makeText(requireContext(), "שגיאה בטעינת מועמדים", Toast.LENGTH_SHORT).show()
@@ -142,30 +145,25 @@ class WorkerSortingFragment : Fragment() {
     }
 
     private fun setupTabs() {
-        tabApplied.setOnClickListener {
-            tabApplied.setBackgroundResource(R.drawable.bg_tab_selected_teal)
-            tabApplied.setTextColor(resources.getColor(R.color.white, null))
-            tabAccepted.setBackgroundResource(R.drawable.bg_tab_unselected_sorting)
-            tabAccepted.setTextColor(resources.getColor(android.R.color.darker_gray, null))
+        binding.tabApplied.setOnClickListener {
+            isAcceptedTabSelected = false
             showApplied()
         }
 
-        tabAccepted.setOnClickListener {
-            tabAccepted.setBackgroundResource(R.drawable.bg_tab_selected_teal)
-            tabAccepted.setTextColor(resources.getColor(R.color.white, null))
-            tabApplied.setBackgroundResource(R.drawable.bg_tab_unselected_sorting)
-            tabApplied.setTextColor(resources.getColor(android.R.color.darker_gray, null))
+        binding.tabAccepted.setOnClickListener {
+            isAcceptedTabSelected = true
             showAccepted()
         }
     }
 
     private fun showApplied() {
-        tabApplied.setBackgroundResource(R.drawable.bg_tab_selected_teal)
-        tabApplied.setTextColor(resources.getColor(R.color.white, null))
-        tabAccepted.setBackgroundResource(R.drawable.bg_tab_unselected_sorting)
-        tabAccepted.setTextColor(resources.getColor(android.R.color.darker_gray, null))
+        binding.tabApplied.setBackgroundResource(R.drawable.bg_tab_selected_teal)
+        binding.tabApplied.setTextColor(resources.getColor(R.color.white, null))
 
-        rvWorkers.adapter = WorkerSortingAdapter(
+        binding.tabAccepted.setBackgroundResource(R.drawable.bg_tab_unselected_sorting)
+        binding.tabAccepted.setTextColor(resources.getColor(android.R.color.darker_gray, null))
+
+        binding.rvWorkers.adapter = WorkerSortingAdapter(
             workers = appliedWorkers,
             showCancelButton = false,
             onWorkerClick = { worker -> showWorkerDialog(worker) },
@@ -174,7 +172,13 @@ class WorkerSortingFragment : Fragment() {
     }
 
     private fun showAccepted() {
-        rvWorkers.adapter = WorkerSortingAdapter(
+        binding.tabAccepted.setBackgroundResource(R.drawable.bg_tab_selected_teal)
+        binding.tabAccepted.setTextColor(resources.getColor(R.color.white, null))
+
+        binding.tabApplied.setBackgroundResource(R.drawable.bg_tab_unselected_sorting)
+        binding.tabApplied.setTextColor(resources.getColor(android.R.color.darker_gray, null))
+
+        binding.rvWorkers.adapter = WorkerSortingAdapter(
             workers = acceptedWorkers,
             showCancelButton = true,
             onWorkerClick = { worker -> showWorkerDialog(worker) },
@@ -188,7 +192,6 @@ class WorkerSortingFragment : Fragment() {
         UserRepository.getJobById(
             jobId = jobId,
             onSuccess = { job ->
-                // Fetch the worker's live profile for accurate rating, role and image
                 UserRepository.getUserProfileById(
                     userId = worker.workerId,
                     onSuccess = { profile ->
@@ -198,10 +201,10 @@ class WorkerSortingFragment : Fragment() {
                             rating = profile.rating.toFloat(),
                             profileImageUrl = profile.profileImageUrl.ifEmpty { worker.profileImageUrl }
                         )
+
                         openWorkerDialog(enrichedWorker, application, job)
                     },
                     onFailure = {
-                        // Fallback: show dialog with the data we already have
                         openWorkerDialog(worker.copy(role = worker.bio), application, job)
                     }
                 )
@@ -213,7 +216,7 @@ class WorkerSortingFragment : Fragment() {
     private fun openWorkerDialog(
         worker: WorkerItem,
         application: Application,
-        job: com.example.clickjob_finalproject.data.model.JobPost
+        job: JobPost
     ) {
         WorkerDetailsDialog.newInstance(
             worker = worker,
@@ -223,7 +226,6 @@ class WorkerSortingFragment : Fragment() {
                     job = job,
                     onSuccess = {
                         Toast.makeText(requireContext(), "המועמד אושר!", Toast.LENGTH_SHORT).show()
-                        loadApplications()
                     },
                     onFailure = {
                         Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
@@ -236,6 +238,7 @@ class WorkerSortingFragment : Fragment() {
                     putString("workerId", worker.workerId)
                     putString("jobId", jobId)
                 }
+
                 findNavController().navigate(
                     R.id.action_workerSortingFragment_to_workerProfileFragment,
                     bundle
@@ -255,7 +258,6 @@ class WorkerSortingFragment : Fragment() {
                     job = job,
                     onSuccess = {
                         Toast.makeText(requireContext(), "המועמד בוטל", Toast.LENGTH_SHORT).show()
-                        loadApplications()
                     },
                     onFailure = {
                         Toast.makeText(requireContext(), "שגיאה בביטול", Toast.LENGTH_SHORT).show()
@@ -275,5 +277,12 @@ class WorkerSortingFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         bottomNav?.visibility = View.VISIBLE
+    }
+
+    override fun onDestroyView() {
+        applicationsListener?.remove()
+        applicationsListener = null
+        _binding = null
+        super.onDestroyView()
     }
 }

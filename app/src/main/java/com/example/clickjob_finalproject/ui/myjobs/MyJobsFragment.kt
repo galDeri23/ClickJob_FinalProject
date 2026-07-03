@@ -326,7 +326,31 @@ class MyJobsFragment : Fragment() {
         workerAdapter = MyJobsAdapter(
             items = emptyList(),
             tabType = JobTabType.ACTIVE,
-            onApproveClick = { },
+            onApproveClick = { item ->
+                UserRepository.getJobById(
+                    jobId = item.jobId,
+                    onSuccess = { job ->
+                        UserRepository.getApplicationById(
+                            applicationId = item.applicationId,
+                            onSuccess = { application ->
+                                UserRepository.confirmJob(
+                                    application = application,
+                                    job = job,
+                                    onSuccess = {
+                                        Toast.makeText(requireContext(), "העבודה אושרה! ✓", Toast.LENGTH_SHORT).show()
+                                        loadWorkerJobs()
+                                    },
+                                    onFailure = {
+                                        Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            },
+                            onFailure = { }
+                        )
+                    },
+                    onFailure = { }
+                )
+            },
             onItemClick = { item ->
                 if (item.needsApproval) {
                     findNavController().navigate(

@@ -42,18 +42,20 @@ class NotificationsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupAdapter()
         setupToggle()
         setupSearch()
         checkUserMode()
     }
 
-    private fun setupAdapter() {
+    // Recreate the adapter with the correct mode, then attach it
+    private fun recreateAdapter(isEmployer: Boolean) {
         adapter = NotificationsAdapter(
             items = emptyList(),
+            isEmployerMode = isEmployer,
             onApprove = { item -> handleApprove(item) },
             onCancel = { item -> handleCancel(item) },
             onRate = { item -> handleRate(item) },
+            onJobPage = { item -> handleItemClick(item) },
             onItemClick = { item -> handleItemClick(item) }
         )
         binding.rvNotifications.layoutManager = LinearLayoutManager(requireContext())
@@ -100,10 +102,10 @@ class NotificationsFragment : Fragment() {
     private fun Notification.toNotificationItem(): NotificationItem {
         val status = when (type) {
             "ALERT" -> NotificationStatus.ALERT
-            "CONFIRMED" -> NotificationStatus.CONFIRMED
+            "CONFIRMED", "WORKER_CONFIRMED" -> NotificationStatus.CONFIRMED
             "PENDING" -> NotificationStatus.PENDING
-            "CANCELLED" -> NotificationStatus.CANCELLED
-            "PEOPLE", "NEW_CANDIDATES", "WORKER_CONFIRMED", "WORKER_CANCELLED" -> NotificationStatus.PEOPLE
+            "CANCELLED", "WORKER_CANCELLED" -> NotificationStatus.CANCELLED
+            "PEOPLE", "NEW_CANDIDATES" -> NotificationStatus.PEOPLE
             "RATING" -> NotificationStatus.RATING
             else -> NotificationStatus.PENDING
         }
@@ -115,6 +117,7 @@ class NotificationsFragment : Fragment() {
             status = status,
             jobId = jobId,
             applicationId = applicationId,
+            actionRequired = actionRequired,
             isRated = isRated
         )
     }
@@ -236,6 +239,7 @@ class NotificationsFragment : Fragment() {
             onFailure = { }
         )
     }
+
     private fun handleItemClick(item: NotificationItem) {
         if (item.jobId.isEmpty()) return
 
@@ -264,7 +268,7 @@ class NotificationsFragment : Fragment() {
             // Worker - navigate to job details
             val args = bundleOf(
                 "jobId" to item.jobId,
-                "applicationId" to if (item.status == NotificationStatus.ALERT) item.applicationId else null
+                "applicationId" to if (item.actionRequired) item.applicationId else null
             )
             findNavController().navigate(
                 R.id.action_notificationsFragment_to_jobDetailsFragment,
@@ -296,6 +300,7 @@ class NotificationsFragment : Fragment() {
         binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         binding.toggleEmployer.background = null
         binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
+        recreateAdapter(isEmployer = false)
         loadNotifications("worker")
     }
 
@@ -305,6 +310,7 @@ class NotificationsFragment : Fragment() {
         binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         binding.toggleWorker.background = null
         binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
+        recreateAdapter(isEmployer = true)
         loadNotifications("employer")
     }
 

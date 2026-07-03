@@ -31,6 +31,7 @@ data class NotificationItem(
     val workerId: String = "",
     val workerName: String = "",
     val workerImageUrl: String = "",
+    val actionRequired: Boolean = false,
     val isRated: Boolean = false
 )
 
@@ -107,8 +108,9 @@ class NotificationsAdapter(
             NotificationStatus.CONFIRMED -> {
                 holder.imgStatus.setImageResource(R.drawable.ic_status_check)
 
-                // Worker side only: approve / cancel buttons
-                if (!isEmployerMode) {
+                // Green icon WITH buttons only when the notification requires action
+                // (double-check). Informational "accepted" notifications have no buttons.
+                if (!isEmployerMode && item.actionRequired) {
                     holder.actionsRow.visibility = View.VISIBLE
                     holder.cardRoot.setCardBackgroundColor("#FDF5F9".toColorInt())
 
@@ -142,7 +144,7 @@ class NotificationsAdapter(
                     holder.btnSingle.text = "דירוג"
 
                     if (isEmployerMode) {
-                        holder.btnSingle.setTextColor("@color/employer_primary".toColorInt())
+                        holder.btnSingle.setTextColor(ContextCompat.getColor(context, R.color.employer_primary))
                         holder.btnSingle.background =
                             ContextCompat.getDrawable(context, R.drawable.bg_outline_button_teal)
                     } else {

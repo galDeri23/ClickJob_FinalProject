@@ -147,7 +147,7 @@ class JobDetailsFragment : Fragment() {
                 if (!applicationId.isNullOrEmpty()) {
                     // Came from notification/my jobs - show confirm button
                     binding.btnApply.text = "אישור עבודה"
-                    binding.btnApply.setBackgroundColor(Color.parseColor("DarkDeep"))
+                    binding.btnApply.setBackgroundColor(Color.parseColor("#24061E"))
                     binding.btnApply.setOnClickListener {
                         binding.btnApply.isEnabled = false
                         UserRepository.getJobApplications(

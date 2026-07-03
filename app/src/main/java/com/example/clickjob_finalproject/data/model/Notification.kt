@@ -17,5 +17,6 @@ data class Notification(
     @get:PropertyName("isRated")
     @set:PropertyName("isRated")
     var isRated: Boolean = false,
+    val actionRequired: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
