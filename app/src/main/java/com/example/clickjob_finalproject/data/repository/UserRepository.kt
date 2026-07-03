@@ -285,61 +285,117 @@ object UserRepository {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        db.collection("applications")
-            .document(application.id)
-            .update("status", "confirmed")
-            .addOnSuccessListener {
-                db.collection("jobs")
-                    .document(job.id)
-                    .update("workersRegistered", com.google.firebase.firestore.FieldValue.increment(1))
+        val jobRef = db.collection("jobs").document(job.id)
+        val applicationRef = db.collection("applications").document(application.id)
 
-                db.collection("candidates")
-                    .document(application.workerId)
-                    .update("upcomingShifts", com.google.firebase.firestore.FieldValue.arrayUnion(job.id))
+        db.runTransaction { transaction ->
 
-                // Deactivate the original double-check notification so its buttons disappear
-                db.collection("notifications")
-                    .whereEqualTo("applicationId", application.id)
-                    .whereEqualTo("actionRequired", true)
-                    .get()
-                    .addOnSuccessListener { docs ->
-                        docs.forEach { it.reference.update("actionRequired", false) }
+            val jobSnapshot = transaction.get(jobRef)
+
+            val workersRegistered =
+                jobSnapshot.getLong("workersRegistered")?.toInt() ?: 0
+
+            val workersNeeded =
+                jobSnapshot.getLong("workersNeeded")?.toInt() ?: 0
+
+            if (workersRegistered >= workersNeeded) {
+                throw Exception("המשרה כבר מלאה")
+            }
+
+            transaction.update(applicationRef, "status", "confirmed")
+            transaction.update(jobRef, "workersRegistered", workersRegistered + 1)
+
+            null
+
+        }.addOnSuccessListener {
+
+            db.collection("candidates")
+                .document(application.workerId)
+                .update(
+                    "upcomingShifts",
+                    com.google.firebase.firestore.FieldValue.arrayUnion(job.id)
+                )
+
+            db.collection("notifications")
+                .whereEqualTo("applicationId", application.id)
+                .whereEqualTo("actionRequired", true)
+                .get()
+                .addOnSuccessListener { docs ->
+                    docs.forEach {
+                        it.reference.update("actionRequired", false)
                     }
+                }
 
-                val dateStr = java.text.SimpleDateFormat("dd.MM.yy", java.util.Locale.getDefault())
-                    .format(java.util.Date(job.date))
-                val workerNotifRef = db.collection("notifications").document()
-                val workerNotification = Notification(
-                    id = workerNotifRef.id,
+            val dateStr = java.text.SimpleDateFormat(
+                "dd.MM.yy",
+                java.util.Locale.getDefault()
+            ).format(java.util.Date(job.date))
+
+            val workerNotifRef = db.collection("notifications").document()
+            val workerNotification = Notification(
+                id = workerNotifRef.id,
+                userId = application.workerId,
+                role = "worker",
+                type = "CONFIRMED",
+                title = "התקבלת לעבודה ב\"${job.company}\"",
+                dateTime = "עבודה ביום $dateStr ${job.startTime}",
+                jobId = job.id,
+                applicationId = application.id
+            )
+
+            val employerNotifRef = db.collection("notifications").document()
+            val employerNotification = Notification(
+                id = employerNotifRef.id,
+                userId = job.employerId,
+                role = "employer",
+                type = "WORKER_CONFIRMED",
+                title = "${application.workerName} אישר/ה את העבודה ב\"${job.company}\"",
+                dateTime = java.text.SimpleDateFormat(
+                    "dd.MM.yy HH:mm",
+                    java.util.Locale.getDefault()
+                ).format(java.util.Date()),
+                jobId = job.id,
+                applicationId = application.id
+            )
+
+            val batch = db.batch()
+            batch.set(workerNotifRef, workerNotification)
+            batch.set(employerNotifRef, employerNotification)
+
+            batch.commit()
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { onFailure(it) }
+
+        }.addOnFailureListener { exception ->
+
+            if (exception.message == "המשרה כבר מלאה") {
+
+                val notifRef = db.collection("notifications").document()
+
+                val notification = Notification(
+                    id = notifRef.id,
                     userId = application.workerId,
                     role = "worker",
-                    type = "CONFIRMED",
-                    title = "התקבלת לעבודה ב\"${job.company}\"",
-                    dateTime = "עבודה ביום $dateStr ${job.startTime}",
+                    type = "CANCELLED",
+                    title = "המשרה ב\"${job.company}\" כבר נסגרה",
+                    dateTime = "כל התקנים למשרה כבר אוישו",
                     jobId = job.id,
                     applicationId = application.id
                 )
-                workerNotifRef.set(workerNotification)
 
-                val employerNotifRef = db.collection("notifications").document()
-                val employerNotification = Notification(
-                    id = employerNotifRef.id,
-                    userId = job.employerId,
-                    role = "employer",
-                    type = "WORKER_CONFIRMED",
-                    title = "${application.workerName} אישר/ה את העבודה ב\"${job.company}\"",
-                    dateTime = java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.getDefault())
-                        .format(java.util.Date()),
-                    jobId = job.id,
-                    applicationId = application.id
-                )
-                employerNotifRef.set(employerNotification)
-                    .addOnSuccessListener { onSuccess() }
-                    .addOnFailureListener { onFailure(it) }
+                notifRef.set(notification)
+                    .addOnSuccessListener {
+                        onFailure(Exception("לא ניתן לאשר את העבודה - כל התקנים כבר אוישו"))
+                    }
+                    .addOnFailureListener {
+                        onFailure(it)
+                    }
+
+            } else {
+                onFailure(exception)
             }
-            .addOnFailureListener { onFailure(it) }
+        }
     }
-
     fun rejectJob(
         application: Application,
         job: JobPost,
@@ -564,44 +620,84 @@ object UserRepository {
         onFailure: (Exception) -> Unit
     ) {
         val userId = auth.currentUser?.uid ?: return
+
         db.collection("applications")
             .whereEqualTo("jobId", jobId)
             .whereEqualTo("workerId", userId)
             .whereEqualTo("status", "confirmed")
             .get()
             .addOnSuccessListener { documents ->
+
                 if (documents.isEmpty) {
                     onFailure(Exception("No confirmed application found"))
                     return@addOnSuccessListener
                 }
+
                 val appDoc = documents.first()
-                appDoc.reference.update("status", "arrived")
-                    .addOnSuccessListener {
-                        db.collection("jobs").document(jobId)
-                            .get()
-                            .addOnSuccessListener { jobDoc ->
-                                val company = jobDoc.getString("company") ?: ""
-                                val endTime = jobDoc.getString("endTime") ?: ""
-                                val date = jobDoc.getLong("date") ?: 0L
-                                val dateStr = java.text.SimpleDateFormat("dd.MM.yy", java.util.Locale.getDefault())
-                                    .format(java.util.Date(date))
-                                val notifRef = db.collection("notifications").document()
-                                val notification = Notification(
-                                    id = notifRef.id,
-                                    userId = userId,
-                                    role = "worker",
-                                    type = "PENDING",
-                                    title = "סריקה לסיום עבודה ב\"$company\"",
-                                    dateTime = "עבודה הסתיימה ב-$dateStr $endTime:00",
-                                    jobId = jobId
-                                )
-                                notifRef.set(notification)
-                                    .addOnSuccessListener {
-                                        checkAllWorkersArrived(jobId, onSuccess, onFailure)
-                                    }
-                                    .addOnFailureListener { onFailure(it) }
-                            }
-                            .addOnFailureListener { onFailure(it) }
+                val application = appDoc.toObject(Application::class.java)
+
+                db.collection("jobs").document(jobId)
+                    .get()
+                    .addOnSuccessListener { jobDoc ->
+
+                        val job = jobDoc.toObject(JobPost::class.java)
+
+                        if (job == null) {
+                            onFailure(Exception("Job not found"))
+                            return@addOnSuccessListener
+                        }
+
+                        appDoc.reference.update(
+                            mapOf(
+                                "status" to "arrived",
+                                "arrivalScannedAt" to System.currentTimeMillis()
+                            )
+                        ).addOnSuccessListener {
+
+                            val scanTimeMillis = System.currentTimeMillis()
+
+                            val scanTimeStr = java.text.SimpleDateFormat(
+                                "dd.MM.yy HH:mm",
+                                java.util.Locale.getDefault()
+                            ).format(java.util.Date(scanTimeMillis))
+
+                            val workerNotifRef = db.collection("notifications").document()
+                            val workerNotification = Notification(
+                                id = workerNotifRef.id,
+                                userId = userId,
+                                role = "worker",
+                                type = "WORKER_ARRIVED",
+                                title = "סריקה להתחלת העבודה ב\"${job.company}\"",
+                                dateTime = "עבודה החלה ב-$scanTimeStr",
+                                jobId = jobId,
+                                applicationId = application.id,
+                                createdAt = scanTimeMillis
+                            )
+
+                            val employerNotifRef = db.collection("notifications").document()
+                            val employerNotification = Notification(
+                                id = employerNotifRef.id,
+                                userId = job.employerId,
+                                role = "employer",
+                                type = "WORKER_ARRIVED",
+                                title = "סריקה להתחלת עבודה ב\"${job.company}\"",
+                                dateTime = "${application.workerName} סרק/ה ב-$scanTimeStr",
+                                jobId = jobId,
+                                applicationId = application.id,
+                                createdAt = scanTimeMillis
+                            )
+
+                            val batch = db.batch()
+                            batch.set(workerNotifRef, workerNotification)
+                            batch.set(employerNotifRef, employerNotification)
+
+                            batch.commit()
+                                .addOnSuccessListener {
+                                    checkAllWorkersArrived(jobId, onSuccess, onFailure)
+                                }
+                                .addOnFailureListener { onFailure(it) }
+
+                        }.addOnFailureListener { onFailure(it) }
                     }
                     .addOnFailureListener { onFailure(it) }
             }

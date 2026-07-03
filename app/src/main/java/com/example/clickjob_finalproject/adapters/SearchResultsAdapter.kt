@@ -11,9 +11,9 @@ import com.example.clickjob_finalproject.R
 data class ResultItem(
     val id: String = "",
     val title: String,
+    val company: String = "",
     val price: String,
     val salary: Int = 0,
-    val address: String,
     val day: String,
     val distance: String,
     val category: String = "מסעדות",
@@ -30,8 +30,8 @@ class SearchResultsAdapter(
         val tvPrice: TextView      = itemView.findViewById(R.id.tvPrice)
         val tvPerHour: TextView    = itemView.findViewById(R.id.tvPerHour)
         val tvJobTitle: TextView   = itemView.findViewById(R.id.tvJobTitle)
-        val tvAddress: TextView    = itemView.findViewById(R.id.tvAddress)
         val tvDay: TextView        = itemView.findViewById(R.id.tvDay)
+        val tvCompanyName : TextView        = itemView.findViewById(R.id.tvCompanyName)
         val tvDistance: TextView   = itemView.findViewById(R.id.tvDistance)
     }
 
@@ -46,7 +46,7 @@ class SearchResultsAdapter(
         holder.tvPrice.text    = item.price
         holder.tvPerHour.text  = "לשעה"
         holder.tvJobTitle.text = item.title
-        holder.tvAddress.text  = item.address
+        holder.tvCompanyName.text = item.company
         holder.tvDay.text      = item.day
         holder.tvDistance.text = item.distance
         holder.imgCategory.setImageResource(getCategoryCircleImage(item.category))

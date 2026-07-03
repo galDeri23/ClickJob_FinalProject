@@ -191,8 +191,7 @@ class EmployerJobsAdapter(
     }
 
     fun updateItems(newItems: List<EmployerJobItem>, newTabType: JobTabType) {
-        // Sort: filled jobs first, then open jobs
-        items = newItems.sortedByDescending { it.workersRegistered == it.workersNeeded }
+        items = newItems
         tabType = newTabType
         notifyDataSetChanged()
     }

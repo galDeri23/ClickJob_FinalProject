@@ -26,6 +26,10 @@ import com.example.clickjob_finalproject.adapters.MyJobsAdapter
 import com.example.clickjob_finalproject.adapters.TimerType
 import com.example.clickjob_finalproject.data.repository.UserRepository
 import com.example.clickjob_finalproject.databinding.FragmentMyJobsBinding
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class MyJobsFragment : Fragment() {
 
@@ -35,11 +39,9 @@ class MyJobsFragment : Fragment() {
     private val viewModel: MyJobsViewModel by viewModels()
     private val appViewModel: AppViewModel by activityViewModels()
 
-    // ===== Worker data =====
     private val workerActive = mutableListOf<MyJobItem>()
     private val workerHistory = mutableListOf<MyJobItem>()
 
-    // ===== Employer data =====
     private val employerActive = mutableListOf<EmployerJobItem>()
     private val employerPending = mutableListOf(
         EmployerJobItem(id = "1", title = "מלצרית לחתונה", company = "שם חברה", workersRegistered = 2, workersNeeded = 6, countdownMillis = 18000000L, category = "מסעדות"),
@@ -52,11 +54,7 @@ class MyJobsFragment : Fragment() {
     private lateinit var employerAdapter: EmployerJobsAdapter
     private var jobsListener: com.google.firebase.firestore.ListenerRegistration? = null
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentMyJobsBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -85,20 +83,53 @@ class MyJobsFragment : Fragment() {
         }
     }
 
+    private fun buildShiftMillis(dateMillis: Long, time: String): Long {
+        val parts = time.split(":")
+        val hour = parts.getOrNull(0)?.toIntOrNull() ?: 0
+        val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
+
+        return Calendar.getInstance().apply {
+            timeInMillis = dateMillis
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+
+    private fun getDateLabel(dateMillis: Long): String {
+        val jobCalendar = Calendar.getInstance().apply { timeInMillis = dateMillis }
+        val todayCalendar = Calendar.getInstance()
+        val tomorrowCalendar = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 1) }
+
+        return when {
+            jobCalendar.get(Calendar.YEAR) == todayCalendar.get(Calendar.YEAR) &&
+                    jobCalendar.get(Calendar.DAY_OF_YEAR) == todayCalendar.get(Calendar.DAY_OF_YEAR) -> "היום"
+
+            jobCalendar.get(Calendar.YEAR) == tomorrowCalendar.get(Calendar.YEAR) &&
+                    jobCalendar.get(Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(Calendar.DAY_OF_YEAR) -> "מחר"
+
+            else -> SimpleDateFormat("dd/MM", Locale.getDefault()).format(Date(dateMillis))
+        }
+    }
+
     private fun checkUserMode() {
         UserRepository.getUserProfile(
             onSuccess = { profile ->
                 if (profile.hasPostedJob) {
                     binding.toggleContainer.visibility = View.VISIBLE
                     binding.toggleContainer.requestLayout()
+
                     val isEmployer = getSavedMode()
                     viewModel.isWorkerMode = !isEmployer
+
                     if (isEmployer) {
                         applyEmployerMode(animated = false)
                         loadEmployerJobs()
                     } else {
                         applyWorkerMode(animated = false)
                     }
+
                     viewModel.currentTab = JobTabType.ACTIVE
                     restoreTab(JobTabType.ACTIVE)
                 } else {
@@ -118,7 +149,6 @@ class MyJobsFragment : Fragment() {
         )
     }
 
-    // Loads worker applications from Firestore and converts to MyJobItem
     private fun loadWorkerJobs() {
         UserRepository.getWorkerApplications(
             onSuccess = { applications ->
@@ -140,35 +170,10 @@ class MyJobsFragment : Fragment() {
                     UserRepository.getJobById(
                         jobId = application.jobId,
                         onSuccess = { job ->
-                            val jobCalendar = java.util.Calendar.getInstance().apply {
-                                timeInMillis = job.date
-                            }
-                            val todayCalendar = java.util.Calendar.getInstance()
-                            val tomorrowCalendar = java.util.Calendar.getInstance().apply {
-                                add(java.util.Calendar.DAY_OF_YEAR, 1)
-                            }
-                            val dateLabel = when {
-                                jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
-                                jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
-                                else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
-                            }
+                            val dateLabel = getDateLabel(job.date)
 
-                            val startHour = job.startTime.split(":")[0].toIntOrNull() ?: 0
-                            val endHour = job.endTime.split(":")[0].toIntOrNull() ?: 0
-
-                            val shiftStartMillis = java.util.Calendar.getInstance().apply {
-                                timeInMillis = job.date
-                                set(java.util.Calendar.HOUR_OF_DAY, startHour)
-                                set(java.util.Calendar.MINUTE, 0)
-                                set(java.util.Calendar.SECOND, 0)
-                            }.timeInMillis
-
-                            val shiftEndMillis = java.util.Calendar.getInstance().apply {
-                                timeInMillis = job.date
-                                set(java.util.Calendar.HOUR_OF_DAY, endHour)
-                                set(java.util.Calendar.MINUTE, 0)
-                                set(java.util.Calendar.SECOND, 0)
-                            }.timeInMillis
+                            val shiftStartMillis = buildShiftMillis(job.date, job.startTime)
+                            val shiftEndMillis = buildShiftMillis(job.date, job.endTime)
 
                             val item = MyJobItem(
                                 id = application.id,
@@ -191,16 +196,21 @@ class MyJobsFragment : Fragment() {
                             )
 
                             when {
-                                // Shift ended - goes to history
-                                application.status == "confirmed" && shiftEndMillis < now ->
+                                application.status == "confirmed" && shiftEndMillis < now -> {
                                     historyItems.add(item)
-                                // Rejected - don't show
-                                application.status == "rejected" -> { }
-                                // Everything else - active
-                                else -> activeItems.add(item)
+                                }
+
+                                application.status == "rejected" -> {
+
+                                }
+
+                                else -> {
+                                    activeItems.add(item)
+                                }
                             }
 
                             pending--
+
                             if (pending == 0) {
                                 workerActive.clear()
                                 workerActive.addAll(
@@ -211,15 +221,36 @@ class MyJobsFragment : Fragment() {
                                 workerHistory.addAll(
                                     historyItems.sortedByDescending { it.shiftStartMillis }
                                 )
+
                                 if (viewModel.isWorkerMode) {
-                                    workerAdapter.updateItems(workerActive.toList(), JobTabType.ACTIVE)
+                                    val currentItems = when (viewModel.currentTab) {
+                                        JobTabType.ACTIVE -> workerActive.toList()
+                                        JobTabType.HISTORY -> workerHistory.toList()
+                                        else -> workerActive.toList()
+                                    }
+
+                                    workerAdapter.updateItems(currentItems, viewModel.currentTab)
                                 }
+
                                 updateTabLabels()
                             }
                         },
                         onFailure = {
                             pending--
-                            if (pending == 0) updateTabLabels()
+
+                            if (pending == 0) {
+                                workerActive.clear()
+                                workerActive.addAll(
+                                    activeItems.sortedBy { it.shiftStartMillis }
+                                )
+
+                                workerHistory.clear()
+                                workerHistory.addAll(
+                                    historyItems.sortedByDescending { it.shiftStartMillis }
+                                )
+
+                                updateTabLabels()
+                            }
                         }
                     )
                 }
@@ -232,6 +263,7 @@ class MyJobsFragment : Fragment() {
 
     private fun loadEmployerJobs() {
         jobsListener?.remove()
+
         jobsListener = UserRepository.listenToEmployerJobs(
             onUpdate = { jobs ->
                 val now = System.currentTimeMillis()
@@ -239,37 +271,15 @@ class MyJobsFragment : Fragment() {
                 val activeItems = mutableListOf<EmployerJobItem>()
                 val historyItems = mutableListOf<EmployerJobItem>()
 
-                jobs.forEach { job ->
-                    val jobCalendar = java.util.Calendar.getInstance().apply {
-                        timeInMillis = job.date
-                    }
-                    val todayCalendar = java.util.Calendar.getInstance()
-                    val tomorrowCalendar = java.util.Calendar.getInstance().apply {
-                        add(java.util.Calendar.DAY_OF_YEAR, 1)
-                    }
+                val sortedJobs = jobs.sortedBy { job ->
+                    buildShiftMillis(job.date, job.startTime)
+                }
 
-                    val dateLabel = when {
-                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
-                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
-                        else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
-                    }
+                sortedJobs.forEach { job ->
+                    val dateLabel = getDateLabel(job.date)
 
-                    val startHour = job.startTime.split(":")[0].toIntOrNull() ?: 0
-                    val endHour = job.endTime.split(":")[0].toIntOrNull() ?: 0
-
-                    val shiftStartMillis = java.util.Calendar.getInstance().apply {
-                        timeInMillis = job.date
-                        set(java.util.Calendar.HOUR_OF_DAY, startHour)
-                        set(java.util.Calendar.MINUTE, 0)
-                        set(java.util.Calendar.SECOND, 0)
-                    }.timeInMillis
-
-                    val shiftEndMillis = java.util.Calendar.getInstance().apply {
-                        timeInMillis = job.date
-                        set(java.util.Calendar.HOUR_OF_DAY, endHour)
-                        set(java.util.Calendar.MINUTE, 0)
-                        set(java.util.Calendar.SECOND, 0)
-                    }.timeInMillis
+                    val shiftStartMillis = buildShiftMillis(job.date, job.startTime)
+                    val shiftEndMillis = buildShiftMillis(job.date, job.endTime)
 
                     val countdownMillis = (shiftStartMillis - now).coerceAtLeast(0L)
                     val isCompleted = shiftEndMillis < now
@@ -286,16 +296,34 @@ class MyJobsFragment : Fragment() {
                         countdownMillis = countdownMillis
                     )
 
-                    if (isCompleted) historyItems.add(item)
-                    else activeItems.add(item)
+                    if (isCompleted) {
+                        historyItems.add(item)
+                    } else {
+                        activeItems.add(item)
+                    }
                 }
 
                 employerActive.clear()
-                employerActive.addAll(activeItems.sortedBy { it.countdownMillis })
+                employerActive.addAll(activeItems)
+
                 employerHistory.clear()
                 employerHistory.addAll(historyItems)
 
-                employerAdapter.updateItems(employerActive.toList(), JobTabType.ACTIVE)
+                if (!viewModel.isWorkerMode) {
+                    val currentItems = when (viewModel.currentTab) {
+                        JobTabType.ACTIVE -> employerActive.toList()
+                        JobTabType.PENDING -> employerPending.toList()
+                        JobTabType.HISTORY -> employerHistory.toList()
+                    }
+
+                    employerAdapter.updateItems(currentItems, viewModel.currentTab)
+                    binding.rvJobs.adapter = employerAdapter
+
+                    if (viewModel.currentTab == JobTabType.HISTORY) {
+                        updateEmployerHistoryUI()
+                    }
+                }
+
                 updateTabLabels()
             },
             onFailure = {
@@ -306,7 +334,9 @@ class MyJobsFragment : Fragment() {
 
     private fun saveUserMode(isEmployer: Boolean) {
         requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-            .edit().putBoolean("is_employer_mode", isEmployer).apply()
+            .edit()
+            .putBoolean("is_employer_mode", isEmployer)
+            .apply()
     }
 
     private fun getSavedMode(): Boolean {
@@ -316,8 +346,7 @@ class MyJobsFragment : Fragment() {
 
     private fun setupKeyboard() {
         binding.root.setOnClickListener {
-            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE)
-                    as InputMethodManager
+            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
         }
     }
@@ -363,6 +392,7 @@ class MyJobsFragment : Fragment() {
                 }
             }
         )
+
         binding.rvJobs.layoutManager = LinearLayoutManager(requireContext())
         binding.rvJobs.adapter = workerAdapter
     }
@@ -383,14 +413,7 @@ class MyJobsFragment : Fragment() {
                 findNavController().navigate(
                     R.id.action_myJobsFragment_to_postJobFragment,
                     bundleOf(
-                        "jobTitle" to item.title,
-                        "jobCompany" to item.company,
-                        "jobPrice" to item.price,
-                        "workersNeeded" to item.workersNeeded,
-                        "jobDescription" to "",
-                        "jobPhone" to "",
-                        "jobAddress" to "",
-                        "jobLink" to ""
+                        "duplicateJobId" to item.id
                     )
                 )
             },
@@ -404,6 +427,7 @@ class MyJobsFragment : Fragment() {
                     "jobPrice" to item.price,
                     "workersNeeded" to item.workersNeeded
                 )
+
                 findNavController().navigate(
                     R.id.action_myJobsFragment_to_workerSortingFragment,
                     bundle
@@ -416,6 +440,7 @@ class MyJobsFragment : Fragment() {
         binding.cardEmptyHistory.setOnClickListener {
             findNavController().navigate(R.id.action_myJobsFragment_to_postJobFragment)
         }
+
         binding.cardPostJob.setOnClickListener {
             findNavController().navigate(R.id.action_myJobsFragment_to_postJobFragment)
         }
@@ -426,6 +451,7 @@ class MyJobsFragment : Fragment() {
             viewModel.currentTab = JobTabType.ACTIVE
             applyTab(JobTabType.ACTIVE)
         }
+
         binding.tabHistory.setOnClickListener {
             viewModel.currentTab = JobTabType.HISTORY
             applyTab(JobTabType.HISTORY)
@@ -438,33 +464,36 @@ class MyJobsFragment : Fragment() {
         binding.rvJobs.visibility = View.VISIBLE
 
         when (tab) {
-            JobTabType.ACTIVE  -> setTabSelected(binding.tabActive)
+            JobTabType.ACTIVE -> setTabSelected(binding.tabActive)
             JobTabType.HISTORY -> setTabSelected(binding.tabHistory)
             else -> {}
         }
 
         if (viewModel.isWorkerMode) {
             val items = when (tab) {
-                JobTabType.ACTIVE  -> workerActive.toList()
+                JobTabType.ACTIVE -> workerActive.toList()
                 JobTabType.HISTORY -> workerHistory.toList()
                 else -> workerActive.toList()
             }
+
             workerAdapter.updateItems(items, tab)
-            binding.cardPostJob.visibility      = View.GONE
+            binding.rvJobs.adapter = workerAdapter
+            binding.cardPostJob.visibility = View.GONE
             binding.cardEmptyHistory.visibility = View.GONE
         } else {
             val items = when (tab) {
-                JobTabType.ACTIVE  -> employerActive.toList()
+                JobTabType.ACTIVE -> employerActive.toList()
                 JobTabType.PENDING -> employerPending.toList()
                 JobTabType.HISTORY -> employerHistory.toList()
             }
+
             employerAdapter.updateItems(items, tab)
             binding.rvJobs.adapter = employerAdapter
 
             if (tab == JobTabType.HISTORY) {
                 updateEmployerHistoryUI()
             } else {
-                binding.cardPostJob.visibility      = View.GONE
+                binding.cardPostJob.visibility = View.GONE
                 binding.cardEmptyHistory.visibility = View.GONE
             }
         }
@@ -473,12 +502,12 @@ class MyJobsFragment : Fragment() {
     private fun updateEmployerHistoryUI() {
         if (employerHistory.isEmpty()) {
             binding.cardEmptyHistory.visibility = View.VISIBLE
-            binding.cardPostJob.visibility      = View.GONE
-            binding.rvJobs.visibility           = View.GONE
+            binding.cardPostJob.visibility = View.GONE
+            binding.rvJobs.visibility = View.GONE
         } else {
             binding.cardEmptyHistory.visibility = View.GONE
-            binding.cardPostJob.visibility      = View.VISIBLE
-            binding.rvJobs.visibility           = View.VISIBLE
+            binding.cardPostJob.visibility = View.VISIBLE
+            binding.rvJobs.visibility = View.VISIBLE
         }
     }
 
@@ -496,12 +525,14 @@ class MyJobsFragment : Fragment() {
                 restoreTab(JobTabType.ACTIVE)
             }
         }
+
         binding.toggleEmployer.setOnClickListener {
             if (viewModel.isWorkerMode) {
                 viewModel.isWorkerMode = false
                 viewModel.currentTab = JobTabType.ACTIVE
                 saveUserMode(isEmployer = true)
                 applyEmployerMode(animated = true)
+                loadEmployerJobs()
                 restoreTab(JobTabType.ACTIVE)
             }
         }
@@ -509,50 +540,71 @@ class MyJobsFragment : Fragment() {
 
     private fun applyWorkerMode(animated: Boolean) {
         appViewModel.setWorkerMode()
-        binding.rvJobs.visibility           = View.VISIBLE
-        binding.cardPostJob.visibility      = View.GONE
+
+        binding.rvJobs.visibility = View.VISIBLE
+        binding.cardPostJob.visibility = View.GONE
         binding.cardEmptyHistory.visibility = View.GONE
+
         binding.toggleWorker.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected)
         binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+
         binding.toggleEmployer.background = null
         binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
+
         updateTabColors(isPink = true)
+
         binding.rvJobs.adapter = workerAdapter
+
         updateTabLabels()
         loadWorkerJobs()
     }
 
     private fun applyEmployerMode(animated: Boolean) {
         appViewModel.setEmployerMode()
+
         binding.toggleEmployer.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected_teal)
         binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+
         binding.toggleWorker.background = null
         binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
+
         updateTabColors(isPink = false)
+
         binding.rvJobs.adapter = employerAdapter
+
         updateTabLabels()
     }
 
     private fun updateTabLabels() {
         if (viewModel.isWorkerMode) {
-            binding.tabActive.text  = "פעילות (${workerActive.size})"
+            binding.tabActive.text = "פעילות (${workerActive.size})"
             binding.tabHistory.text = "היסטוריה"
         } else {
-            binding.tabActive.text  = "פעילות (${employerActive.size})"
+            binding.tabActive.text = "פעילות (${employerActive.size})"
             binding.tabHistory.text = "היסטוריה"
         }
     }
 
     private fun updateTabColors(isPink: Boolean) {
         listOf(binding.tabActive, binding.tabHistory).forEach { setTabUnselected(it) }
-        val selectedDrawable = if (isPink) R.drawable.bg_tab_selected else R.drawable.bg_tab_selected_teal
+
+        val selectedDrawable = if (isPink) {
+            R.drawable.bg_tab_selected
+        } else {
+            R.drawable.bg_tab_selected_teal
+        }
+
         binding.tabActive.background = ContextCompat.getDrawable(requireContext(), selectedDrawable)
         binding.tabActive.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
     }
 
     private fun setTabSelected(tab: TextView) {
-        val selectedDrawable = if (viewModel.isWorkerMode)
-            R.drawable.bg_tab_selected else R.drawable.bg_tab_selected_teal
+        val selectedDrawable = if (viewModel.isWorkerMode) {
+            R.drawable.bg_tab_selected
+        } else {
+            R.drawable.bg_tab_selected_teal
+        }
+
         tab.background = ContextCompat.getDrawable(requireContext(), selectedDrawable)
         tab.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         tab.typeface = ResourcesCompat.getFont(requireContext(), R.font.ploni_bold_aaa)

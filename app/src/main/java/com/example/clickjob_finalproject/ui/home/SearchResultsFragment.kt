@@ -106,9 +106,9 @@ class SearchResultsFragment : Fragment() {
                     ResultItem(
                         id = job.id,
                         title = job.title,
+                        company = job.company,
                         price = "₪${job.salary}",
                         salary = job.salary.toIntOrNull() ?: 0,
-                        address = job.address,
                         day = dateLabel,
                         distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
                         category = job.category,
@@ -141,25 +141,31 @@ class SearchResultsFragment : Fragment() {
                 isClickable = false
                 isCheckable = false
 
-                // Figma style: light gray pill, no stroke, dark text
                 chipBackgroundColor = android.content.res.ColorStateList.valueOf(
                     android.graphics.Color.parseColor("#E9E7E9")
                 )
                 chipStrokeWidth = 0f
+                chipCornerRadius = 50f
+
                 setTextColor(ContextCompat.getColor(requireContext(), R.color.DarkDeep))
                 textSize = 13f
                 typeface = ResourcesCompat.getFont(requireContext(), R.font.ploni_regular_aaa)
 
-                // Fully rounded pill shape
-                chipCornerRadius = 50f
-
-                // Small dark close icon
+                closeIcon = ContextCompat.getDrawable(requireContext(), R.drawable.close)
                 closeIconTint = android.content.res.ColorStateList.valueOf(
                     ContextCompat.getColor(requireContext(), R.color.DarkDeep)
                 )
-                closeIconSize = 16f * resources.displayMetrics.density / 2.5f
-                chipStartPadding = 10f
-                chipEndPadding = 10f
+                closeIconSize = 18f
+
+                chipStartPadding = 12f
+                chipEndPadding = 12f
+                textStartPadding = 4f
+                textEndPadding = 4f
+                closeIconStartPadding = 6f
+                closeIconEndPadding = 4f
+
+                minHeight = 34
+                height = 34
 
                 setOnCloseIconClickListener {
                     selectedCategories.remove(category)
@@ -167,6 +173,7 @@ class SearchResultsFragment : Fragment() {
                     loadJobs()
                 }
             }
+
             binding.chipGroupCategories.addView(chip)
         }
     }
