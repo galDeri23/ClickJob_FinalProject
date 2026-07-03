@@ -245,10 +245,17 @@ class PostJobFragment : Fragment() {
             this.text = text
             isCloseIconVisible = true
             isClickable = false
-            setChipBackgroundColorResource(R.color.white)
-            setTextColor(ContextCompat.getColor(requireContext(), R.color.DarkDeep))
+
+            setChipBackgroundColorResource(R.color.employer_primary)
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+
             chipStrokeWidth = 1f
-            setChipStrokeColorResource(R.color.DarkDeep)
+            setChipStrokeColorResource(R.color.white)
+
+            closeIconTint = android.content.res.ColorStateList.valueOf(
+                ContextCompat.getColor(requireContext(), R.color.white)
+            )
+
             setOnCloseIconClickListener {
                 binding.chipGroupRequirements.removeView(this)
             }

@@ -468,6 +468,7 @@
             app:boxStrokeColor="@color/input_stroke_color"
             app:boxBackgroundColor="@android:color/white"
             app:endIconMode="custom"
+            app:endIconTint="@color/black"
             app:endIconDrawable="@drawable/ic_phone"
             app:layout_constraintTop_toBottomOf="@id/chipGroupRequirements"
             app:layout_constraintStart_toStartOf="parent"
@@ -513,13 +514,14 @@
                 app:boxStrokeColor="@color/input_stroke_color"
                 app:boxBackgroundColor="@android:color/white"
                 app:endIconMode="custom"
+                app:endIconTint="@color/black"
                 app:endIconDrawable="@drawable/ic_location">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etAddress"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="end"
+                    android:gravity="start"
                     android:inputType="textPostalAddress"
                     android:textSize="14sp"
                     android:hint="בית אל 47, תל אביב"
@@ -542,6 +544,7 @@
                 app:boxStrokeColor="@color/input_stroke_color"
                 app:boxBackgroundColor="@android:color/white"
                 app:endIconMode="custom"
+                app:endIconTint="@color/black"
                 app:endIconDrawable="@drawable/ic_link">
 
                 <com.google.android.material.textfield.TextInputEditText
