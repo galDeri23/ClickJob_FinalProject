@@ -100,9 +100,9 @@ class HomeFragment : Fragment() {
         UserRepository.getUpcomingShifts(
             onSuccess = { jobs ->
                 if (jobs.isEmpty()) {
-                    binding.tvSectionUpcoming.visibility    = View.GONE
-                    binding.vpUpcoming.visibility           = View.GONE
-                    binding.layoutDots.visibility           = View.GONE
+                    binding.tvSectionUpcoming.visibility = View.GONE
+                    binding.vpUpcoming.visibility = View.GONE
+                    binding.layoutDots.visibility = View.GONE
                     binding.cardNoUpcomingShifts.visibility = View.VISIBLE
                     onSectionLoaded()
                     return@getUpcomingShifts
@@ -135,13 +135,16 @@ class HomeFragment : Fragment() {
                 }
 
                 binding.cardNoUpcomingShifts.visibility = View.GONE
-                binding.tvSectionUpcoming.visibility    = View.VISIBLE
-                binding.vpUpcoming.visibility           = View.VISIBLE
-                binding.layoutDots.visibility           = View.VISIBLE
+                binding.tvSectionUpcoming.visibility = View.VISIBLE
+                binding.vpUpcoming.visibility = View.VISIBLE
+                binding.layoutDots.visibility = View.VISIBLE
 
                 binding.vpUpcoming.adapter = ShiftAdapter(items) { shift ->
                     val args = bundleOf("jobId" to shift.id, "isViewOnly" to true)
-                    findNavController().navigate(R.id.action_homeFragment_to_jobDetailsFragment, args)
+                    findNavController().navigate(
+                        R.id.action_homeFragment_to_jobDetailsFragment,
+                        args
+                    )
                 }
 
                 setupDots(items.size)
@@ -223,7 +226,10 @@ class HomeFragment : Fragment() {
                         Log.d("HOME_DEBUG", "BestMatch: employerIds = $employerIds")
 
                         if (employerIds.isEmpty()) {
-                            Log.d("HOME_DEBUG", "BestMatch: employerIds is empty, showing jobs without ratings")
+                            Log.d(
+                                "HOME_DEBUG",
+                                "BestMatch: employerIds is empty, showing jobs without ratings"
+                            )
 
                             val items = jobsWithMatch.map { (job, matchPercent) ->
                                 val jobCalendar = java.util.Calendar.getInstance().apply {
@@ -231,11 +237,19 @@ class HomeFragment : Fragment() {
                                 }
 
                                 val dateLabel = when {
-                                    jobCalendar.get(java.util.Calendar.YEAR) == todayCalendar.get(java.util.Calendar.YEAR) &&
-                                            jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+                                    jobCalendar.get(java.util.Calendar.YEAR) == todayCalendar.get(
+                                        java.util.Calendar.YEAR
+                                    ) &&
+                                            jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(
+                                        java.util.Calendar.DAY_OF_YEAR
+                                    ) -> "היום"
 
-                                    jobCalendar.get(java.util.Calendar.YEAR) == tomorrowCalendar.get(java.util.Calendar.YEAR) &&
-                                            jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+                                    jobCalendar.get(java.util.Calendar.YEAR) == tomorrowCalendar.get(
+                                        java.util.Calendar.YEAR
+                                    ) &&
+                                            jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(
+                                        java.util.Calendar.DAY_OF_YEAR
+                                    ) -> "מחר"
 
                                     else -> java.text.SimpleDateFormat(
                                         "dd/MM",
@@ -248,7 +262,8 @@ class HomeFragment : Fragment() {
                                     company = job.company,
                                     price = "₪${job.salary}",
                                     rating = "",
-                                    distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
+                                    distance = job.address.split(",").lastOrNull()?.trim()
+                                        ?: job.address,
                                     date = dateLabel,
                                     matchPercent = "$matchPercent%",
                                     isUrgent = job.isUrgent,
@@ -290,19 +305,31 @@ class HomeFragment : Fragment() {
 
                                     if (loadedEmployers == employerIds.size) {
                                         Log.d("HOME_DEBUG", "BestMatch: all employers loaded")
-                                        Log.d("HOME_DEBUG", "BestMatch: employerRatings = $employerRatings")
+                                        Log.d(
+                                            "HOME_DEBUG",
+                                            "BestMatch: employerRatings = $employerRatings"
+                                        )
 
                                         val items = jobsWithMatch.map { (job, matchPercent) ->
-                                            val jobCalendar = java.util.Calendar.getInstance().apply {
-                                                timeInMillis = job.date
-                                            }
+                                            val jobCalendar =
+                                                java.util.Calendar.getInstance().apply {
+                                                    timeInMillis = job.date
+                                                }
 
                                             val dateLabel = when {
-                                                jobCalendar.get(java.util.Calendar.YEAR) == todayCalendar.get(java.util.Calendar.YEAR) &&
-                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+                                                jobCalendar.get(java.util.Calendar.YEAR) == todayCalendar.get(
+                                                    java.util.Calendar.YEAR
+                                                ) &&
+                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(
+                                                    java.util.Calendar.DAY_OF_YEAR
+                                                ) -> "היום"
 
-                                                jobCalendar.get(java.util.Calendar.YEAR) == tomorrowCalendar.get(java.util.Calendar.YEAR) &&
-                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+                                                jobCalendar.get(java.util.Calendar.YEAR) == tomorrowCalendar.get(
+                                                    java.util.Calendar.YEAR
+                                                ) &&
+                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(
+                                                    java.util.Calendar.DAY_OF_YEAR
+                                                ) -> "מחר"
 
                                                 else -> java.text.SimpleDateFormat(
                                                     "dd/MM",
@@ -315,7 +342,8 @@ class HomeFragment : Fragment() {
                                                 company = job.company,
                                                 price = "₪${job.salary}",
                                                 rating = employerRatings[job.employerId] ?: "",
-                                                distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
+                                                distance = job.address.split(",").lastOrNull()
+                                                    ?.trim() ?: job.address,
                                                 date = dateLabel,
                                                 matchPercent = "$matchPercent%",
                                                 isUrgent = job.isUrgent,
@@ -350,19 +378,31 @@ class HomeFragment : Fragment() {
                                     loadedEmployers++
 
                                     if (loadedEmployers == employerIds.size) {
-                                        Log.d("HOME_DEBUG", "BestMatch: finished employers with some failures")
+                                        Log.d(
+                                            "HOME_DEBUG",
+                                            "BestMatch: finished employers with some failures"
+                                        )
 
                                         val items = jobsWithMatch.map { (job, matchPercent) ->
-                                            val jobCalendar = java.util.Calendar.getInstance().apply {
-                                                timeInMillis = job.date
-                                            }
+                                            val jobCalendar =
+                                                java.util.Calendar.getInstance().apply {
+                                                    timeInMillis = job.date
+                                                }
 
                                             val dateLabel = when {
-                                                jobCalendar.get(java.util.Calendar.YEAR) == todayCalendar.get(java.util.Calendar.YEAR) &&
-                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+                                                jobCalendar.get(java.util.Calendar.YEAR) == todayCalendar.get(
+                                                    java.util.Calendar.YEAR
+                                                ) &&
+                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(
+                                                    java.util.Calendar.DAY_OF_YEAR
+                                                ) -> "היום"
 
-                                                jobCalendar.get(java.util.Calendar.YEAR) == tomorrowCalendar.get(java.util.Calendar.YEAR) &&
-                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+                                                jobCalendar.get(java.util.Calendar.YEAR) == tomorrowCalendar.get(
+                                                    java.util.Calendar.YEAR
+                                                ) &&
+                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(
+                                                    java.util.Calendar.DAY_OF_YEAR
+                                                ) -> "מחר"
 
                                                 else -> java.text.SimpleDateFormat(
                                                     "dd/MM",
@@ -375,7 +415,8 @@ class HomeFragment : Fragment() {
                                                 company = job.company,
                                                 price = "₪${job.salary}",
                                                 rating = employerRatings[job.employerId] ?: "",
-                                                distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
+                                                distance = job.address.split(",").lastOrNull()
+                                                    ?.trim() ?: job.address,
                                                 date = dateLabel,
                                                 matchPercent = "$matchPercent%",
                                                 isUrgent = job.isUrgent,
@@ -425,7 +466,7 @@ class HomeFragment : Fragment() {
             onSuccess = { jobs ->
                 if (jobs.isEmpty()) {
                     binding.tvSectionUrgent.visibility = View.GONE
-                    binding.rvUrgent.visibility        = View.GONE
+                    binding.rvUrgent.visibility = View.GONE
                     onSectionLoaded()
                     return@getUrgentJobs
                 }
@@ -454,33 +495,44 @@ class HomeFragment : Fragment() {
                                 val items = jobs
                                     .sortedBy { it.date }
                                     .map { job ->
-                                    val jobCalendar = java.util.Calendar.getInstance().apply {
-                                        timeInMillis = job.date
+                                        val jobCalendar = java.util.Calendar.getInstance().apply {
+                                            timeInMillis = job.date
+                                        }
+                                        val dateLabel = when {
+                                            jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(
+                                                java.util.Calendar.DAY_OF_YEAR
+                                            ) -> "היום"
+
+                                            jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(
+                                                java.util.Calendar.DAY_OF_YEAR
+                                            ) -> "מחר"
+
+                                            else -> java.text.SimpleDateFormat(
+                                                "dd/MM",
+                                                java.util.Locale.getDefault()
+                                            ).format(java.util.Date(job.date))
+                                        }
+                                        JobItem(
+                                            title = job.title,
+                                            company = job.company,
+                                            price = "₪${job.salary}",
+                                            rating = employerRatings[job.employerId] ?: "",
+                                            distance = job.address.split(",").lastOrNull()?.trim()
+                                                ?: job.address,
+                                            date = dateLabel,
+                                            matchPercent = null,
+                                            isUrgent = true,
+                                            category = job.category,
+                                            id = job.id
+                                        )
                                     }
-                                    val dateLabel = when {
-                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
-                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
-                                        else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
-                                    }
-                                    JobItem(
-                                        title = job.title,
-                                        company = job.company,
-                                        price = "₪${job.salary}",
-                                        rating = employerRatings[job.employerId] ?: "",
-                                        distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
-                                        date = dateLabel,
-                                        matchPercent = null,
-                                        isUrgent = true,
-                                        category = job.category,
-                                        id = job.id
-                                    )
-                                }
                                 binding.tvSectionUrgent.visibility = View.VISIBLE
-                                binding.rvUrgent.visibility        = View.VISIBLE
+                                binding.rvUrgent.visibility = View.VISIBLE
                                 binding.rvUrgent.layoutManager = LinearLayoutManager(
                                     requireContext(), LinearLayoutManager.HORIZONTAL, false
                                 )
-                                binding.rvUrgent.adapter = JobAdapter(items) { job -> openJobDetails(job) }
+                                binding.rvUrgent.adapter =
+                                    JobAdapter(items) { job -> openJobDetails(job) }
                                 onSectionLoaded()
                             }
                         },

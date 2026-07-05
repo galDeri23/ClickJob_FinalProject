@@ -154,16 +154,19 @@ class JobDetailsFragment : Fragment() {
                             )
                         }
                     } else {
-                        Toast.makeText(requireContext(), "לא הוזנה כתובת", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "לא הוזנה כתובת", Toast.LENGTH_SHORT)
+                            .show()
                     }
                 }
 
                 binding.btnEmployerProfile.setOnClickListener {
                     if (job.link.isNotEmpty()) {
-                        val url = if (job.link.startsWith("http")) job.link else "https://${job.link}"
+                        val url =
+                            if (job.link.startsWith("http")) job.link else "https://${job.link}"
                         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                     } else {
-                        Toast.makeText(requireContext(), "לא הוזן קישור לעסק", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "לא הוזן קישור לעסק", Toast.LENGTH_SHORT)
+                            .show()
                     }
                 }
 
@@ -197,12 +200,20 @@ class JobDetailsFragment : Fragment() {
                                     application = application,
                                     job = job,
                                     onSuccess = {
-                                        Toast.makeText(requireContext(), "העבודה אושרה! ✓", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            requireContext(),
+                                            "העבודה אושרה! ✓",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                         findNavController().popBackStack()
                                     },
                                     onFailure = {
                                         binding.btnApply.isEnabled = true
-                                        Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            requireContext(),
+                                            "שגיאה באישור",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 )
                             },
@@ -221,11 +232,19 @@ class JobDetailsFragment : Fragment() {
                             job = job,
                             onSuccess = {
                                 binding.btnApply.text = "המועמדות נשלחה ✓"
-                                Toast.makeText(requireContext(), "המועמדות נשלחה בהצלחה!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    requireContext(),
+                                    "המועמדות נשלחה בהצלחה!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             },
                             onFailure = {
                                 binding.btnApply.isEnabled = true
-                                Toast.makeText(requireContext(), "שגיאה בשליחת המועמדות", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    requireContext(),
+                                    "שגיאה בשליחת המועמדות",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         )
                     }

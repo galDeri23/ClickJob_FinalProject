@@ -45,8 +45,20 @@ object UserRepository {
     fun generateBio(profile: UserProfile): String {
         val parts = mutableListOf<String>()
         if (profile.name.isNotEmpty()) parts.add("שמי ${profile.name}")
-        if (profile.jobCategories.isNotEmpty()) parts.add("מחפש עבודה בתחומים: ${profile.jobCategories.joinToString(", ")}")
-        if (profile.availableDays.isNotEmpty()) parts.add("זמין בימים: ${profile.availableDays.joinToString(", ")}")
+        if (profile.jobCategories.isNotEmpty()) parts.add(
+            "מחפש עבודה בתחומים: ${
+                profile.jobCategories.joinToString(
+                    ", "
+                )
+            }"
+        )
+        if (profile.availableDays.isNotEmpty()) parts.add(
+            "זמין בימים: ${
+                profile.availableDays.joinToString(
+                    ", "
+                )
+            }"
+        )
         if (profile.languages.isNotEmpty()) parts.add("שפות: ${profile.languages.joinToString(", ")}")
         if (profile.softSkills.isNotEmpty()) parts.add("כישורים: ${profile.softSkills.joinToString(", ")}")
         if (profile.address.isNotEmpty()) parts.add("מתגורר ב${profile.address}")
@@ -127,44 +139,65 @@ object UserRepository {
         onSuccess: (List<Pair<JobPost, Int>>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        if (jobMatches.isEmpty()) {
-            onSuccess(emptyList())
-            return
-        }
-
-        val topMatches = jobMatches
+        val validMatches = jobMatches
             .filter { it.jobId.isNotEmpty() }
-            .sortedByDescending { it.score }
-            .take(10)
 
-        if (topMatches.isEmpty()) {
+        if (validMatches.isEmpty()) {
             onSuccess(emptyList())
             return
         }
 
-        val jobIds = topMatches.map { it.jobId }
+        val matchMap = validMatches.associateBy { it.jobId }
+        val chunks = validMatches.map { it.jobId }.chunked(30)
 
-        db.collection("jobs")
-            .whereIn("id", jobIds)
-            .get()
-            .addOnSuccessListener { documents ->
-                val jobs = documents.mapNotNull { it.toObject(JobPost::class.java) }
+        val allJobs = mutableListOf<JobPost>()
+        var completedChunks = 0
+        val now = System.currentTimeMillis()
 
-                val result = jobs.mapNotNull { job ->
-                    val match = topMatches.find { it.jobId == job.id }
+        chunks.forEach { idsChunk ->
+            db.collection("jobs")
+                .whereIn("id", idsChunk)
+                .get()
+                .addOnSuccessListener { documents ->
+                    val jobs = documents
+                        .mapNotNull { it.toObject(JobPost::class.java) }
+                        .filter { job ->
+                            buildShiftMillis(job.date, job.endTime) > now
+                        }
 
-                    if (match != null) {
-                        Pair(job, match.score)
-                    } else {
-                        null
+                    allJobs.addAll(jobs)
+                    completedChunks++
+
+                    if (completedChunks == chunks.size) {
+                        val result = allJobs
+                            .mapNotNull { job ->
+                                val match = matchMap[job.id]
+                                if (match != null) Pair(job, match.score) else null
+                            }
+                            .sortedByDescending { it.second }
+                            .take(10)
+
+                        onSuccess(result)
                     }
-                }.sortedByDescending { it.second }
+                }
+                .addOnFailureListener { exception ->
+                    onFailure(exception)
+                }
+        }
+    }
 
-                onSuccess(result)
-            }
-            .addOnFailureListener { exception ->
-                onFailure(exception)
-            }
+    private fun buildShiftMillis(dateMillis: Long, time: String): Long {
+        val parts = time.split(":")
+        val hour = parts.getOrNull(0)?.toIntOrNull() ?: 0
+        val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
+
+        return java.util.Calendar.getInstance().apply {
+            timeInMillis = dateMillis
+            set(java.util.Calendar.HOUR_OF_DAY, hour)
+            set(java.util.Calendar.MINUTE, minute)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
     }
 
     fun getJobById(
@@ -200,6 +233,7 @@ object UserRepository {
             }
             .addOnFailureListener { onFailure(it) }
     }
+
     fun applyToJob(
         job: JobPost,
         onSuccess: () -> Unit,
@@ -244,7 +278,10 @@ object UserRepository {
                         role = "employer",
                         type = "ALERT",
                         title = "יש ${documents.size()} מועמדים חדשים למשרה ${job.title}",
-                        dateTime = java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.getDefault())
+                        dateTime = java.text.SimpleDateFormat(
+                            "dd.MM.yy HH:mm",
+                            java.util.Locale.getDefault()
+                        )
                             .format(java.util.Date()),
                         jobId = job.id
                     )
@@ -279,8 +316,9 @@ object UserRepository {
             .update("status", "employer_approved")
             .addOnSuccessListener {
                 val notifRef = db.collection("notifications").document()
-                val dateStr = java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.getDefault())
-                    .format(java.util.Date(job.date))
+                val dateStr =
+                    java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.getDefault())
+                        .format(java.util.Date(job.date))
                 val notification = Notification(
                     id = notifRef.id,
                     userId = application.workerId,
@@ -416,6 +454,7 @@ object UserRepository {
             }
         }
     }
+
     fun rejectJob(
         application: Application,
         job: JobPost,
@@ -442,7 +481,10 @@ object UserRepository {
                     role = "employer",
                     type = "WORKER_CANCELLED",
                     title = "${application.workerName} ביטל/ה את העבודה ב\"${job.company}\"",
-                    dateTime = java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.getDefault())
+                    dateTime = java.text.SimpleDateFormat(
+                        "dd.MM.yy HH:mm",
+                        java.util.Locale.getDefault()
+                    )
                         .format(java.util.Date()),
                     jobId = job.id,
                     applicationId = application.id
@@ -488,7 +530,10 @@ object UserRepository {
                     role = "worker",
                     type = "ALERT",
                     title = "העבודה ב\"${job.company}\" בוטלה על ידי המעסיק",
-                    dateTime = java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.getDefault())
+                    dateTime = java.text.SimpleDateFormat(
+                        "dd.MM.yy HH:mm",
+                        java.util.Locale.getDefault()
+                    )
                         .format(java.util.Date()),
                     jobId = job.id,
                     applicationId = application.id
@@ -545,7 +590,8 @@ object UserRepository {
         db.collection("candidates").document(workerId)
             .get()
             .addOnSuccessListener { document ->
-                val profile = document.toObject(UserProfile::class.java) ?: return@addOnSuccessListener
+                val profile =
+                    document.toObject(UserProfile::class.java) ?: return@addOnSuccessListener
                 val newCount = profile.ratingsCount + 1
                 val newRating = ((profile.rating * profile.ratingsCount) + score) / newCount
                 db.collection("candidates").document(workerId)
@@ -570,7 +616,8 @@ object UserRepository {
         db.collection("candidates").document(employerId)
             .get()
             .addOnSuccessListener { document ->
-                val profile = document.toObject(UserProfile::class.java) ?: return@addOnSuccessListener
+                val profile =
+                    document.toObject(UserProfile::class.java) ?: return@addOnSuccessListener
                 val newCount = profile.ratingsCount + 1
                 val newRating = ((profile.rating * profile.ratingsCount) + score) / newCount
                 db.collection("candidates").document(employerId)
@@ -732,7 +779,8 @@ object UserRepository {
         db.collection("jobs").document(jobId)
             .get()
             .addOnSuccessListener { jobDoc ->
-                val workersNeeded = jobDoc.getLong("workersNeeded")?.toInt() ?: return@addOnSuccessListener
+                val workersNeeded =
+                    jobDoc.getLong("workersNeeded")?.toInt() ?: return@addOnSuccessListener
                 val employerId = jobDoc.getString("employerId") ?: return@addOnSuccessListener
                 val jobTitle = jobDoc.getString("title") ?: ""
                 val company = jobDoc.getString("company") ?: ""
@@ -750,7 +798,10 @@ object UserRepository {
                                 role = "employer",
                                 type = "CONFIRMED",
                                 title = "כל העובדים הגיעו ל\"$jobTitle\"",
-                                dateTime = java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.getDefault())
+                                dateTime = java.text.SimpleDateFormat(
+                                    "dd.MM.yy HH:mm",
+                                    java.util.Locale.getDefault()
+                                )
                                     .format(java.util.Date()),
                                 jobId = jobId
                             )
@@ -960,6 +1011,7 @@ object UserRepository {
         }.timeInMillis
         return startMillis > System.currentTimeMillis()
     }
+
     fun getApplicationById(
         applicationId: String,
         onSuccess: (Application) -> Unit,

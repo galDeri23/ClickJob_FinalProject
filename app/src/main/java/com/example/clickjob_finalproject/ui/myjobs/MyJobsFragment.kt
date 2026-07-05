@@ -44,9 +44,33 @@ class MyJobsFragment : Fragment() {
 
     private val employerActive = mutableListOf<EmployerJobItem>()
     private val employerPending = mutableListOf(
-        EmployerJobItem(id = "1", title = "מלצרית לחתונה", company = "שם חברה", workersRegistered = 2, workersNeeded = 6, countdownMillis = 18000000L, category = "מסעדות"),
-        EmployerJobItem(id = "2", title = "מלצרית לחתונה", company = "שם חברה", workersRegistered = 3, workersNeeded = 7, countdownMillis = 18000000L, category = "אחזקה"),
-        EmployerJobItem(id = "3", title = "מלצרית לחתונה", company = "שם חברה", workersRegistered = 1, workersNeeded = 3, countdownMillis = 18000000L, category = "טכנולוגיה")
+        EmployerJobItem(
+            id = "1",
+            title = "מלצרית לחתונה",
+            company = "שם חברה",
+            workersRegistered = 2,
+            workersNeeded = 6,
+            countdownMillis = 18000000L,
+            category = "מסעדות"
+        ),
+        EmployerJobItem(
+            id = "2",
+            title = "מלצרית לחתונה",
+            company = "שם חברה",
+            workersRegistered = 3,
+            workersNeeded = 7,
+            countdownMillis = 18000000L,
+            category = "אחזקה"
+        ),
+        EmployerJobItem(
+            id = "3",
+            title = "מלצרית לחתונה",
+            company = "שם חברה",
+            workersRegistered = 1,
+            workersNeeded = 3,
+            countdownMillis = 18000000L,
+            category = "טכנולוגיה"
+        )
     )
     private val employerHistory = mutableListOf<EmployerJobItem>()
 
@@ -54,7 +78,11 @@ class MyJobsFragment : Fragment() {
     private lateinit var employerAdapter: EmployerJobsAdapter
     private var jobsListener: com.google.firebase.firestore.ListenerRegistration? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentMyJobsBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -182,7 +210,8 @@ class MyJobsFragment : Fragment() {
                                 title = job.title,
                                 company = job.company,
                                 price = "₪${job.salary}/לשעה",
-                                distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
+                                distance = job.address.split(",").lastOrNull()?.trim()
+                                    ?: job.address,
                                 day = dateLabel,
                                 category = job.category,
                                 needsApproval = application.status == "employer_approved",
@@ -196,7 +225,7 @@ class MyJobsFragment : Fragment() {
                             )
 
                             when {
-                                application.status == "confirmed" && shiftEndMillis < now -> {
+                                shiftEndMillis < now -> {
                                     historyItems.add(item)
                                 }
 
@@ -346,7 +375,8 @@ class MyJobsFragment : Fragment() {
 
     private fun setupKeyboard() {
         binding.root.setOnClickListener {
-            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val imm =
+                requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
         }
     }
@@ -366,11 +396,19 @@ class MyJobsFragment : Fragment() {
                                     application = application,
                                     job = job,
                                     onSuccess = {
-                                        Toast.makeText(requireContext(), "העבודה אושרה! ✓", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            requireContext(),
+                                            "העבודה אושרה! ✓",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                         loadWorkerJobs()
                                     },
                                     onFailure = {
-                                        Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            requireContext(),
+                                            "שגיאה באישור",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 )
                             },
@@ -395,6 +433,7 @@ class MyJobsFragment : Fragment() {
         binding.rvJobs.layoutManager = LinearLayoutManager(requireContext())
         binding.rvJobs.adapter = workerAdapter
     }
+
     private fun setupEmployerAdapter() {
         employerAdapter = EmployerJobsAdapter(
             items = employerActive,
@@ -543,11 +582,17 @@ class MyJobsFragment : Fragment() {
         binding.cardPostJob.visibility = View.GONE
         binding.cardEmptyHistory.visibility = View.GONE
 
-        binding.toggleWorker.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected)
+        binding.toggleWorker.background =
+            ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected)
         binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
 
         binding.toggleEmployer.background = null
-        binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
+        binding.toggleEmployer.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                R.color.text_gray
+            )
+        )
 
         updateTabColors(isPink = true)
 
@@ -560,11 +605,17 @@ class MyJobsFragment : Fragment() {
     private fun applyEmployerMode(animated: Boolean) {
         appViewModel.setEmployerMode()
 
-        binding.toggleEmployer.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected_teal)
+        binding.toggleEmployer.background =
+            ContextCompat.getDrawable(requireContext(), R.drawable.bg_toggle_selected_teal)
         binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
 
         binding.toggleWorker.background = null
-        binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
+        binding.toggleWorker.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                R.color.text_gray
+            )
+        )
 
         updateTabColors(isPink = false)
 
@@ -609,7 +660,8 @@ class MyJobsFragment : Fragment() {
     }
 
     private fun setTabUnselected(tab: TextView) {
-        tab.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_tab_unselected_box)
+        tab.background =
+            ContextCompat.getDrawable(requireContext(), R.drawable.bg_tab_unselected_box)
         tab.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_dark))
         tab.typeface = ResourcesCompat.getFont(requireContext(), R.font.ploni_regular_aaa)
     }
