@@ -33,6 +33,10 @@ class SearchResultsFragment : Fragment() {
 
     // User's city from profile - used by the "near" tab
     private var userCity: String = ""
+    private var selectedWorkFrequency: String = ""
+    private var selectedSalaryType: String = ""
+    private var minSalary: Int = 0
+    private var maxDistanceKm: Int = 10
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,6 +53,10 @@ class SearchResultsFragment : Fragment() {
         arguments?.getStringArrayList("selectedCategories")?.let {
             selectedCategories.addAll(it)
         }
+        selectedWorkFrequency = arguments?.getString("workFrequency") ?: ""
+        selectedSalaryType = arguments?.getString("salaryType") ?: ""
+        minSalary = arguments?.getInt("minSalary", 0) ?: 0
+        maxDistanceKm = arguments?.getInt("maxDistanceKm", 10) ?: 10
 
         setupBackButton()
         setupAdapter()
@@ -90,13 +98,58 @@ class SearchResultsFragment : Fragment() {
         UserRepository.searchJobs(
             categories = selectedCategories,
             onSuccess = { jobs ->
+
+                android.util.Log.d("SEARCH_DEBUG", "jobs from repository = ${jobs.size}")
+                android.util.Log.d("SEARCH_DEBUG", "selectedCategories = $selectedCategories")
+                android.util.Log.d("SEARCH_DEBUG", "selectedWorkFrequency = $selectedWorkFrequency")
+                android.util.Log.d("SEARCH_DEBUG", "selectedSalaryType = $selectedSalaryType")
+                android.util.Log.d("SEARCH_DEBUG", "minSalary = $minSalary")
+                android.util.Log.d("SEARCH_DEBUG", "maxDistanceKm = $maxDistanceKm")
+
+                jobs.forEach { job ->
+                    android.util.Log.d(
+                        "SEARCH_DEBUG",
+                        "job=${job.title}, category=${job.category}, workFrequency=${job.workFrequency}, salaryType=${job.salaryType}, salary=${job.salary}"
+                    )
+                }
+
+                val filteredJobs = jobs.filter { job ->
+
+                    val matchesWorkFrequency =
+                        selectedWorkFrequency.isEmpty() ||
+                                job.workFrequency.isEmpty() ||
+                                job.workFrequency == selectedWorkFrequency
+
+                    val matchesSalaryType =
+                        selectedSalaryType.isEmpty() ||
+                                job.salaryType.isEmpty() ||
+                                job.salaryType == selectedSalaryType
+
+                    val salaryValue = job.salary.filter { it.isDigit() }.toIntOrNull() ?: 0
+
+                    val matchesSalary =
+                        minSalary == 0 || salaryValue == 0 || salaryValue >= minSalary
+
+                    android.util.Log.d(
+                        "SEARCH_DEBUG",
+                        "FILTER job=${job.title}: freq=$matchesWorkFrequency, salaryType=$matchesSalaryType, salary=$matchesSalary"
+                    )
+
+                    matchesWorkFrequency && matchesSalaryType && matchesSalary
+                }
+
+                android.util.Log.d("SEARCH_DEBUG", "filteredJobs = ${filteredJobs.size}")
+
                 val todayCalendar = Calendar.getInstance()
                 val tomorrowCalendar = Calendar.getInstance().apply {
                     add(Calendar.DAY_OF_YEAR, 1)
                 }
 
-                allItems = jobs.map { job ->
-                    val jobCalendar = Calendar.getInstance().apply { timeInMillis = job.date }
+                allItems = filteredJobs.map { job ->
+                    val jobCalendar = Calendar.getInstance().apply {
+                        timeInMillis = job.date
+                    }
+
                     val dateLabel = when {
                         jobCalendar.get(Calendar.DAY_OF_YEAR) == todayCalendar.get(Calendar.DAY_OF_YEAR) -> "היום"
                         jobCalendar.get(Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(Calendar.DAY_OF_YEAR) -> "מחר"
@@ -108,7 +161,7 @@ class SearchResultsFragment : Fragment() {
                         title = job.title,
                         company = job.company,
                         price = "₪${job.salary}",
-                        salary = job.salary.toIntOrNull() ?: 0,
+                        salary = job.salary.filter { it.isDigit() }.toIntOrNull() ?: 0,
                         day = dateLabel,
                         distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
                         category = job.category,
@@ -117,10 +170,13 @@ class SearchResultsFragment : Fragment() {
                     )
                 }
 
-                adapter.updateItems(allItems)
-                updateResultsCount(allItems.size)
+                val sorted = allItems.sortedBy { it.date }
+                adapter.updateItems(sorted)
+                updateResultsCount(sorted.size)
             },
-            onFailure = { }
+            onFailure = { e ->
+                android.util.Log.e("SEARCH_DEBUG", "searchJobs failed: ${e.message}")
+            }
         )
     }
 

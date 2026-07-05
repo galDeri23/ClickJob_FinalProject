@@ -244,7 +244,6 @@ class NotificationsFragment : Fragment() {
         if (item.jobId.isEmpty()) return
 
         if (!isWorkerMode) {
-            // Employer - navigate to worker sorting
             UserRepository.getJobById(
                 jobId = item.jobId,
                 onSuccess = { job ->
@@ -265,11 +264,14 @@ class NotificationsFragment : Fragment() {
                 onFailure = { }
             )
         } else {
-            // Worker - navigate to job details
+            val isViewOnly = !item.actionRequired
+
             val args = bundleOf(
                 "jobId" to item.jobId,
-                "applicationId" to if (item.actionRequired) item.applicationId else null
+                "applicationId" to item.applicationId,
+                "isViewOnly" to isViewOnly
             )
+
             findNavController().navigate(
                 R.id.action_notificationsFragment_to_jobDetailsFragment,
                 args

@@ -182,9 +182,16 @@ class HomeFragment : Fragment() {
     private fun setupBestMatchList() {
         UserRepository.getUserProfile(
             onSuccess = { profile ->
+
+                Log.d("HOME_DEBUG", "BestMatch: profile loaded")
+                Log.d("HOME_DEBUG", "BestMatch: jobMatches size = ${profile.jobMatches.size}")
+                Log.d("HOME_DEBUG", "BestMatch: jobMatches = ${profile.jobMatches}")
+
                 if (profile.jobMatches.isEmpty()) {
+                    Log.d("HOME_DEBUG", "BestMatch: profile.jobMatches is empty")
+
                     binding.tvSectionBestMatch.visibility = View.GONE
-                    binding.rvBestMatch.visibility        = View.GONE
+                    binding.rvBestMatch.visibility = View.GONE
                     onSectionLoaded()
                     return@getUserProfile
                 }
@@ -192,12 +199,79 @@ class HomeFragment : Fragment() {
                 UserRepository.getBestMatchJobs(
                     jobMatches = profile.jobMatches,
                     onSuccess = { jobsWithMatch ->
+
+                        Log.d("HOME_DEBUG", "BestMatch: jobsWithMatch size = ${jobsWithMatch.size}")
+                        Log.d("HOME_DEBUG", "BestMatch: jobsWithMatch = $jobsWithMatch")
+
+                        if (jobsWithMatch.isEmpty()) {
+                            Log.d("HOME_DEBUG", "BestMatch: jobsWithMatch is empty")
+
+                            binding.tvSectionBestMatch.visibility = View.GONE
+                            binding.rvBestMatch.visibility = View.GONE
+                            onSectionLoaded()
+                            return@getBestMatchJobs
+                        }
+
                         val todayCalendar = java.util.Calendar.getInstance()
                         val tomorrowCalendar = java.util.Calendar.getInstance().apply {
                             add(java.util.Calendar.DAY_OF_YEAR, 1)
                         }
 
                         val employerIds = jobsWithMatch.map { it.first.employerId }.distinct()
+
+                        Log.d("HOME_DEBUG", "BestMatch: employerIds size = ${employerIds.size}")
+                        Log.d("HOME_DEBUG", "BestMatch: employerIds = $employerIds")
+
+                        if (employerIds.isEmpty()) {
+                            Log.d("HOME_DEBUG", "BestMatch: employerIds is empty, showing jobs without ratings")
+
+                            val items = jobsWithMatch.map { (job, matchPercent) ->
+                                val jobCalendar = java.util.Calendar.getInstance().apply {
+                                    timeInMillis = job.date
+                                }
+
+                                val dateLabel = when {
+                                    jobCalendar.get(java.util.Calendar.YEAR) == todayCalendar.get(java.util.Calendar.YEAR) &&
+                                            jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+
+                                    jobCalendar.get(java.util.Calendar.YEAR) == tomorrowCalendar.get(java.util.Calendar.YEAR) &&
+                                            jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+
+                                    else -> java.text.SimpleDateFormat(
+                                        "dd/MM",
+                                        java.util.Locale.getDefault()
+                                    ).format(java.util.Date(job.date))
+                                }
+
+                                JobItem(
+                                    title = job.title,
+                                    company = job.company,
+                                    price = "₪${job.salary}",
+                                    rating = "",
+                                    distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
+                                    date = dateLabel,
+                                    matchPercent = "$matchPercent%",
+                                    isUrgent = job.isUrgent,
+                                    category = job.category,
+                                    id = job.id
+                                )
+                            }
+
+                            binding.tvSectionBestMatch.visibility = View.VISIBLE
+                            binding.rvBestMatch.visibility = View.VISIBLE
+                            binding.rvBestMatch.layoutManager = LinearLayoutManager(
+                                requireContext(),
+                                LinearLayoutManager.HORIZONTAL,
+                                false
+                            )
+                            binding.rvBestMatch.adapter = JobAdapter(items) { job ->
+                                openJobDetails(job)
+                            }
+
+                            onSectionLoaded()
+                            return@getBestMatchJobs
+                        }
+
                         val employerRatings = mutableMapOf<String, String>()
                         var loadedEmployers = 0
 
@@ -205,20 +279,37 @@ class HomeFragment : Fragment() {
                             UserRepository.getUserProfileById(
                                 userId = employerId,
                                 onSuccess = { empProfile ->
+                                    Log.d("HOME_DEBUG", "BestMatch: employer loaded = $employerId")
+
                                     if (empProfile.rating > 0) {
-                                        employerRatings[employerId] = String.format("%.1f", empProfile.rating)
+                                        employerRatings[employerId] =
+                                            String.format("%.1f", empProfile.rating)
                                     }
+
                                     loadedEmployers++
+
                                     if (loadedEmployers == employerIds.size) {
+                                        Log.d("HOME_DEBUG", "BestMatch: all employers loaded")
+                                        Log.d("HOME_DEBUG", "BestMatch: employerRatings = $employerRatings")
+
                                         val items = jobsWithMatch.map { (job, matchPercent) ->
                                             val jobCalendar = java.util.Calendar.getInstance().apply {
                                                 timeInMillis = job.date
                                             }
+
                                             val dateLabel = when {
-                                                jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
-                                                jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
-                                                else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
+                                                jobCalendar.get(java.util.Calendar.YEAR) == todayCalendar.get(java.util.Calendar.YEAR) &&
+                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+
+                                                jobCalendar.get(java.util.Calendar.YEAR) == tomorrowCalendar.get(java.util.Calendar.YEAR) &&
+                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+
+                                                else -> java.text.SimpleDateFormat(
+                                                    "dd/MM",
+                                                    java.util.Locale.getDefault()
+                                                ).format(java.util.Date(job.date))
                                             }
+
                                             JobItem(
                                                 title = job.title,
                                                 company = job.company,
@@ -232,26 +323,100 @@ class HomeFragment : Fragment() {
                                                 id = job.id
                                             )
                                         }
+
+                                        Log.d("HOME_DEBUG", "BestMatch: items size = ${items.size}")
+                                        Log.d("HOME_DEBUG", "BestMatch: items = $items")
+
                                         binding.tvSectionBestMatch.visibility = View.VISIBLE
-                                        binding.rvBestMatch.visibility        = View.VISIBLE
+                                        binding.rvBestMatch.visibility = View.VISIBLE
                                         binding.rvBestMatch.layoutManager = LinearLayoutManager(
-                                            requireContext(), LinearLayoutManager.HORIZONTAL, false
+                                            requireContext(),
+                                            LinearLayoutManager.HORIZONTAL,
+                                            false
                                         )
-                                        binding.rvBestMatch.adapter = JobAdapter(items) { job -> openJobDetails(job) }
+                                        binding.rvBestMatch.adapter = JobAdapter(items) { job ->
+                                            openJobDetails(job)
+                                        }
+
                                         onSectionLoaded()
                                     }
                                 },
-                                onFailure = {
+                                onFailure = { e ->
+                                    Log.e(
+                                        "HOME_DEBUG",
+                                        "BestMatch: failed loading employer $employerId: ${e.message}"
+                                    )
+
                                     loadedEmployers++
-                                    if (loadedEmployers == employerIds.size) onSectionLoaded()
+
+                                    if (loadedEmployers == employerIds.size) {
+                                        Log.d("HOME_DEBUG", "BestMatch: finished employers with some failures")
+
+                                        val items = jobsWithMatch.map { (job, matchPercent) ->
+                                            val jobCalendar = java.util.Calendar.getInstance().apply {
+                                                timeInMillis = job.date
+                                            }
+
+                                            val dateLabel = when {
+                                                jobCalendar.get(java.util.Calendar.YEAR) == todayCalendar.get(java.util.Calendar.YEAR) &&
+                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+
+                                                jobCalendar.get(java.util.Calendar.YEAR) == tomorrowCalendar.get(java.util.Calendar.YEAR) &&
+                                                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+
+                                                else -> java.text.SimpleDateFormat(
+                                                    "dd/MM",
+                                                    java.util.Locale.getDefault()
+                                                ).format(java.util.Date(job.date))
+                                            }
+
+                                            JobItem(
+                                                title = job.title,
+                                                company = job.company,
+                                                price = "₪${job.salary}",
+                                                rating = employerRatings[job.employerId] ?: "",
+                                                distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
+                                                date = dateLabel,
+                                                matchPercent = "$matchPercent%",
+                                                isUrgent = job.isUrgent,
+                                                category = job.category,
+                                                id = job.id
+                                            )
+                                        }
+
+                                        binding.tvSectionBestMatch.visibility = View.VISIBLE
+                                        binding.rvBestMatch.visibility = View.VISIBLE
+                                        binding.rvBestMatch.layoutManager = LinearLayoutManager(
+                                            requireContext(),
+                                            LinearLayoutManager.HORIZONTAL,
+                                            false
+                                        )
+                                        binding.rvBestMatch.adapter = JobAdapter(items) { job ->
+                                            openJobDetails(job)
+                                        }
+
+                                        onSectionLoaded()
+                                    }
                                 }
                             )
                         }
                     },
-                    onFailure = { onSectionLoaded() }
+                    onFailure = { e ->
+                        Log.e("HOME_DEBUG", "BestMatch: getBestMatchJobs failed: ${e.message}")
+
+                        binding.tvSectionBestMatch.visibility = View.GONE
+                        binding.rvBestMatch.visibility = View.GONE
+                        onSectionLoaded()
+                    }
                 )
             },
-            onFailure = { onSectionLoaded() }
+            onFailure = { e ->
+                Log.e("HOME_DEBUG", "BestMatch: getUserProfile failed: ${e.message}")
+
+                binding.tvSectionBestMatch.visibility = View.GONE
+                binding.rvBestMatch.visibility = View.GONE
+                onSectionLoaded()
+            }
         )
     }
 

@@ -221,6 +221,11 @@ class WorkerSortingFragment : Fragment() {
         WorkerDetailsDialog.newInstance(
             worker = worker,
             onApprove = {
+                if (application.status == "confirmed" || application.status == "arrived") {
+                    Toast.makeText(requireContext(), "העובד כבר התקבל ואישר את העבודה", Toast.LENGTH_SHORT).show()
+                    return@newInstance
+                }
+
                 UserRepository.approveApplicant(
                     application = application,
                     job = job,

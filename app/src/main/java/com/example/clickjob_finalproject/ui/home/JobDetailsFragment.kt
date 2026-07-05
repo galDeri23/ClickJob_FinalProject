@@ -26,7 +26,6 @@ class JobDetailsFragment : Fragment() {
 
     private var bottomNav: View? = null
 
-    // Maps job category name to its circle image drawable
     private val categoryImages = mapOf(
         "מסעדות" to R.drawable.img_cat_circle_hospitality,
         "אבטחה וביטחון" to R.drawable.img_cat_circle_security,
@@ -59,9 +58,6 @@ class JobDetailsFragment : Fragment() {
         val jobId = arguments?.getString("jobId")
         val applicationId = arguments?.getString("applicationId")
         val isViewOnly = arguments?.getBoolean("isViewOnly", false) ?: false
-        if (isViewOnly) {
-            binding.btnApply.visibility = View.GONE
-        }
 
         if (jobId.isNullOrEmpty()) {
             Toast.makeText(requireContext(), "שגיאה בטעינת המשרה", Toast.LENGTH_SHORT).show()
@@ -71,7 +67,7 @@ class JobDetailsFragment : Fragment() {
 
         setupBackButton()
         setupFavoriteButton()
-        loadJob(jobId, applicationId)
+        loadJob(jobId, applicationId, isViewOnly)
     }
 
     private fun setupBackButton() {
@@ -82,6 +78,7 @@ class JobDetailsFragment : Fragment() {
 
     private fun setupFavoriteButton() {
         var isFavorite = false
+
         binding.btnFavorite.setOnClickListener {
             isFavorite = !isFavorite
             Toast.makeText(
@@ -92,30 +89,26 @@ class JobDetailsFragment : Fragment() {
         }
     }
 
-    private fun loadJob(jobId: String, applicationId: String?) {
+    private fun loadJob(jobId: String, applicationId: String?, isViewOnly: Boolean) {
         UserRepository.getJobById(
             jobId = jobId,
             onSuccess = { job ->
-                // Business card: job title, company name, address
                 binding.tvJobTitle.text = job.title
                 binding.tvCompanyName.text = job.company
                 binding.tvAddressCard.text = job.address
                 binding.tvDescription.text = job.description
 
-                // Category circle image
                 val categoryImage = categoryImages[job.category]
                 if (categoryImage != null) {
                     binding.imgLogo.setImageResource(categoryImage)
                 }
 
-                // Salary box
                 binding.tvSalary.text = "₪${job.salary}"
                 binding.tvSalaryType.text = if (job.salaryType == "daily") "ליום" else "לשעה"
 
-                // Timing: date range or single day + hours
-                binding.tvTiming.text = buildTimingText(job.date, job.endDate, job.startTime, job.endTime)
+                binding.tvTiming.text =
+                    buildTimingText(job.date, job.endDate, job.startTime, job.endTime)
 
-                // Job type based on work frequency
                 binding.tvJobType.text = when (job.workFrequency) {
                     "חד פעמי" -> "עבודה חד פעמית"
                     "רציף" -> "עבודה רציפה, לאורך תקופה"
@@ -136,28 +129,70 @@ class JobDetailsFragment : Fragment() {
                             "קטגוריה: ${job.category}\n" +
                             "שכר: ₪${job.salary} ${if (job.salaryType == "daily") "ליום" else "לשעה"}\n" +
                             "כתובת: ${job.address}"
+
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         putExtra(Intent.EXTRA_TEXT, shareText)
                     }
+
                     startActivity(Intent.createChooser(intent, "שתף משרה"))
                 }
 
-                // Show confirm or apply button based on applicationId
+                binding.btnAddress.setOnClickListener {
+                    if (job.address.isNotEmpty()) {
+                        val encodedAddress = Uri.encode(job.address)
+
+                        try {
+                            val wazeUri = Uri.parse("waze://?q=$encodedAddress&navigate=yes")
+                            startActivity(Intent(Intent.ACTION_VIEW, wazeUri))
+                        } catch (e: Exception) {
+                            startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse("geo:0,0?q=$encodedAddress")
+                                )
+                            )
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "לא הוזנה כתובת", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                binding.btnEmployerProfile.setOnClickListener {
+                    if (job.link.isNotEmpty()) {
+                        val url = if (job.link.startsWith("http")) job.link else "https://${job.link}"
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    } else {
+                        Toast.makeText(requireContext(), "לא הוזן קישור לעסק", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                // מצב צפייה בלבד ממסך "המשרות שלי" — בלי כפתור בסוף
+                if (isViewOnly) {
+                    binding.btnApply.visibility = View.GONE
+                    binding.btnApply.setOnClickListener(null)
+                    return@getJobById
+                }
+
+                binding.btnApply.visibility = View.VISIBLE
+
                 if (!applicationId.isNullOrEmpty()) {
-                    // Came from notification/my jobs - show confirm button
                     binding.btnApply.text = "אישור עבודה"
                     binding.btnApply.setBackgroundColor(Color.parseColor("#24061E"))
+
                     binding.btnApply.setOnClickListener {
                         binding.btnApply.isEnabled = false
+
                         UserRepository.getJobApplications(
                             jobId = jobId,
                             onSuccess = { applications ->
                                 val application = applications.find { it.id == applicationId }
+
                                 if (application == null) {
                                     binding.btnApply.isEnabled = true
                                     return@getJobApplications
                                 }
+
                                 UserRepository.confirmJob(
                                     application = application,
                                     job = job,
@@ -177,10 +212,11 @@ class JobDetailsFragment : Fragment() {
                         )
                     }
                 } else {
-                    // Came from search/home - show apply button
                     binding.btnApply.text = "הגשת מועמדות"
+
                     binding.btnApply.setOnClickListener {
                         binding.btnApply.isEnabled = false
+
                         UserRepository.applyToJob(
                             job = job,
                             onSuccess = {
@@ -194,29 +230,6 @@ class JobDetailsFragment : Fragment() {
                         )
                     }
                 }
-
-                binding.btnAddress.setOnClickListener {
-                    if (job.address.isNotEmpty()) {
-                        val encodedAddress = Uri.encode(job.address)
-                        try {
-                            val wazeUri = Uri.parse("waze://?q=$encodedAddress&navigate=yes")
-                            startActivity(Intent(Intent.ACTION_VIEW, wazeUri))
-                        } catch (e: Exception) {
-                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=$encodedAddress")))
-                        }
-                    } else {
-                        Toast.makeText(requireContext(), "לא הוזנה כתובת", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                binding.btnEmployerProfile.setOnClickListener {
-                    if (job.link.isNotEmpty()) {
-                        val url = if (job.link.startsWith("http")) job.link else "https://${job.link}"
-                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                    } else {
-                        Toast.makeText(requireContext(), "לא הוזן קישור לעסק", Toast.LENGTH_SHORT).show()
-                    }
-                }
             },
             onFailure = {
                 Toast.makeText(requireContext(), "שגיאה בטעינת המשרה", Toast.LENGTH_SHORT).show()
@@ -224,12 +237,15 @@ class JobDetailsFragment : Fragment() {
         )
     }
 
-    // Builds the timing line: single day or date range, with hours
-    private fun buildTimingText(startDate: Long, endDate: Long, startTime: String, endTime: String): String {
+    private fun buildTimingText(
+        startDate: Long,
+        endDate: Long,
+        startTime: String,
+        endTime: String
+    ): String {
         val format = SimpleDateFormat("dd/MM", Locale.getDefault())
         val startStr = format.format(Date(startDate))
 
-        // Fallback for old jobs without endDate
         val effectiveEnd = if (endDate > 0L) endDate else startDate
         val endStr = format.format(Date(effectiveEnd))
 
@@ -244,14 +260,17 @@ class JobDetailsFragment : Fragment() {
 
     private fun bindRequirementChips(requirements: List<String>) {
         binding.chipGroupRequirements.removeAllViews()
+
         for (requirement in requirements) {
             val chip = Chip(requireContext()).apply {
                 text = requirement
                 isClickable = false
                 isCheckable = false
-                chipBackgroundColor = android.content.res.ColorStateList.valueOf(0xFFEFEFEF.toInt())
+                chipBackgroundColor =
+                    android.content.res.ColorStateList.valueOf(0xFFEFEFEF.toInt())
                 chipStrokeWidth = 0f
             }
+
             binding.chipGroupRequirements.addView(chip)
         }
     }

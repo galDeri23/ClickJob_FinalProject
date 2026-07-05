@@ -35,6 +35,7 @@ class WorkerDetailsDialog : DialogFragment() {
                     putString("profileImageUrl", worker.profileImageUrl)
                     putString("bio", worker.bio)
                     putBoolean("isPending", worker.isPending)
+                    putBoolean("isAccepted", worker.isAccepted)
                 }
             }
         }
@@ -57,6 +58,7 @@ class WorkerDetailsDialog : DialogFragment() {
         val rating = arguments?.getFloat("rating") ?: 0f
         val profileImageUrl = arguments?.getString("profileImageUrl") ?: ""
         val isPending = arguments?.getBoolean("isPending") ?: false
+        val isAccepted = arguments?.getBoolean("isAccepted") ?: false
 
         view.findViewById<TextView>(R.id.tvWorkerName).text = name
         view.findViewById<TextView>(R.id.tvWorkerRole).text = role
@@ -78,15 +80,18 @@ class WorkerDetailsDialog : DialogFragment() {
 
         // Approve button: disabled when already approved and waiting for the worker
         val btnApprove = view.findViewById<MaterialButton>(R.id.btnApprove)
-        if (isPending) {
+
+        if (isAccepted) {
+            btnApprove.visibility = View.GONE
+        } else if (isPending) {
             btnApprove.isEnabled = false
             btnApprove.text = "ממתין לאישור העובד"
+        } else {
+            btnApprove.setOnClickListener {
+                onApprove?.invoke()
+                dismiss()
+            }
         }
-        btnApprove.setOnClickListener {
-            onApprove?.invoke()
-            dismiss()
-        }
-
         view.findViewById<MaterialButton>(R.id.btnMoreDetails).setOnClickListener {
             dismiss()
             onMoreDetails?.invoke()

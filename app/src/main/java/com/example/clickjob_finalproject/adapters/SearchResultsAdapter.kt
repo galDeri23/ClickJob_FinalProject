@@ -61,11 +61,11 @@ class SearchResultsAdapter(
             "חינוך והוראה"        -> R.drawable.img_cat_circle_education
             "בעלי חיים"          -> R.drawable.img_cat_circle_pets
             "אפסנאות ולוגיסטיקה" -> R.drawable.img_cat_circle_logistics
-            "מסעדות"             -> R.drawable.img_cat_circle_hospitality
+            "מסעדנות"             -> R.drawable.img_cat_circle_hospitality
             "אחזקה"              -> R.drawable.img_cat_circle_maintenance
             "רפואה ובריאות"      -> R.drawable.img_cat_circle_health
             "הפקה ואירועים"      -> R.drawable.img_cat_circle_events
-            "טכנולוגיה"          -> R.drawable.img_cat_circle_tech
+            "טכנולוגיה ותוכנה"          -> R.drawable.img_cat_circle_tech
             "שירות לקוחות"       -> R.drawable.img_cat_circle_service
             "מכירות ואופנה"      -> R.drawable.img_cat_circle_sales
             "עיצוב וקריאייטיב"   -> R.drawable.img_cat_circle_creative

@@ -381,22 +381,20 @@ class MyJobsFragment : Fragment() {
                 )
             },
             onItemClick = { item ->
-                if (item.needsApproval) {
-                    findNavController().navigate(
-                        R.id.action_myJobsFragment_to_jobDetailsFragment,
-                        bundleOf(
-                            "jobId" to item.jobId,
-                            "applicationId" to item.applicationId
-                        )
+                findNavController().navigate(
+                    R.id.action_myJobsFragment_to_jobDetailsFragment,
+                    bundleOf(
+                        "jobId" to item.jobId,
+                        "applicationId" to item.applicationId,
+                        "isViewOnly" to true
                     )
-                }
+                )
             }
         )
 
         binding.rvJobs.layoutManager = LinearLayoutManager(requireContext())
         binding.rvJobs.adapter = workerAdapter
     }
-
     private fun setupEmployerAdapter() {
         employerAdapter = EmployerJobsAdapter(
             items = employerActive,

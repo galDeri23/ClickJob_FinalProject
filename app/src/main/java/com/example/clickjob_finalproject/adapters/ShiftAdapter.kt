@@ -53,20 +53,20 @@ class ShiftAdapter(
 
     private fun getCategoryCircleImage(category: String): Int {
         return when (category) {
-            "אבטחה וביטחון"            -> R.drawable.img_cat_circle_security_white
-            "משלוחים ותחבורה"           -> R.drawable.img_cat_circle_delivery_white
-            "בניין, תעשייה וייצור"      -> R.drawable.img_cat_circle_construction_white
-            "חינוך והוראה"              -> R.drawable.img_cat_circle_education_white
-            "בעלי חיים"                -> R.drawable.img_cat_circle_pets_white
-            "אפסנאות ולוגיסטיקה"        -> R.drawable.img_cat_circle_transportation_white
-            "מסעדנות"                  -> R.drawable.img_cat_circle_hospitality_white
-            "אחזקה"                    -> R.drawable.img_cat_circle_logistics_white
-            "בריאות ורווחה"            -> R.drawable.img_cat_circle_health_white
-            "הפקה ואירועים"            -> R.drawable.img_cat_circle_events_white
+            "אבטחה וביטחון"      -> R.drawable.img_cat_circle_security_white
+            "משלוחים ותחבורה"    -> R.drawable.img_cat_circle_delivery_white
+            "בניין וייצור"        -> R.drawable.img_cat_circle_construction_white
+            "חינוך והוראה"        -> R.drawable.img_cat_circle_education_white
+            "בעלי חיים"          -> R.drawable.img_cat_circle_pets_white
+            "אפסנאות ולוגיסטיקה" -> R.drawable.img_cat_circle_transportation_white
+            "מסעדנות"             -> R.drawable.img_cat_circle_hospitality_white
+            "אחזקה"              -> R.drawable.img_cat_circle_maintenance_white
+            "רפואה ובריאות"      -> R.drawable.img_cat_circle_health_white
+            "הפקה ואירועים"      -> R.drawable.img_cat_circle_events_white
             "טכנולוגיה ותוכנה"          -> R.drawable.img_cat_circle_tech_white
-            "שירות לקוחות ותמיכה"      -> R.drawable.img_cat_circle_service_white
-            "מכירות ואופנה"            -> R.drawable.img_cat_circle_sales_white
-            "קריאייטיב, עיצוב ומדיה"   -> R.drawable.img_cat_circle_creative_white
+            "שירות לקוחות"       -> R.drawable.img_cat_circle_service_white
+            "מכירות ואופנה"      -> R.drawable.img_cat_circle_sales_white
+            "עיצוב וקריאייטיב"   -> R.drawable.img_cat_circle_creative_white
             else                       -> R.drawable.img_cat_circle_service_white
         }
     }

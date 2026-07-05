@@ -12,7 +12,7 @@
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="כניסה/סיום משמרת"
+        android:text="כניסה למשמרת"
         android:textSize="36sp"
         android:fontFamily="@font/ploni_bold_aaa"
         android:textColor="#4A4A4A"

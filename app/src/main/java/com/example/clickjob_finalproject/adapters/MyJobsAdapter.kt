@@ -1,7 +1,10 @@
 package com.example.clickjob_finalproject.adapters
 
 import android.graphics.Color
+import android.text.BidiFormatter
+import android.text.TextDirectionHeuristics
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.clickjob_finalproject.R
@@ -38,7 +41,9 @@ class MyJobsAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyJobViewHolder {
         val binding = ItemMyJobCardBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false
+            LayoutInflater.from(parent.context),
+            parent,
+            false
         )
         return MyJobViewHolder(binding)
     }
@@ -47,18 +52,25 @@ class MyJobsAdapter(
         val binding = holder.binding
         val item = items[position]
 
-        binding.tvJobTitle.text = item.title
-        binding.tvCompanyName.text = item.company
+        binding.tvJobTitle.text =
+            BidiFormatter.getInstance().unicodeWrap(item.title, TextDirectionHeuristics.RTL)
+
+        binding.tvCompanyName.text =
+            BidiFormatter.getInstance().unicodeWrap(item.company, TextDirectionHeuristics.RTL)
+
         binding.tvDistance.text = item.distance
         binding.tvDay.text = item.day
         binding.tvPrice.text = item.price
         binding.imgCategory.setImageResource(getCategoryImage(item.category))
 
-        // Hide all badges by default
-        binding.btnApprove.visibility     = android.view.View.GONE
-        binding.tvTimerSoon.visibility    = android.view.View.GONE
-        binding.tvTimerPending.visibility = android.view.View.GONE
-        binding.root.setOnClickListener(null)
+        binding.btnApprove.visibility = View.GONE
+        binding.tvTimerSoon.visibility = View.GONE
+        binding.tvTimerPending.visibility = View.GONE
+
+        // כל כרטיס במשרות שלי פותח פרטי משרה
+        binding.root.setOnClickListener {
+            onItemClick(item)
+        }
 
         when (tabType) {
             JobTabType.ACTIVE -> {
@@ -67,24 +79,29 @@ class MyJobsAdapter(
 
                 when {
                     item.needsApproval -> {
-                        binding.btnApprove.visibility = android.view.View.VISIBLE
-                        binding.btnApprove.setOnClickListener { onApproveClick(item) }
-                        binding.root.setOnClickListener { onItemClick(item) }
+                        binding.btnApprove.visibility = View.VISIBLE
+                        binding.btnApprove.setOnClickListener {
+                            onApproveClick(item)
+                        }
                     }
+
                     item.timerType == TimerType.SOON -> {
-                        binding.tvTimerSoon.visibility = android.view.View.VISIBLE
+                        binding.tvTimerSoon.visibility = View.VISIBLE
+
                         val now = System.currentTimeMillis()
                         val diff = item.shiftStartMillis - now
                         val hours = diff / 3600000
                         val days = hours / 24
+
                         binding.tvTimerSoon.text = when {
                             days >= 1 -> "בעוד $days ימים"
                             hours >= 1 -> "בעוד $hours שעות"
                             else -> "בעוד ${diff / 60000} דקות"
                         }
                     }
+
                     item.timerType == TimerType.PENDING -> {
-                        binding.tvTimerPending.visibility = android.view.View.VISIBLE
+                        binding.tvTimerPending.visibility = View.VISIBLE
                     }
                 }
             }
@@ -109,21 +126,21 @@ class MyJobsAdapter(
 
     private fun getCategoryImage(category: String): Int {
         return when (category) {
-            "אבטחה וביטחון"      -> R.drawable.img_cat_circle_security
-            "משלוחים ותחבורה"    -> R.drawable.img_cat_circle_delivery
-            "בניין וייצור"        -> R.drawable.img_cat_circle_construction
-            "חינוך והוראה"        -> R.drawable.img_cat_circle_education
-            "בעלי חיים"          -> R.drawable.img_cat_circle_pets
+            "אבטחה וביטחון" -> R.drawable.img_cat_circle_security
+            "משלוחים ותחבורה" -> R.drawable.img_cat_circle_delivery
+            "בניין וייצור" -> R.drawable.img_cat_circle_construction
+            "חינוך והוראה" -> R.drawable.img_cat_circle_education
+            "בעלי חיים" -> R.drawable.img_cat_circle_pets
             "אפסנאות ולוגיסטיקה" -> R.drawable.img_cat_circle_logistics
-            "מסעדות"             -> R.drawable.img_cat_circle_hospitality
-            "אחזקה"              -> R.drawable.img_cat_circle_maintenance
-            "רפואה ובריאות"      -> R.drawable.img_cat_circle_health
-            "הפקה ואירועים"      -> R.drawable.img_cat_circle_events
-            "טכנולוגיה"          -> R.drawable.img_cat_circle_tech
-            "שירות לקוחות"       -> R.drawable.img_cat_circle_service
-            "מכירות ואופנה"      -> R.drawable.img_cat_circle_sales
-            "עיצוב וקריאייטיב"   -> R.drawable.img_cat_circle_creative
-            else                 -> R.drawable.img_cat_circle_service
+            "מסעדנות" -> R.drawable.img_cat_circle_hospitality
+            "אחזקה" -> R.drawable.img_cat_circle_maintenance
+            "רפואה ובריאות" -> R.drawable.img_cat_circle_health
+            "הפקה ואירועים" -> R.drawable.img_cat_circle_events
+            "טכנולוגיה ותוכנה" -> R.drawable.img_cat_circle_tech
+            "שירות לקוחות" -> R.drawable.img_cat_circle_service
+            "מכירות ואופנה" -> R.drawable.img_cat_circle_sales
+            "עיצוב וקריאייטיב" -> R.drawable.img_cat_circle_creative
+            else -> R.drawable.img_cat_circle_service
         }
     }
 

@@ -132,19 +132,39 @@ object UserRepository {
             return
         }
 
-        val jobIds = jobMatches.map { it.jobId }
+        val topMatches = jobMatches
+            .filter { it.jobId.isNotEmpty() }
+            .sortedByDescending { it.score }
+            .take(10)
+
+        if (topMatches.isEmpty()) {
+            onSuccess(emptyList())
+            return
+        }
+
+        val jobIds = topMatches.map { it.jobId }
+
         db.collection("jobs")
             .whereIn("id", jobIds)
             .get()
             .addOnSuccessListener { documents ->
                 val jobs = documents.mapNotNull { it.toObject(JobPost::class.java) }
+
                 val result = jobs.mapNotNull { job ->
-                    val match = jobMatches.find { it.jobId == job.id }
-                    if (match != null) Pair(job, match.matchPercent) else null
-                }.sortedByDescending { it.second }.take(10)
+                    val match = topMatches.find { it.jobId == job.id }
+
+                    if (match != null) {
+                        Pair(job, match.score)
+                    } else {
+                        null
+                    }
+                }.sortedByDescending { it.second }
+
                 onSuccess(result)
             }
-            .addOnFailureListener { onFailure(it) }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
     }
 
     fun getJobById(

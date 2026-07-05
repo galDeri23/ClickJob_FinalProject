@@ -170,10 +170,31 @@ class SearchFragment : Fragment() {
 
     private fun setupSearchButton() {
         binding.btnSearch.setOnClickListener {
+
+            val selectedWorkFrequency = when {
+                binding.rbOneTime.isChecked -> "חד פעמי"
+                binding.rbRecurring.isChecked -> "רציף"
+                else -> ""
+            }
+
+            val selectedSalaryType = when {
+                binding.rbHourly.isChecked -> "hourly"
+                binding.rbFixed.isChecked -> "daily"
+                else -> ""
+            }
+
             val bundle = Bundle().apply {
                 putStringArrayList("selectedCategories", ArrayList(selectedCategories))
+                putString("workFrequency", selectedWorkFrequency)
+                putString("salaryType", selectedSalaryType)
+                putInt("minSalary", binding.seekBarSalary.progress)
+                putInt("maxDistanceKm", 10)
             }
-            findNavController().navigate(R.id.action_searchFragment_to_searchResultsFragment, bundle)
+
+            findNavController().navigate(
+                R.id.action_searchFragment_to_searchResultsFragment,
+                bundle
+            )
         }
     }
 

@@ -96,18 +96,18 @@ class JobAdapter(
         return when (category) {
             "אבטחה וביטחון"            -> R.drawable.img_cat_security
             "משלוחים ותחבורה"           -> R.drawable.img_cat_delivery
-            "בניין, תעשייה וייצור"      -> R.drawable.img_cat_construction
+            "בניין וייצור"      -> R.drawable.img_cat_construction
             "חינוך והוראה"              -> R.drawable.img_cat_education
             "בעלי חיים"                -> R.drawable.img_cat_pets
             "אפסנאות ולוגיסטיקה"        -> R.drawable.img_cat_transportation
             "מסעדנות"                  -> R.drawable.img_cat_hospitality
             "אחזקה"                    -> R.drawable.img_cat_logistics
-            "בריאות ורווחה"            -> R.drawable.img_cat_health
+            "רפואה ובריאות"            -> R.drawable.img_cat_health
             "הפקה ואירועים"            -> R.drawable.img_cat_events
             "טכנולוגיה ותוכנה"          -> R.drawable.img_cat_tech
-            "שירות לקוחות ותמיכה"      -> R.drawable.img_cat_service
+            "שירות לקוחות"      -> R.drawable.img_cat_service
             "מכירות ואופנה"            -> R.drawable.img_cat_sales
-            "קריאייטיב, עיצוב ומדיה"   -> R.drawable.img_cat_creative
+            "עיצוב וקריאייטיב"   -> R.drawable.img_cat_creative
             else                       -> R.drawable.img_cat_service
         }
     }

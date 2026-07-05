@@ -224,17 +224,41 @@ class WorkerProfileFragment : Fragment() {
     }
 
     private fun doApprove(application: Application, job: JobPost) {
+
+        if (application.status == "confirmed" || application.status == "arrived") {
+            binding.btnApproveWorker.isEnabled = false
+            binding.btnApproveWorker.text = "העובד כבר אושר ✓"
+
+            Toast.makeText(
+                requireContext(),
+                "העובד כבר אישר את העבודה",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
         binding.btnApproveWorker.isEnabled = false
+
         UserRepository.approveApplicant(
             application = application,
             job = job,
             onSuccess = {
-                Toast.makeText(requireContext(), "העובד אושר!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "העובד אושר!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
                 findNavController().popBackStack()
             },
             onFailure = {
                 binding.btnApproveWorker.isEnabled = true
-                Toast.makeText(requireContext(), "שגיאה באישור", Toast.LENGTH_SHORT).show()
+
+                Toast.makeText(
+                    requireContext(),
+                    "שגיאה באישור",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         )
     }

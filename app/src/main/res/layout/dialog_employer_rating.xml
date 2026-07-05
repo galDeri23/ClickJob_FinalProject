@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
         android:text="כמה אתה מרוצה מחווית העבודה של רום פז?"
-        android:textSize="18sp"
+        android:textSize="15sp"
         android:fontFamily="@font/ploni_bold_aaa"
         android:textColor="@color/DarkDeep"
         android:gravity="center"
