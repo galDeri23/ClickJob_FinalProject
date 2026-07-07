@@ -193,7 +193,7 @@ class RegisterActivity : AppCompatActivity() {
 
         btnNext.text = if (step == 3) "הצג לי משרות מתאימות" else "הבא"
         if (step == 3) {
-            btnNext.setBackgroundResource(R.color.brand_pink)
+            btnNext.backgroundTintList = ContextCompat.getColorStateList(this, R.color.brand_pink)
             progressBarSteps.progressTintList = android.content.res.ColorStateList.valueOf(
                 ContextCompat.getColor(this, R.color.brand_pink)
             )

@@ -1,6 +1,7 @@
 package com.example.clickjob_finalproject.data.repository
 
 import android.util.Log
+import com.example.clickjob_finalproject.MatchingService
 import com.example.clickjob_finalproject.data.model.Application
 import com.example.clickjob_finalproject.data.model.JobMatch
 import com.example.clickjob_finalproject.data.model.JobPost
@@ -25,7 +26,10 @@ object UserRepository {
         db.collection("candidates")
             .document(userId)
             .set(profile, SetOptions.merge())
-            .addOnSuccessListener(TaskExecutors.MAIN_THREAD) { onSuccess() }
+            .addOnSuccessListener(TaskExecutors.MAIN_THREAD) {
+                MatchingService.triggerCandidateMatching(userId)
+                onSuccess()
+            }
             .addOnFailureListener(TaskExecutors.MAIN_THREAD) { onFailure(it) }
     }
 
@@ -91,6 +95,7 @@ object UserRepository {
 
         jobRef.set(jobWithId)
             .addOnSuccessListener {
+                MatchingService.triggerJobMatching(jobRef.id)
                 db.collection("candidates").document(userId)
                     .update("hasPostedJob", true)
                     .addOnSuccessListener { onSuccess(jobRef.id) }
