@@ -275,23 +275,35 @@ object UserRepository {
             .whereEqualTo("status", "pending")
             .get()
             .addOnSuccessListener { documents ->
-                if (documents.size() % 5 == 0) {
-                    val notifRef = db.collection("notifications").document()
-                    val notification = Notification(
-                        id = notifRef.id,
-                        userId = job.employerId,
-                        role = "employer",
-                        type = "ALERT",
-                        title = "יש ${documents.size()} מועמדים חדשים למשרה ${job.title}",
-                        dateTime = java.text.SimpleDateFormat(
-                            "dd.MM.yy HH:mm",
-                            java.util.Locale.getDefault()
-                        )
-                            .format(java.util.Date()),
-                        jobId = job.id
-                    )
-                    notifRef.set(notification)
+                val count = documents.size()
+                if (count == 0) return@addOnSuccessListener
+
+
+                val notifId = "candidates_${job.id}"
+                val notifRef = db.collection("notifications").document(notifId)
+
+                val title = if (count == 1) {
+                    "מועמד חדש נרשם למשרה \"${job.title}\""
+                } else {
+                    "$count מועמדים נרשמו למשרה \"${job.title}\""
                 }
+
+                val notification = Notification(
+                    id = notifId,
+                    userId = job.employerId,
+                    role = "employer",
+                    type = "ALERT",
+                    title = title,
+                    dateTime = java.text.SimpleDateFormat(
+                        "dd.MM.yy HH:mm",
+                        java.util.Locale.getDefault()
+                    ).format(java.util.Date()),
+                    jobId = job.id,
+                    isRead = false,
+                    createdAt = System.currentTimeMillis()
+                )
+
+                notifRef.set(notification)
             }
     }
 
