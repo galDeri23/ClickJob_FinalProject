@@ -98,6 +98,7 @@ object UserRepository {
                 Log.e("FCM", "Failed to get token: ${it.message}")
             }
     }
+
     fun saveJobPost(
         job: JobPost,
         onSuccess: (String) -> Unit,
@@ -321,13 +322,17 @@ object UserRepository {
             }
     }
 
+    // SECURITY: scoped to the signed-in employer, so worker phone numbers
+    // can't be pulled by anyone who knows a jobId
     fun getJobApplications(
         jobId: String,
         onSuccess: (List<Application>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
+        val userId = auth.currentUser?.uid ?: return
         db.collection("applications")
             .whereEqualTo("jobId", jobId)
+            .whereEqualTo("employerId", userId)
             .get()
             .addOnSuccessListener { documents ->
                 val applications = documents.mapNotNull { it.toObject(Application::class.java) }
@@ -405,7 +410,10 @@ object UserRepository {
                     com.google.firebase.firestore.FieldValue.arrayUnion(job.id)
                 )
 
+            // SECURITY: filter by userId so the query is allowed under
+            // the tightened notifications rule
             db.collection("notifications")
+                .whereEqualTo("userId", application.workerId)
                 .whereEqualTo("applicationId", application.id)
                 .whereEqualTo("actionRequired", true)
                 .get()
@@ -497,7 +505,10 @@ object UserRepository {
             .update("status", "rejected")
             .addOnSuccessListener {
                 // Deactivate the original double-check notification so its buttons disappear
+                // SECURITY: filter by userId so the query is allowed under
+                // the tightened notifications rule
                 db.collection("notifications")
+                    .whereEqualTo("userId", application.workerId)
                     .whereEqualTo("applicationId", application.id)
                     .whereEqualTo("actionRequired", true)
                     .get()

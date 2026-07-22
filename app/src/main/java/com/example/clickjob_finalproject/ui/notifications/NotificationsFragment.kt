@@ -142,11 +142,9 @@ class NotificationsFragment : Fragment() {
         UserRepository.getJobById(
             jobId = item.jobId,
             onSuccess = { job ->
-                UserRepository.getJobApplications(
-                    jobId = item.jobId,
-                    onSuccess = { applications ->
-                        val application = applications.find { it.id == item.applicationId }
-                            ?: return@getJobApplications
+                UserRepository.getApplicationById(
+                    applicationId = item.applicationId,
+                    onSuccess = { application ->
                         UserRepository.confirmJob(
                             application = application,
                             job = job,
@@ -168,11 +166,9 @@ class NotificationsFragment : Fragment() {
         UserRepository.getJobById(
             jobId = item.jobId,
             onSuccess = { job ->
-                UserRepository.getJobApplications(
-                    jobId = item.jobId,
-                    onSuccess = { applications ->
-                        val application = applications.find { it.id == item.applicationId }
-                            ?: return@getJobApplications
+                UserRepository.getApplicationById(
+                    applicationId = item.applicationId,
+                    onSuccess = { application ->
                         UserRepository.rejectJob(
                             application = application,
                             job = job,
@@ -186,7 +182,6 @@ class NotificationsFragment : Fragment() {
             onFailure = { }
         )
     }
-
     // Open rating dialog
     private fun handleRate(item: NotificationItem) {
         if (item.jobId.isEmpty()) return
