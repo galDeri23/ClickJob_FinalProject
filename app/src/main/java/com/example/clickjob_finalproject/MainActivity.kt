@@ -1,6 +1,11 @@
 package com.example.clickjob_finalproject
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -20,6 +25,12 @@ class MainActivity : AppCompatActivity() {
 
     private val appViewModel: AppViewModel by viewModels()
     private var notificationsListener: ListenerRegistration? = null
+
+    // Must be registered as a class field, before the activity is started
+    private val requestNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            Log.d("FCM", "Notification permission granted: $granted")
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,8 +53,6 @@ class MainActivity : AppCompatActivity() {
             )
             insets
         }
-        //SeedUsers.seedAll()
-        //SeedData.seedAll()
         if (FirebaseAuth.getInstance().currentUser != null) {
             UserRepository.checkFinishedShiftsAndCreateRatingNotifications()
         }
@@ -52,7 +61,6 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
 
         bottomNav.setupWithNavController(navController)
-
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.homeFragment -> {
@@ -82,6 +90,11 @@ class MainActivity : AppCompatActivity() {
         // Setup notifications badge
         setupNotificationsBadge(bottomNav)
 
+        UserRepository.saveFcmToken()
+
+        // Ask for notification permission (required from Android 13)
+        askNotificationPermission()
+
         // Observe global worker/employer mode and switch bottom nav color accordingly
         appViewModel.isWorkerMode.observe(this) { isWorker ->
             val colorList = if (isWorker) {
@@ -91,6 +104,20 @@ class MainActivity : AppCompatActivity() {
             }
             bottomNav.itemIconTintList = colorList
             bottomNav.itemTextColor = colorList
+        }
+    }
+
+    // On Android 13+ the user must explicitly allow notifications, otherwise
+    // pushes arrive at the device but are never displayed
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 

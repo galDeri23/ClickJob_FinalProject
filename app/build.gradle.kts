@@ -63,6 +63,7 @@ dependencies {
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-auth")
     implementation(libs.play.services.auth)
     implementation("com.google.android.gms:play-services-auth:21.2.0")

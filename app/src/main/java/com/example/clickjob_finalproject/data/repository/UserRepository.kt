@@ -84,6 +84,20 @@ object UserRepository {
             .addOnFailureListener { onFailure(it) }
     }
 
+    // Saves this device's FCM token on the user's profile, so the server knows where to push
+    fun saveFcmToken() {
+        val userId = auth.currentUser?.uid ?: return
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token ->
+                db.collection("candidates")
+                    .document(userId)
+                    .set(mapOf("fcmToken" to token), SetOptions.merge())
+                Log.d("FCM", "Token saved: $token")
+            }
+            .addOnFailureListener {
+                Log.e("FCM", "Failed to get token: ${it.message}")
+            }
+    }
     fun saveJobPost(
         job: JobPost,
         onSuccess: (String) -> Unit,
