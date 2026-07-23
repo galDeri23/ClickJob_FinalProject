@@ -26,7 +26,17 @@ class RegisterStep4Fragment : Fragment() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { uri -> uploadCvToStorage(uri) }
+            result.data?.data?.let { uri ->
+                if (!isPdf(uri)) {
+                    Toast.makeText(
+                        requireContext(),
+                        "ניתן להעלות קבצי PDF בלבד",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@let
+                }
+                uploadCvToStorage(uri)
+            }
         }
     }
 
@@ -48,14 +58,16 @@ class RegisterStep4Fragment : Fragment() {
 
     private fun openFilePicker() {
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "*/*"
-            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
-                "application/pdf",
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            ))
+            type = "application/pdf"
         }
         filePickerLauncher.launch(intent)
+    }
+
+    // The picker filter isn't always honoured by third-party file providers,
+    // so the chosen file is checked again before uploading
+    private fun isPdf(uri: Uri): Boolean {
+        if (requireContext().contentResolver.getType(uri) == "application/pdf") return true
+        return getFileName(uri).lowercase().endsWith(".pdf")
     }
 
     private fun uploadCvToStorage(uri: Uri) {

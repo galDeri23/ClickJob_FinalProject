@@ -64,7 +64,17 @@ class ProfileFragment : Fragment() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { uri -> uploadAdditionalDocument(uri) }
+            result.data?.data?.let { uri ->
+                if (!isPdf(uri)) {
+                    Toast.makeText(
+                        requireContext(),
+                        "ניתן להעלות קבצי PDF בלבד",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@let
+                }
+                uploadAdditionalDocument(uri)
+            }
         }
     }
 
@@ -398,12 +408,7 @@ class ProfileFragment : Fragment() {
     }
     private fun openDocumentPicker() {
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "*/*"
-            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
-                "application/pdf",
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            ))
+            type = "application/pdf"
         }
         documentPickerLauncher.launch(intent)
     }
@@ -437,6 +442,12 @@ class ProfileFragment : Fragment() {
             }
     }
 
+    // The picker filter isn't always honoured by third-party file providers,
+    // so the chosen file is checked again before uploading
+    private fun isPdf(uri: Uri): Boolean {
+        if (requireContext().contentResolver.getType(uri) == "application/pdf") return true
+        return getFileName(uri).lowercase().endsWith(".pdf")
+    }
     private fun getFileName(uri: Uri): String {
         return requireContext().contentResolver
             .query(uri, null, null, null, null)
