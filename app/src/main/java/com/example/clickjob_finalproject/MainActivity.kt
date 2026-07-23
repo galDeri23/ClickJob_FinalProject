@@ -53,9 +53,6 @@ class MainActivity : AppCompatActivity() {
             )
             insets
         }
-        if (FirebaseAuth.getInstance().currentUser != null) {
-            UserRepository.checkFinishedShiftsAndCreateRatingNotifications()
-        }
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController

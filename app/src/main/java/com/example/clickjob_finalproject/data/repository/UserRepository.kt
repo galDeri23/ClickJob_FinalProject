@@ -275,51 +275,12 @@ object UserRepository {
                 )
                 appRef.set(application)
                     .addOnSuccessListener {
-                        checkAndNotifyEmployer(job)
                         onSuccess()
                     }
                     .addOnFailureListener { onFailure(it) }
             },
             onFailure = onFailure
         )
-    }
-
-    private fun checkAndNotifyEmployer(job: JobPost) {
-        db.collection("applications")
-            .whereEqualTo("jobId", job.id)
-            .whereEqualTo("status", "pending")
-            .get()
-            .addOnSuccessListener { documents ->
-                val count = documents.size()
-                if (count == 0) return@addOnSuccessListener
-
-
-                val notifId = "candidates_${job.id}"
-                val notifRef = db.collection("notifications").document(notifId)
-
-                val title = if (count == 1) {
-                    "מועמד חדש נרשם למשרה \"${job.title}\""
-                } else {
-                    "$count מועמדים נרשמו למשרה \"${job.title}\""
-                }
-
-                val notification = Notification(
-                    id = notifId,
-                    userId = job.employerId,
-                    role = "employer",
-                    type = "ALERT",
-                    title = title,
-                    dateTime = java.text.SimpleDateFormat(
-                        "dd.MM.yy HH:mm",
-                        java.util.Locale.getDefault()
-                    ).format(java.util.Date()),
-                    jobId = job.id,
-                    isRead = false,
-                    createdAt = System.currentTimeMillis()
-                )
-
-                notifRef.set(notification)
-            }
     }
 
     // SECURITY: scoped to the signed-in employer, so worker phone numbers
@@ -743,142 +704,15 @@ object UserRepository {
                 }
 
                 val appDoc = documents.first()
-                val application = appDoc.toObject(Application::class.java)
 
-                db.collection("jobs").document(jobId)
-                    .get()
-                    .addOnSuccessListener { jobDoc ->
-
-                        val job = jobDoc.toObject(JobPost::class.java)
-
-                        if (job == null) {
-                            onFailure(Exception("Job not found"))
-                            return@addOnSuccessListener
-                        }
-
-                        appDoc.reference.update(
-                            mapOf(
-                                "status" to "arrived",
-                                "arrivalScannedAt" to System.currentTimeMillis()
-                            )
-                        ).addOnSuccessListener {
-
-                            val scanTimeMillis = System.currentTimeMillis()
-
-                            val scanTimeStr = java.text.SimpleDateFormat(
-                                "dd.MM.yy HH:mm",
-                                java.util.Locale.getDefault()
-                            ).format(java.util.Date(scanTimeMillis))
-
-                            val workerNotifRef = db.collection("notifications").document()
-                            val workerNotification = Notification(
-                                id = workerNotifRef.id,
-                                userId = userId,
-                                role = "worker",
-                                type = "WORKER_ARRIVED",
-                                title = "סריקה להתחלת העבודה ב\"${job.company}\"",
-                                dateTime = "עבודה החלה ב-$scanTimeStr",
-                                jobId = jobId,
-                                applicationId = application.id,
-                                createdAt = scanTimeMillis
-                            )
-
-                            val employerNotifRef = db.collection("notifications").document()
-                            val employerNotification = Notification(
-                                id = employerNotifRef.id,
-                                userId = job.employerId,
-                                role = "employer",
-                                type = "WORKER_ARRIVED",
-                                title = "סריקה להתחלת עבודה ב\"${job.company}\"",
-                                dateTime = "${application.workerName} סרק/ה ב-$scanTimeStr",
-                                jobId = jobId,
-                                applicationId = application.id,
-                                createdAt = scanTimeMillis
-                            )
-
-                            val batch = db.batch()
-                            batch.set(workerNotifRef, workerNotification)
-                            batch.set(employerNotifRef, employerNotification)
-
-                            batch.commit()
-                                .addOnSuccessListener {
-                                    checkAllWorkersArrived(jobId, onSuccess, onFailure)
-                                }
-                                .addOnFailureListener { onFailure(it) }
-
-                        }.addOnFailureListener { onFailure(it) }
-                    }
-                    .addOnFailureListener { onFailure(it) }
-            }
-            .addOnFailureListener { onFailure(it) }
-    }
-
-    private fun checkAllWorkersArrived(
-        jobId: String,
-        onSuccess: () -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        db.collection("jobs").document(jobId)
-            .get()
-            .addOnSuccessListener { jobDoc ->
-                val workersNeeded =
-                    jobDoc.getLong("workersNeeded")?.toInt() ?: return@addOnSuccessListener
-                val employerId = jobDoc.getString("employerId") ?: return@addOnSuccessListener
-                val jobTitle = jobDoc.getString("title") ?: ""
-                val company = jobDoc.getString("company") ?: ""
-
-                db.collection("applications")
-                    .whereEqualTo("jobId", jobId)
-                    .whereEqualTo("status", "arrived")
-                    .get()
-                    .addOnSuccessListener { arrivedDocs ->
-                        if (arrivedDocs.size() >= workersNeeded) {
-                            val employerNotifRef = db.collection("notifications").document()
-                            val employerNotif = Notification(
-                                id = employerNotifRef.id,
-                                userId = employerId,
-                                role = "employer",
-                                type = "CONFIRMED",
-                                title = "כל העובדים הגיעו ל\"$jobTitle\"",
-                                dateTime = java.text.SimpleDateFormat(
-                                    "dd.MM.yy HH:mm",
-                                    java.util.Locale.getDefault()
-                                )
-                                    .format(java.util.Date()),
-                                jobId = jobId
-                            )
-                            employerNotifRef.set(employerNotif)
-
-                            val employerRatingRef = db.collection("notifications").document()
-                            val employerRatingNotif = Notification(
-                                id = employerRatingRef.id,
-                                userId = employerId,
-                                role = "employer",
-                                type = "RATING",
-                                title = "דרג את העובדים במשרת $jobTitle",
-                                dateTime = "דירוגים עוזרים לעובדים למצוא עבודה",
-                                jobId = jobId
-                            )
-                            employerRatingRef.set(employerRatingNotif)
-
-                            arrivedDocs.forEach { arrivedDoc ->
-                                val workerId = arrivedDoc.getString("workerId") ?: return@forEach
-                                val workerRatingRef = db.collection("notifications").document()
-                                val workerRatingNotif = Notification(
-                                    id = workerRatingRef.id,
-                                    userId = workerId,
-                                    role = "worker",
-                                    type = "RATING",
-                                    title = "דרג את עבודה ב\"$company\"",
-                                    dateTime = "דירוגים מעלים את הסיכוי למצוא עבודה",
-                                    jobId = jobId
-                                )
-                                workerRatingRef.set(workerRatingNotif)
-                            }
-                        }
-                        onSuccess()
-                    }
-                    .addOnFailureListener { onFailure(it) }
+                appDoc.reference.update(
+                    mapOf(
+                        "status" to "arrived",
+                        "arrivalScannedAt" to System.currentTimeMillis()
+                    )
+                ).addOnSuccessListener {
+                    onSuccess()
+                }.addOnFailureListener { onFailure(it) }
             }
             .addOnFailureListener { onFailure(it) }
     }
@@ -918,129 +752,6 @@ object UserRepository {
         )
     }
 
-    fun checkFinishedShiftsAndCreateRatingNotifications(
-        onComplete: () -> Unit = {},
-        onFailure: (Exception) -> Unit = {}
-    ) {
-        val now = System.currentTimeMillis()
-
-        db.collection("jobs")
-            .get()
-            .addOnSuccessListener { jobDocs ->
-
-                val finishedJobs = jobDocs
-                    .mapNotNull { it.toObject(JobPost::class.java) }
-                    .filter { job ->
-                        !job.ratingNotificationsSent && isShiftEnded(job, now)
-                    }
-
-                if (finishedJobs.isEmpty()) {
-                    onComplete()
-                    return@addOnSuccessListener
-                }
-
-                var completedCount = 0
-
-                finishedJobs.forEach { job ->
-                    createRatingNotificationsForJob(
-                        job = job,
-                        onComplete = {
-                            completedCount++
-                            if (completedCount == finishedJobs.size) {
-                                onComplete()
-                            }
-                        },
-                        onFailure = onFailure
-                    )
-                }
-            }
-            .addOnFailureListener { onFailure(it) }
-    }
-
-    private fun isShiftEnded(job: JobPost, now: Long): Boolean {
-        val calendar = java.util.Calendar.getInstance().apply {
-            timeInMillis = if (job.endDate != 0L) job.endDate else job.date
-
-            val parts = job.endTime.split(":")
-            val hour = parts.getOrNull(0)?.toIntOrNull() ?: 0
-            val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
-
-            set(java.util.Calendar.HOUR_OF_DAY, hour)
-            set(java.util.Calendar.MINUTE, minute)
-            set(java.util.Calendar.SECOND, 0)
-            set(java.util.Calendar.MILLISECOND, 0)
-        }
-
-        return calendar.timeInMillis < now
-    }
-
-    private fun createRatingNotificationsForJob(
-        job: JobPost,
-        onComplete: () -> Unit = {},
-        onFailure: (Exception) -> Unit = {}
-    ) {
-        db.collection("applications")
-            .whereEqualTo("jobId", job.id)
-            .get()
-            .addOnSuccessListener { applicationDocs ->
-
-                val applications = applicationDocs
-                    .mapNotNull { it.toObject(Application::class.java) }
-                    .filter { it.status == "confirmed" || it.status == "arrived" }
-
-                if (applications.isEmpty()) {
-                    db.collection("jobs")
-                        .document(job.id)
-                        .update("ratingNotificationsSent", true)
-                        .addOnSuccessListener { onComplete() }
-                        .addOnFailureListener { onFailure(it) }
-
-                    return@addOnSuccessListener
-                }
-
-                val batch = db.batch()
-
-                applications.forEach { application ->
-
-                    val employerRef = db.collection("notifications").document()
-                    val employerNotification = Notification(
-                        id = employerRef.id,
-                        userId = job.employerId,
-                        role = "employer",
-                        type = "RATING",
-                        title = "דירוג העובד \"${application.workerName}\"",
-                        dateTime = "דירוגים מסייעים למצוא עובדים מתאימים",
-                        jobId = job.id,
-                        applicationId = application.id
-                    )
-                    batch.set(employerRef, employerNotification)
-
-                    if (application.status == "arrived") {
-                        val workerRef = db.collection("notifications").document()
-                        val workerNotification = Notification(
-                            id = workerRef.id,
-                            userId = application.workerId,
-                            role = "worker",
-                            type = "RATING",
-                            title = "דירוג עבודה ב\"${job.company}\"",
-                            dateTime = "דירוגים מעלים את הסיכוי למצוא עבודה",
-                            jobId = job.id,
-                            applicationId = application.id
-                        )
-                        batch.set(workerRef, workerNotification)
-                    }
-                }
-
-                val jobRef = db.collection("jobs").document(job.id)
-                batch.update(jobRef, "ratingNotificationsSent", true)
-
-                batch.commit()
-                    .addOnSuccessListener { onComplete() }
-                    .addOnFailureListener { onFailure(it) }
-            }
-            .addOnFailureListener { onFailure(it) }
-    }
-
     // Returns true if the job can still be applied to (start date+time has not passed)
     fun isJobStillOpen(job: JobPost): Boolean {
         val startMillis = java.util.Calendar.getInstance().apply {
@@ -1078,8 +789,10 @@ object UserRepository {
         onUpdate: (List<Application>) -> Unit,
         onFailure: (Exception) -> Unit
     ): com.google.firebase.firestore.ListenerRegistration {
+        val userId = auth.currentUser?.uid ?: ""
         return db.collection("applications")
             .whereEqualTo("jobId", jobId)
+            .whereEqualTo("employerId", userId)
             .addSnapshotListener { documents, error ->
                 if (error != null) {
                     onFailure(error)
