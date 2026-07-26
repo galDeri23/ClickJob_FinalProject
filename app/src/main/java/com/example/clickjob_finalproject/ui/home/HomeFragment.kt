@@ -41,7 +41,6 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // מצב טעינה: מציגים רק את הספינר, מסתירים את כל התוכן
         binding.progressBar.visibility = View.VISIBLE
         binding.scrollView.visibility = View.INVISIBLE
         loadedCount = 0
@@ -51,20 +50,18 @@ class HomeFragment : Fragment() {
         setupJobPosting()
         setupEmptyShiftCard()
 
-        loadUserLocation()          // רץ ברקע — לא נספר בטעינת המסך
-        setupUpcomingShifts()       // נספר
-        setupBestMatchList()        // נספר
-        setupUrgentList()           // נספר
+        loadUserLocation()
+        setupUpcomingShifts()
+        setupBestMatchList()
+        setupUrgentList()
     }
 
-    // נקראת בכל פעם שסקציה (מהשלוש) מסיימת — בין אם בהצלחה ובין אם בכישלון
     private fun onSectionLoaded() {
         loadedCount++
         Log.d("HOME_DEBUG", "onSectionLoaded called, count = $loadedCount")
 
         if (loadedCount >= totalToLoad && !screenShown) {
             screenShown = true
-            // ווידוא שה-binding עדיין קיים (המשתמש לא עזב את המסך באמצע הטעינה)
             _binding?.let {
                 it.progressBar.visibility = View.GONE
                 it.scrollView.visibility = View.VISIBLE
@@ -301,7 +298,7 @@ class HomeFragment : Fragment() {
         )
     }
 
-    // חילצתי את בניית הרשימה למתודה אחת כדי למנוע כפילות קוד בין הצלחה לכישלון
+
     private fun showBestMatch(
         jobsWithMatch: List<Pair<com.example.clickjob_finalproject.data.model.JobPost, Int>>,
         employerRatings: Map<String, String>,

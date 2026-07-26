@@ -665,6 +665,7 @@ object UserRepository {
             .addOnSuccessListener { document ->
                 val profile = document.toObject(UserProfile::class.java)
                 if (profile != null) onSuccess(profile)
+                else onFailure(Exception("Profile is null"))
             }
             .addOnFailureListener { onFailure(it) }
     }
