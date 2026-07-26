@@ -9,7 +9,7 @@
 ![Cloud Functions](https://img.shields.io/badge/Cloud_Functions-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 
-<img src="[LOGO_PATH]" alt="ClickJob Logo" width="160"/>
+<img src="screenshots/logo.png" alt="ClickJob Logo" width="160"/>
 
 </div>
 
@@ -27,7 +27,7 @@ The system unifies two roles in a single account — **Worker** and **Employer**
 
 👥 &nbsp;**Dual-Role System** — worker and employer in the same account, each with its own interface, dynamic theming, and workflow.
 
-🔔 &nbsp;**Real-Time Push Notifications** — delivered to the device even when the app is closed, for every event: new applicant, confirmation, cancellation, arrival, and rating request.
+🔔 &nbsp;**Real-Time Push Notifications** — delivered to the device even when the app is closed, for every event: new applicant, confirmation, cancellation,           arrival, and rating request.
 
 📷 &nbsp;**QR Shift Check-In** — scanning a code confirms on-site arrival in real time, with an automatic update to both sides.
 
@@ -56,9 +56,15 @@ The system unifies two roles in a single account — **Worker** and **Employer**
 
 ## Screenshots
 
-| Home | Search | Job Details | Notifications |
-|:---:|:---:|:---:|:---:|
-| `[image]` | `[image]` | `[image]` | `[image]` |
+| Home | Job Details |
+|:---:|:---:|
+| <img src="screenshots/home.png" width="230"/> | <img src="screenshots/job-details.png" width="230"/> |
+
+**Notifications — the same screen adapts to each role:**
+
+| Worker | Employer |
+|:---:|:---:|
+| <img src="screenshots/notifications_worker.png" width="230"/> | <img src="screenshots/notifications_emp.png" width="230"/> |
 
 ---
 
@@ -66,26 +72,9 @@ The system unifies two roles in a single account — **Worker** and **Employer**
 
 The app follows the **MVVM** pattern, separating the view layer, the ViewModels, and the data layer (Repository). It communicates directly with Firestore for most operations, while sensitive logic is moved to the server side.
 
-```
-┌──────────────────────────────────────────────┐
-│              Android App (Kotlin)             │
-│       Views  →  ViewModels  →  Repository     │
-└──────────────────────────────────────────────┘
-        │                          │
-        │ read / write             │ trigger matching
-        ▼                          ▼
-┌────────────────────┐   ┌──────────────────────┐
-│  Firebase          │   │  Matching Engine (AI)│
-│  Firestore · Auth  │   │  Node.js · Cloud Run │
-│  Storage           │   │  [separate repo]     │
-└────────────────────┘   └──────────────────────┘
-        ▲
-        │ triggers
-┌────────────────────┐
-│  Cloud Functions   │
-│  notifications·push│
-└────────────────────┘
-```
+<div align="center">
+<img src="screenshots/Architecture..png" alt="Architecture Diagram" width="720"/>
+</div>
 
 **Splitting responsibility between client and server** is the central design decision: routine operations (reading jobs, applying, managing a profile) run directly against Firestore — fast and simple. But sensitive logic — creating notifications, sending push, and generating rating requests — was intentionally moved to **Cloud Functions**, because code that runs on the device can be bypassed, and the server side guarantees that a client cannot forge actions on behalf of another user.
 
