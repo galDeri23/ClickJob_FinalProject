@@ -17,7 +17,7 @@ ClickJob is an Android application that connects students looking for short-term
 
 The system unifies two roles in a single account — **Worker** and **Employer** — with seamless switching between them, and guides both sides through the entire process: from discovering a job, through application and confirmation, to on-site check-in and mutual rating.
 
-> 🧠 &nbsp;The AI matching engine is maintained in a separate repository → **[Matching Engine](PLACEHOLDER_ENGINE_REPO)**
+> 🧠 &nbsp;The AI matching engine is maintained in a separate repository → **[Matching Engine](https://github.com/natim1997/Final_Project_Jobs)**
 
 ---
 
@@ -100,7 +100,7 @@ The core of the system is an AI-powered matching engine, running as a separate s
 
 The app is responsible for **triggering and display**: through `MatchingService`, it invokes the engine at two points — when a profile is updated (`triggerCandidateMatching`) and when a job is posted (`triggerJobMatching`). The engine computes the matches in the background, writes them to Firestore, and the app reads and displays them as a ranked list. This clean separation lets each side evolve independently.
 
-> 🧠 &nbsp;Full details on the matching algorithm and profile analysis — in the **[Matching Engine repo](PLACEHOLDER_ENGINE_REPO)**.
+> 🧠 &nbsp;Full details on the matching algorithm and profile analysis — in the **[Matching Engine repo](https://github.com/natim1997/Final_Project_Jobs)**.
 
 ---
 
@@ -131,7 +131,7 @@ Security was treated as a core layer, guided by one principle: **in a Firebase a
 
 **1.** Clone the repo:
 \`\`\`bash
-git clone https://github.com/galDeri23/PLACEHOLDER_REPO_NAME.git
+git clone https://github.com/galDeri23/ClickJob_FinalProject.git
 \`\`\`
 
 **2.** Create a project in the [Firebase Console](https://console.firebase.google.com) with Authentication · Firestore · Storage · Cloud Messaging enabled, and add an Android app with the package \`com.example.clickjob_finalproject\`.
@@ -144,16 +144,17 @@ cd functions && npm install
 firebase deploy --only functions
 \`\`\`
 
-**5.** In \`MatchingService.kt\`, set the matching-engine endpoint (see the **[Matching Engine repo](PLACEHOLDER_ENGINE_REPO)**).
+**5.** In \`MatchingService.kt\`, set the matching-engine endpoint (see the **[Matching Engine repo](https://github.com/natim1997/Final_Project_Jobs)**).
 
 **6.** Open in Android Studio, wait for the Gradle sync, and click **Run** ▶.
 
-> Minimum requirement: Android 8.0 (API 26).
+> Minimum requirement: Android 9.0 (API 29).
 
 ---
 
 ## Team
 
-\`[Names · LinkedIn · GitHub · link to the Matching Engine repo]\`
+- [Gal Deri](https://github.com/galDeri23)
+- [Netanel Michel](https://github.com/natim1997)
 
 ---
