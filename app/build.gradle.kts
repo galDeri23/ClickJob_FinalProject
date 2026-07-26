@@ -63,6 +63,7 @@ dependencies {
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-auth")
     implementation(libs.play.services.auth)
     implementation("com.google.android.gms:play-services-auth:21.2.0")
@@ -74,8 +75,11 @@ dependencies {
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
 
+    //QR
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.mlkit:barcode-scanning:17.2.0")
 
     implementation(libs.glide)
 
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }

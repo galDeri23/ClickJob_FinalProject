@@ -34,7 +34,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="תאריך 88.88 ₪--שעה"
+            android:text="העלו קורות חיים"
             android:textSize="13sp"
             android:fontFamily="@font/ploni_regular_aaa"
             android:textColor="#AAAAAA"/>

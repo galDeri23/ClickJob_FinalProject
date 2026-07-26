@@ -1,6 +1,7 @@
 package com.example.clickjob_finalproject.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,12 +17,17 @@ import com.example.clickjob_finalproject.adapters.JobAdapter
 import com.example.clickjob_finalproject.adapters.JobItem
 import com.example.clickjob_finalproject.adapters.ShiftAdapter
 import com.example.clickjob_finalproject.adapters.ShiftItem
+import com.example.clickjob_finalproject.data.repository.UserRepository
 import com.example.clickjob_finalproject.databinding.FragmentHomeBinding
 
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+
+    private var loadedCount = 0
+    private val totalToLoad = 3   // שלוש הסקציות: upcoming shifts, best match, urgent
+    private var screenShown = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,11 +41,35 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // מצב טעינה: מציגים רק את הספינר, מסתירים את כל התוכן
+        binding.progressBar.visibility = View.VISIBLE
+        binding.scrollView.visibility = View.INVISIBLE
+        loadedCount = 0
+        screenShown = false
+
         setupSearchBar()
         setupJobPosting()
-        setupUpcomingShifts()
-        setupBestMatchList()
-        setupUrgentList()
+        setupEmptyShiftCard()
+
+        loadUserLocation()          // רץ ברקע — לא נספר בטעינת המסך
+        setupUpcomingShifts()       // נספר
+        setupBestMatchList()        // נספר
+        setupUrgentList()           // נספר
+    }
+
+    // נקראת בכל פעם שסקציה (מהשלוש) מסיימת — בין אם בהצלחה ובין אם בכישלון
+    private fun onSectionLoaded() {
+        loadedCount++
+        Log.d("HOME_DEBUG", "onSectionLoaded called, count = $loadedCount")
+
+        if (loadedCount >= totalToLoad && !screenShown) {
+            screenShown = true
+            // ווידוא שה-binding עדיין קיים (המשתמש לא עזב את המסך באמצע הטעינה)
+            _binding?.let {
+                it.progressBar.visibility = View.GONE
+                it.scrollView.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun setupJobPosting() {
@@ -56,41 +86,89 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun setupUpcomingShifts() {
-        // TODO: replace with the real list of upcoming shifts (from ViewModel/repository).
-        val items = emptyList<ShiftItem>()
-
-        // No open shifts -> hide section title, carousel and dots, show the prompt card instead
-        if (items.isEmpty()) {
-            binding.tvSectionUpcoming.visibility = View.GONE
-            binding.vpUpcoming.visibility = View.GONE
-            binding.layoutDots.visibility = View.GONE
-            binding.cardNoUpcomingShifts.visibility = View.VISIBLE
-            return
+    private fun setupEmptyShiftCard() {
+        binding.cardNoUpcomingShifts.setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_searchFragment)
         }
+    }
 
-        // Design only supports up to 3 cards/dots in this carousel
-        val shiftsToShow = items.take(3)
-
-        binding.cardNoUpcomingShifts.visibility = View.GONE
-        binding.tvSectionUpcoming.visibility = View.VISIBLE
-        binding.vpUpcoming.visibility = View.VISIBLE
-        binding.layoutDots.visibility = View.VISIBLE
-
-        binding.vpUpcoming.adapter = ShiftAdapter(shiftsToShow)
-
-        // Build the dots manually - one per shift, matching shiftsToShow.size (max 3)
-        setupDots(shiftsToShow.size)
-        binding.vpUpcoming.registerOnPageChangeCallback(
-            object : ViewPager2.OnPageChangeCallback() {
-                override fun onPageSelected(position: Int) {
-                    updateDots(position)
+    private fun loadUserLocation() {
+        UserRepository.getUserProfile(
+            onSuccess = { profile ->
+                // ה-binding עלול להיות null אם המשתמש עזב את המסך בינתיים
+                if (profile.address.isNotEmpty()) {
+                    _binding?.tvLocation?.text = profile.address
                 }
-            }
+            },
+            onFailure = { }   // הכתובת לא קריטית — לא עושים כלום אם היא נכשלת
         )
     }
 
-    // Create one dot ImageView per shift
+    private fun setupUpcomingShifts() {
+        UserRepository.getUpcomingShifts(
+            onSuccess = { jobs ->
+                if (jobs.isEmpty()) {
+                    binding.tvSectionUpcoming.visibility = View.GONE
+                    binding.vpUpcoming.visibility = View.GONE
+                    binding.layoutDots.visibility = View.GONE
+                    binding.cardNoUpcomingShifts.visibility = View.VISIBLE
+                    onSectionLoaded()
+                    return@getUpcomingShifts
+                }
+
+                val dateFormat = java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault())
+                val todayCalendar = java.util.Calendar.getInstance()
+                val tomorrowCalendar = java.util.Calendar.getInstance().apply {
+                    add(java.util.Calendar.DAY_OF_YEAR, 1)
+                }
+
+                val items = jobs.map { job ->
+                    val jobCalendar = java.util.Calendar.getInstance().apply {
+                        timeInMillis = job.date
+                    }
+                    val dateLabel = when {
+                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+                        else -> dateFormat.format(java.util.Date(job.date))
+                    }
+                    ShiftItem(
+                        id = job.id,
+                        title = job.title,
+                        company = job.company,
+                        time = "${job.startTime} - ${job.endTime}",
+                        date = dateLabel,
+                        address = job.address,
+                        category = job.category
+                    )
+                }
+
+                binding.cardNoUpcomingShifts.visibility = View.GONE
+                binding.tvSectionUpcoming.visibility = View.VISIBLE
+                binding.vpUpcoming.visibility = View.VISIBLE
+                binding.layoutDots.visibility = View.VISIBLE
+
+                binding.vpUpcoming.adapter = ShiftAdapter(items) { shift ->
+                    val args = bundleOf("jobId" to shift.id, "isViewOnly" to true)
+                    findNavController().navigate(
+                        R.id.action_homeFragment_to_jobDetailsFragment,
+                        args
+                    )
+                }
+
+                setupDots(items.size)
+                binding.vpUpcoming.registerOnPageChangeCallback(
+                    object : ViewPager2.OnPageChangeCallback() {
+                        override fun onPageSelected(position: Int) {
+                            updateDots(position)
+                        }
+                    }
+                )
+                onSectionLoaded()
+            },
+            onFailure = { onSectionLoaded() }
+        )
+    }
+
     private fun setupDots(count: Int) {
         binding.layoutDots.removeAllViews()
         val size = (8 * resources.displayMetrics.density).toInt()
@@ -100,55 +178,257 @@ class HomeFragment : Fragment() {
             val params = LinearLayout.LayoutParams(size, size)
             params.setMargins(margin, 0, margin, 0)
             dot.layoutParams = params
-            dot.setImageResource(
-                if (i == 0) R.drawable.dot_active else R.drawable.dot_inactive
-            )
+            dot.setImageResource(if (i == 0) R.drawable.dot_active else R.drawable.dot_inactive)
             binding.layoutDots.addView(dot)
         }
     }
 
-    // Highlight the dot for the current page
     private fun updateDots(selected: Int) {
         for (i in 0 until binding.layoutDots.childCount) {
             val dot = binding.layoutDots.getChildAt(i) as ImageView
-            dot.setImageResource(
-                if (i == selected) R.drawable.dot_active else R.drawable.dot_inactive
-            )
+            dot.setImageResource(if (i == selected) R.drawable.dot_active else R.drawable.dot_inactive)
         }
     }
 
     private fun setupBestMatchList() {
-        val items = listOf(
-            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", "90%",false ,"אחזקה", id = "best_1"),
-            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", null, false ,"בעלי חיים",id = "best_2"),
-            JobItem("שם משרה", "EventPro הפקות", "₪45", "4.2", "1.5 ק״מ", "היום", "87%",false ,"אבטחה וביטחון", id = "best_3")
-        )
+        UserRepository.getUserProfile(
+            onSuccess = { profile ->
 
+                Log.d("HOME_DEBUG", "BestMatch: profile loaded")
+                Log.d("HOME_DEBUG", "BestMatch: jobMatches size = ${profile.jobMatches.size}")
+
+                if (profile.jobMatches.isEmpty()) {
+                    binding.tvSectionBestMatch.visibility = View.GONE
+                    binding.rvBestMatch.visibility = View.GONE
+                    onSectionLoaded()
+                    return@getUserProfile
+                }
+
+                UserRepository.getBestMatchJobs(
+                    jobMatches = profile.jobMatches,
+                    onSuccess = { jobsWithMatch ->
+
+                        if (jobsWithMatch.isEmpty()) {
+                            binding.tvSectionBestMatch.visibility = View.GONE
+                            binding.rvBestMatch.visibility = View.GONE
+                            onSectionLoaded()
+                            return@getBestMatchJobs
+                        }
+
+                        val todayCalendar = java.util.Calendar.getInstance()
+                        val tomorrowCalendar = java.util.Calendar.getInstance().apply {
+                            add(java.util.Calendar.DAY_OF_YEAR, 1)
+                        }
+
+                        val employerIds = jobsWithMatch.map { it.first.employerId }.distinct()
+
+                        if (employerIds.isEmpty()) {
+                            val items = jobsWithMatch.map { (job, matchPercent) ->
+                                val jobCalendar = java.util.Calendar.getInstance().apply {
+                                    timeInMillis = job.date
+                                }
+                                val dateLabel = when {
+                                    jobCalendar.get(java.util.Calendar.YEAR) == todayCalendar.get(java.util.Calendar.YEAR) &&
+                                            jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+                                    jobCalendar.get(java.util.Calendar.YEAR) == tomorrowCalendar.get(java.util.Calendar.YEAR) &&
+                                            jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+                                    else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
+                                }
+                                JobItem(
+                                    title = job.title,
+                                    company = job.company,
+                                    price = "₪${job.salary}",
+                                    rating = "",
+                                    distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
+                                    date = dateLabel,
+                                    matchPercent = "$matchPercent%",
+                                    isUrgent = job.isUrgent,
+                                    category = job.category,
+                                    id = job.id
+                                )
+                            }
+
+                            binding.tvSectionBestMatch.visibility = View.VISIBLE
+                            binding.rvBestMatch.visibility = View.VISIBLE
+                            binding.rvBestMatch.layoutManager = LinearLayoutManager(
+                                requireContext(), LinearLayoutManager.HORIZONTAL, false
+                            )
+                            binding.rvBestMatch.adapter = JobAdapter(items) { job -> openJobDetails(job) }
+
+                            onSectionLoaded()
+                            return@getBestMatchJobs
+                        }
+
+                        val employerRatings = mutableMapOf<String, String>()
+                        var loadedEmployers = 0
+
+                        employerIds.forEach { employerId ->
+                            UserRepository.getUserProfileById(
+                                userId = employerId,
+                                onSuccess = { empProfile ->
+                                    if (empProfile.rating > 0) {
+                                        employerRatings[employerId] = String.format("%.1f", empProfile.rating)
+                                    }
+                                    loadedEmployers++
+                                    if (loadedEmployers == employerIds.size) {
+                                        showBestMatch(jobsWithMatch, employerRatings, todayCalendar, tomorrowCalendar)
+                                    }
+                                },
+                                onFailure = { e ->
+                                    Log.e("HOME_DEBUG", "BestMatch: failed loading employer $employerId: ${e.message}")
+                                    loadedEmployers++
+                                    if (loadedEmployers == employerIds.size) {
+                                        showBestMatch(jobsWithMatch, employerRatings, todayCalendar, tomorrowCalendar)
+                                    }
+                                }
+                            )
+                        }
+                    },
+                    onFailure = { e ->
+                        Log.e("HOME_DEBUG", "BestMatch: getBestMatchJobs failed: ${e.message}")
+                        binding.tvSectionBestMatch.visibility = View.GONE
+                        binding.rvBestMatch.visibility = View.GONE
+                        onSectionLoaded()
+                    }
+                )
+            },
+            onFailure = { e ->
+                Log.e("HOME_DEBUG", "BestMatch: getUserProfile failed: ${e.message}")
+                binding.tvSectionBestMatch.visibility = View.GONE
+                binding.rvBestMatch.visibility = View.GONE
+                onSectionLoaded()
+            }
+        )
+    }
+
+    // חילצתי את בניית הרשימה למתודה אחת כדי למנוע כפילות קוד בין הצלחה לכישלון
+    private fun showBestMatch(
+        jobsWithMatch: List<Pair<com.example.clickjob_finalproject.data.model.JobPost, Int>>,
+        employerRatings: Map<String, String>,
+        todayCalendar: java.util.Calendar,
+        tomorrowCalendar: java.util.Calendar
+    ) {
+        if (_binding == null) return
+
+        val items = jobsWithMatch.map { (job, matchPercent) ->
+            val jobCalendar = java.util.Calendar.getInstance().apply { timeInMillis = job.date }
+            val dateLabel = when {
+                jobCalendar.get(java.util.Calendar.YEAR) == todayCalendar.get(java.util.Calendar.YEAR) &&
+                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+                jobCalendar.get(java.util.Calendar.YEAR) == tomorrowCalendar.get(java.util.Calendar.YEAR) &&
+                        jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+                else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
+            }
+            JobItem(
+                title = job.title,
+                company = job.company,
+                price = "₪${job.salary}",
+                rating = employerRatings[job.employerId] ?: "",
+                distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
+                date = dateLabel,
+                matchPercent = "$matchPercent%",
+                isUrgent = job.isUrgent,
+                category = job.category,
+                id = job.id
+            )
+        }
+
+        binding.tvSectionBestMatch.visibility = View.VISIBLE
+        binding.rvBestMatch.visibility = View.VISIBLE
         binding.rvBestMatch.layoutManager = LinearLayoutManager(
             requireContext(), LinearLayoutManager.HORIZONTAL, false
         )
-        binding.rvBestMatch.adapter = JobAdapter(items) { job ->
-            openJobDetails(job)
-        }
+        binding.rvBestMatch.adapter = JobAdapter(items) { job -> openJobDetails(job) }
+
+        onSectionLoaded()
     }
 
     private fun setupUrgentList() {
-        val items = listOf(
-            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "היום", null, id = "urgent_1"),
-            JobItem("שם משרה", "EventPro הפקות", "₪50", "4.7", "2.2 ק״מ", "מחר", null, id = "urgent_2"),
-            JobItem("שם משרה", "EventPro הפקות", "₪55", "4.5", "0.8 ק״מ", "היום", null, id = "urgent_3")
-        )
+        UserRepository.getUrgentJobs(
+            onSuccess = { jobs ->
+                if (jobs.isEmpty()) {
+                    binding.tvSectionUrgent.visibility = View.GONE
+                    binding.rvUrgent.visibility = View.GONE
+                    onSectionLoaded()
+                    return@getUrgentJobs
+                }
 
+                val todayCalendar = java.util.Calendar.getInstance()
+                val tomorrowCalendar = java.util.Calendar.getInstance().apply {
+                    add(java.util.Calendar.DAY_OF_YEAR, 1)
+                }
+
+                val employerIds = jobs.map { it.employerId }.distinct()
+                val employerRatings = mutableMapOf<String, String>()
+                var loadedEmployers = 0
+
+                employerIds.forEach { employerId ->
+                    UserRepository.getUserProfileById(
+                        userId = employerId,
+                        onSuccess = { profile ->
+                            if (profile.rating > 0) {
+                                employerRatings[employerId] = String.format("%.1f", profile.rating)
+                            }
+                            loadedEmployers++
+                            if (loadedEmployers == employerIds.size) {
+                                showUrgent(jobs, employerRatings, todayCalendar, tomorrowCalendar)
+                            }
+                        },
+                        onFailure = { e ->
+                            Log.e("DEBUG", "Failed to load employer $employerId: ${e.message}")
+                            loadedEmployers++
+                            if (loadedEmployers == employerIds.size) {
+                                showUrgent(jobs, employerRatings, todayCalendar, tomorrowCalendar)
+                            }
+                        }
+                    )
+                }
+            },
+            onFailure = { onSectionLoaded() }
+        )
+    }
+
+    private fun showUrgent(
+        jobs: List<com.example.clickjob_finalproject.data.model.JobPost>,
+        employerRatings: Map<String, String>,
+        todayCalendar: java.util.Calendar,
+        tomorrowCalendar: java.util.Calendar
+    ) {
+        if (_binding == null) return
+
+        val items = jobs
+            .sortedBy { it.date }
+            .map { job ->
+                val jobCalendar = java.util.Calendar.getInstance().apply { timeInMillis = job.date }
+                val dateLabel = when {
+                    jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == todayCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "היום"
+                    jobCalendar.get(java.util.Calendar.DAY_OF_YEAR) == tomorrowCalendar.get(java.util.Calendar.DAY_OF_YEAR) -> "מחר"
+                    else -> java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(java.util.Date(job.date))
+                }
+                JobItem(
+                    title = job.title,
+                    company = job.company,
+                    price = "₪${job.salary}",
+                    rating = employerRatings[job.employerId] ?: "",
+                    distance = job.address.split(",").lastOrNull()?.trim() ?: job.address,
+                    date = dateLabel,
+                    matchPercent = null,
+                    isUrgent = true,
+                    category = job.category,
+                    id = job.id
+                )
+            }
+
+        binding.tvSectionUrgent.visibility = View.VISIBLE
+        binding.rvUrgent.visibility = View.VISIBLE
         binding.rvUrgent.layoutManager = LinearLayoutManager(
             requireContext(), LinearLayoutManager.HORIZONTAL, false
         )
-        binding.rvUrgent.adapter = JobAdapter(items) { job ->
-            openJobDetails(job)
-        }
+        binding.rvUrgent.adapter = JobAdapter(items) { job -> openJobDetails(job) }
+
+        onSectionLoaded()
     }
 
-    // Navigates to the job details screen, passing the clicked job's id as an argument.
-    // Requires action_homeFragment_to_jobDetailsFragment to exist in the nav graph.
     private fun openJobDetails(job: JobItem) {
         val args = bundleOf("jobId" to job.id)
         findNavController().navigate(R.id.action_homeFragment_to_jobDetailsFragment, args)

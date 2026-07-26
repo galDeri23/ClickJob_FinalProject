@@ -10,6 +10,7 @@ data class UserProfile(
     val phone: String = "",
     val email: String = "",
     val address: String = "",
+    var city: String = "",
     val searchRadius: Int = 0,
     val availableDays: List<String> = emptyList(),
     val languages: List<String> = emptyList(),
@@ -28,5 +29,7 @@ data class UserProfile(
     val ratingsCount: Int = 0,
     val profileImageUrl: String = "",
     val hasPostedJob: Boolean = false,
+    val jobMatches: List<JobMatch> = emptyList(),
+    val upcomingShifts: List<String> = emptyList(),
     val createdAt: Long = System.currentTimeMillis()
 )

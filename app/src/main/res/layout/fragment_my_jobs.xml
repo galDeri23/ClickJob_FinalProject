@@ -140,7 +140,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="פרסום עבודה"
+                android:text="עבודה חדשה"
                 android:textColor="@color/black"
                 android:textSize="15sp"
                 android:fontFamily="@font/ploni_bold_aaa" />
@@ -234,7 +234,7 @@
         android:paddingHorizontal="16dp"
         android:paddingBottom="16dp"
         android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/tabsRow"
+        app:layout_constraintTop_toBottomOf="@id/cardPostJob"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

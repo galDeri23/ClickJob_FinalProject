@@ -15,10 +15,15 @@ class RatingDialog : DialogFragment() {
 
     private var businessName: String = ""
     private var selectedRating = 0
+    private var onRatingSubmit: ((Double) -> Unit)? = null
 
     companion object {
-        fun newInstance(businessName: String): RatingDialog {
+        fun newInstance(
+            businessName: String,
+            onRatingSubmit: ((Double) -> Unit)? = null
+        ): RatingDialog {
             return RatingDialog().apply {
+                this.onRatingSubmit = onRatingSubmit
                 arguments = Bundle().apply {
                     putString("businessName", businessName)
                 }
@@ -51,12 +56,9 @@ class RatingDialog : DialogFragment() {
             setGravity(android.view.Gravity.CENTER)
             setDimAmount(0.7f)
 
-            // Blur effect only on API 31+
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
                 addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                attributes = attributes.apply {
-                    blurBehindRadius = 20
-                }
+                attributes = attributes.apply { blurBehindRadius = 20 }
             }
         }
 
@@ -74,7 +76,6 @@ class RatingDialog : DialogFragment() {
 
         tvQuestion.text = "כמה אתה מרוצה מחוויית העבודה ב\"$businessName\"?"
 
-        // Handle star selection
         stars.forEachIndexed { index, star ->
             star.setOnClickListener {
                 selectedRating = index + 1
@@ -85,21 +86,21 @@ class RatingDialog : DialogFragment() {
         btnClose.setOnClickListener { dismiss() }
 
         btnRate.setOnClickListener {
-            // TODO: save rating to Firestore
-            dismiss()
+            if (selectedRating > 0) {
+                onRatingSubmit?.invoke(selectedRating.toDouble())
+                dismiss()
+            }
         }
     }
 
     private fun updateStars(stars: List<ImageView>, rating: Int) {
         stars.forEachIndexed { index, star ->
             if (index < rating) {
-                // Filled star - use ic_star_filled with pink color
                 star.setImageResource(R.drawable.ic_star_filled)
                 star.setColorFilter(
                     ContextCompat.getColor(requireContext(), R.color.brand_pink)
                 )
             } else {
-                // Empty star - outline with gray color
                 star.setImageResource(R.drawable.ic_star_outline)
                 star.setColorFilter(
                     ContextCompat.getColor(requireContext(), R.color.text_gray)

@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/screen_bg"
+    android:layoutDirection="rtl">
+
+    <!-- Header: back button + title -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layoutDirection="rtl"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="16dp">
+
+        <ImageView
+            android:id="@+id/ivBack"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_arrow_forward"
+            android:background="@drawable/bg_back_button"
+            android:padding="8dp"
+            android:contentDescription="back" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="דף עובד"
+            android:textColor="@color/text_dark"
+            android:textSize="28sp"
+            android:fontFamily="@font/ploni_bold_aaa"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="32dp">
+
+            <!-- Profile header -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/headerLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="24dp">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/imgProfile"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/bari"
+                    app:shapeAppearanceOverlay="@style/CircleImageStyle"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:text="שם משתמש"
+                    android:textColor="@color/text_dark"
+                    android:textSize="22sp"
+                    android:fontFamily="@font/ploni_bold_aaa"
+                    app:layout_constraintTop_toTopOf="@id/imgProfile"
+                    app:layout_constraintStart_toEndOf="@id/imgProfile"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/tvJobTitle" />
+
+                <TextView
+                    android:id="@+id/tvJobTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginTop="4dp"
+                    android:text="תפקיד"
+                    android:textColor="@color/gray04"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/ploni_regular_aaa"
+                    app:layout_constraintTop_toBottomOf="@id/tvName"
+                    app:layout_constraintStart_toEndOf="@id/imgProfile"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/ratingRow" />
+
+                <LinearLayout
+                    android:id="@+id/ratingRow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    app:layout_constraintTop_toBottomOf="@id/tvJobTitle"
+                    app:layout_constraintStart_toEndOf="@id/imgProfile"
+                    app:layout_constraintBottom_toBottomOf="@id/imgProfile">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_star"
+                        app:tint="@color/gray04"
+                        android:contentDescription="rating" />
+
+                    <TextView
+                        android:id="@+id/tvRating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="4.7"
+                        android:textColor="@color/gray04"
+                        android:textSize="18sp"
+                        android:fontFamily="@font/ploni_regular_aaa"
+                        android:layout_marginStart="7dp" />
+
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Contact buttons -->
+            <LinearLayout
+                android:id="@+id/contactRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="28dp"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:id="@+id/btnPhone"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:background="@drawable/bg_contact_button"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="טלפון"
+                        android:textColor="@color/text_dark"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/ploni_regular_aaa"
+                        android:layout_marginEnd="8dp"/>
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_phone"
+                        android:contentDescription="phone"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/btnSocial"
+                    android:layout_width="0dp"
+                    android:layout_height="42dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:background="@drawable/bg_contact_button"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="סושיאל"
+                        android:textColor="@color/text_dark"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/ploni_regular_aaa"
+                        android:layout_marginEnd="8dp"/>
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_instagram"
+                        android:contentDescription="social"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Skills -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="32dp"
+                android:paddingHorizontal="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="כישורים"
+                    android:textColor="@color/text_dark"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/ploni_bold_aaa" />
+
+                <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/flexHardSkills"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layoutDirection="rtl"
+                    app:flexDirection="row"
+                    app:flexWrap="wrap"
+                    app:alignItems="center"
+                    app:justifyContent="flex_start" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="כישורים רכים"
+                    android:textColor="@color/text_dark"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/ploni_bold_aaa" />
+
+                <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/flexSoftSkills"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layoutDirection="rtl"
+                    app:flexDirection="row"
+                    app:flexWrap="wrap"
+                    app:alignItems="center"
+                    app:justifyContent="flex_start" />
+
+            </LinearLayout>
+
+            <!-- Documents - teal color -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="54dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnDocuments"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#D9EEF1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layoutDirection="rtl"
+                        android:paddingHorizontal="14dp">
+
+                        <ImageView
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:src="@drawable/ic_link"
+                            android:contentDescription="link"
+                            app:tint="@color/text_dark" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:text="קו״ח ומסמכים"
+                            android:textColor="@color/DarkDeepPink"
+                            android:textSize="15sp"
+                            android:fontFamily="@font/ploni_regular_aaa" />
+
+                        <TextView
+                            android:id="@+id/tvDocumentsCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="(0)"
+                            android:textColor="@color/DarkDeepPink"
+                            android:textSize="14sp"
+                            android:fontFamily="@font/ploni_regular_aaa"
+                            android:layout_marginEnd="15dp" />
+
+                        <ImageView
+                            android:id="@+id/ivDocumentsArrow"
+                            android:layout_width="6dp"
+                            android:layout_height="11dp"
+                            android:src="@drawable/ic_arrow_back"
+                            android:contentDescription="open"
+                            app:tint="@color/DarkDeepPink" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
+                    android:id="@+id/layoutDocumentsList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:background="@android:color/white"
+                    android:paddingVertical="8dp"
+                    android:paddingHorizontal="14dp">
+
+                    <LinearLayout
+                        android:id="@+id/rowCv"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layoutDirection="rtl">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_link"
+                            app:tint="@color/employer_primary"
+                            android:contentDescription="cv" />
+
+                        <TextView
+                            android:id="@+id/tvCvName"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:text="קורות חיים"
+                            android:textColor="@color/text_dark"
+                            android:textSize="14sp"
+                            android:fontFamily="@font/ploni_regular_aaa" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/gray02" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutAdditionalDocs"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Approve button at bottom -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnApproveWorker"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="24dp"
+        android:text="אישור עובד"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:fontFamily="@font/ploni_bold_aaa"
+        app:backgroundTint="@color/employer_primary"
+        app:cornerRadius="12dp" />
+
+</LinearLayout>

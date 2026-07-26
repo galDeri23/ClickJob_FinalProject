@@ -64,7 +64,17 @@ class ProfileFragment : Fragment() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { uri -> uploadAdditionalDocument(uri) }
+            result.data?.data?.let { uri ->
+                if (!isPdf(uri)) {
+                    Toast.makeText(
+                        requireContext(),
+                        "ניתן להעלות קבצי PDF בלבד",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@let
+                }
+                uploadAdditionalDocument(uri)
+            }
         }
     }
 
@@ -270,7 +280,9 @@ class ProfileFragment : Fragment() {
 
         binding.btnLogout.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
-            Toast.makeText(requireContext(), "התנתקת בהצלחה", Toast.LENGTH_SHORT).show()
+            val intent = Intent(requireContext(), com.example.clickjob_finalproject.auth.LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
         }
     }
 
@@ -304,9 +316,22 @@ class ProfileFragment : Fragment() {
         // Show delete CV button in edit mode only
         binding.btnDeleteCv.visibility = if (isEditMode) View.VISIBLE else View.GONE
         binding.btnDeleteCv.setOnClickListener {
-            val updatedProfile = currentProfile?.copy(cvUrl = "", cvName = "") ?: return@setOnClickListener
+            val current = currentProfile ?: return@setOnClickListener
+            val urlToDelete = current.cvUrl
+
+            val updatedProfile = current.copy(cvUrl = "", cvName = "")
             currentProfile = updatedProfile
-            renderDocumentsList()
+
+            UserRepository.saveUserProfile(
+                profile = updatedProfile,
+                onSuccess = {
+                    deleteStorageFile(urlToDelete)
+                    renderDocumentsList()
+                },
+                onFailure = {
+                    Toast.makeText(requireContext(), "שגיאה במחיקה", Toast.LENGTH_SHORT).show()
+                }
+            )
         }
 
         // Render additional documents
@@ -337,12 +362,16 @@ class ProfileFragment : Fragment() {
                     textSize = 14f
                     setTextColor(resources.getColor(android.R.color.holo_red_light, null))
                     setOnClickListener {
+                        val urlToDelete = doc.url
                         val updatedDocs = profile.documents.toMutableList().also { it.removeAt(index) }
                         val updatedProfile = currentProfile?.copy(documents = updatedDocs) ?: return@setOnClickListener
                         currentProfile = updatedProfile
                         UserRepository.saveUserProfile(
                             profile = updatedProfile,
-                            onSuccess = { renderDocumentsList() },
+                            onSuccess = {
+                                deleteStorageFile(urlToDelete)
+                                renderDocumentsList()
+                            },
                             onFailure = {}
                         )
                     }
@@ -367,14 +396,19 @@ class ProfileFragment : Fragment() {
         startActivity(intent)
     }
 
+    // Removes the actual file from Storage, so deleted documents don't linger
+    private fun deleteStorageFile(url: String) {
+        if (url.isEmpty()) return
+        FirebaseStorage.getInstance()
+            .getReferenceFromUrl(url)
+            .delete()
+            .addOnFailureListener {
+                android.util.Log.e("STORAGE", "Failed to delete file: ${it.message}")
+            }
+    }
     private fun openDocumentPicker() {
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "*/*"
-            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
-                "application/pdf",
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            ))
+            type = "application/pdf"
         }
         documentPickerLauncher.launch(intent)
     }
@@ -408,6 +442,12 @@ class ProfileFragment : Fragment() {
             }
     }
 
+    // The picker filter isn't always honoured by third-party file providers,
+    // so the chosen file is checked again before uploading
+    private fun isPdf(uri: Uri): Boolean {
+        if (requireContext().contentResolver.getType(uri) == "application/pdf") return true
+        return getFileName(uri).lowercase().endsWith(".pdf")
+    }
     private fun getFileName(uri: Uri): String {
         return requireContext().contentResolver
             .query(uri, null, null, null, null)

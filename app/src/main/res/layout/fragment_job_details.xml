@@ -52,7 +52,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="אתר מעסיק"
+                    android:text="קישור לעסק"
                     android:textColor="@color/text_dark"
                     android:textSize="14sp"
                     android:fontFamily="@font/ploni_regular_aaa"/>
@@ -81,10 +81,9 @@
                     app:tint="@color/text_dark"/>
 
                 <TextView
-                    android:id="@+id/tvAddress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="כתובת"
+                    android:text="צפיה במפה"
                     android:textColor="@color/text_dark"
                     android:textSize="14sp"
                     android:fontFamily="@font/ploni_regular_aaa"/>
@@ -173,7 +172,7 @@
 
             </FrameLayout>
 
-            <!-- Business Card: logo + name/category (right), price box (left) -->
+            <!-- Business Card: category logo + job title / company / address (right), price box (left) -->
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -189,18 +188,19 @@
                     android:layout_height="wrap_content"
                     android:padding="16dp">
 
-                    <!-- Logo + name group: right side together -->
+                    <!-- Logo + text group: right side together -->
                     <LinearLayout
                         android:id="@+id/logoNameGroup"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/priceBox"
                         app:layout_constraintBottom_toBottomOf="parent">
 
-                        <!-- Logo -->
+                        <!-- Category logo -->
                         <ImageView
                             android:id="@+id/imgLogo"
                             android:layout_width="52dp"
@@ -210,7 +210,7 @@
                             android:clipToOutline="true"
                             android:scaleType="centerCrop"/>
 
-                        <!-- Company name + category -->
+                        <!-- Job title + company + address -->
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -218,24 +218,49 @@
                             android:layout_marginStart="10dp">
 
                             <TextView
-                                android:id="@+id/tvCompanyName"
+                                android:id="@+id/tvJobTitle"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="wat-san"
+                                android:text="משלוחים האפי האור"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
                                 android:fontFamily="@font/ploni_bold_aaa"
                                 android:textColor="@color/text_dark"/>
 
                             <TextView
-                                android:id="@+id/tvCategory"
+                                android:id="@+id/tvCompanyName"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
-                                android:text="מסעדנות ואירוח"
-                                android:textSize="13sp"
-                                android:textColor="@color/text_gray"
+                                android:text="wat-san"
+                                android:textSize="16sp"
+                                android:textColor="@color/DarkDeep"
                                 android:fontFamily="@font/ploni_regular_aaa"/>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="2dp">
+
+                                <ImageView
+                                    android:layout_width="12dp"
+                                    android:layout_height="12dp"
+                                    android:layout_marginEnd="4dp"
+                                    android:src="@drawable/ic_location"
+                                    app:tint="@color/text_gray"/>
+
+                                <TextView
+                                    android:id="@+id/tvAddressCard"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="כפר מנחם, ציפורה 3"
+                                    android:textSize="12sp"
+                                    android:textColor="@color/text_gray"
+                                    android:fontFamily="@font/ploni_regular_aaa"/>
+
+                            </LinearLayout>
 
                         </LinearLayout>
 
@@ -256,6 +281,7 @@
                         app:layout_constraintBottom_toBottomOf="parent">
 
                         <TextView
+                            android:id="@+id/tvSalary"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="₪50"
@@ -264,6 +290,7 @@
                             android:fontFamily="@font/ploni_bold_aaa"/>
 
                         <TextView
+                            android:id="@+id/tvSalaryType"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="לשעה"
@@ -277,7 +304,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Timing Card: single card with clock icon + days/hours rows -->
+            <!-- Timing Card: clock icon header + single date/hours row -->
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -295,7 +322,7 @@
                     android:padding="14dp"
                     android:layoutDirection="rtl">
 
-                    <!-- Header row: clock icon + "תיזמון" label, right-aligned -->
+                    <!-- Header row: clock icon + "תזמון" label -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -314,67 +341,22 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="תיזמון"
+                            android:text="תזמון"
                             android:textSize="16sp"
                             android:fontFamily="@font/ploni_bold_aaa"
                             android:textColor="@color/text_dark"/>
 
                     </LinearLayout>
 
-                    <!-- Day rows: each row = day name (right) + hours (left) -->
-
-                    <LinearLayout
+                    <!-- Date range + hours -->
+                    <TextView
+                        android:id="@+id/tvTiming"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="4dp">
-
-                        <TextView
-                            android:id="@+id/tvDay1"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="ראשון 10:00-20:00"
-                            android:textColor="@color/text_dark"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/ploni_regular_aaa"/>
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="4dp">
-
-                        <TextView
-                            android:id="@+id/tvDay2"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="חמישי 9:00-16:00"
-                            android:textColor="@color/text_dark"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/ploni_regular_aaa"/>
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/tvDay3"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="שבת 9:00-13:00"
-                            android:textColor="@color/text_dark"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/ploni_regular_aaa"/>
-
-                    </LinearLayout>
+                        android:text="בתאריך 05/02-07/02, שעות 09:00-17:00"
+                        android:textColor="@color/text_dark"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/ploni_regular_aaa"/>
 
                 </LinearLayout>
 
@@ -393,6 +375,7 @@
                 android:textSize="18sp"/>
 
             <TextView
+                android:id="@+id/tvJobType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
@@ -442,7 +425,7 @@
                 android:fontFamily="@font/ploni_regular_aaa"
                 android:lineSpacingExtra="4dp"
                 android:textSize="14sp"
-                android:text="דרושים עובדי צוות למסעדה אסיאתית [שם העיר] למשמרות בוקר וערב גמישות. המשמרת כוללת קבלת קהל, לקיחת הזמנות, אריזת משלוחים (לוודא רטבים וצ׳ופסטיקס), הגשת מנות ושמירה על ניקיון ואסתטיקה של המקום."
+                android:text="תיאור המשרה יופיע כאן"
                 android:textColor="#9C8F9A"/>
 
         </LinearLayout>

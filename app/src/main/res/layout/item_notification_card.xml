@@ -23,7 +23,8 @@
             android:layout_width="37dp"
             android:layout_height="33dp"
             android:layout_marginTop="35dp"
-            android:layout_marginLeft="316dp"
+
+            android:gravity="center_horizontal"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             tools:src="@drawable/ic_status_check" />
@@ -89,30 +90,44 @@
 
             <TextView
                 android:id="@+id/btnApprove"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
+                android:layout_width="64dp"
+                android:layout_height="25dp"
                 android:text="אישור"
                 android:gravity="center"
-                android:paddingHorizontal="18dp"
                 android:textColor="#FFFFFF"
                 android:textSize="13sp"
                 android:fontFamily="@font/ploni_regular_aaa"
-                android:background="@color/black"
-                android:layout_marginStart="8dp" />
+                android:background="@drawable/bg_approve_button" />
 
             <TextView
                 android:id="@+id/btnCancel"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_width="48dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="8dp"
                 android:text="ביטול"
                 android:gravity="center"
-                android:paddingHorizontal="18dp"
                 android:textColor="#24061E"
                 android:textSize="13sp"
                 android:fontFamily="@font/ploni_regular_aaa"
                 android:background="@drawable/bg_tab_unselected" />
-
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/btnJobPage"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:paddingHorizontal="18dp"
+            android:text="דף המשרה"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:layoutDirection="ltr"
+            android:fontFamily="@font/ploni_regular_aaa"
+            android:background="@drawable/bg_job_page_button"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/tvTimeAgo"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <!-- Single action button: e.g. "דירוג" -->
         <TextView

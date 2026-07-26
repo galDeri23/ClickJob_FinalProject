@@ -72,7 +72,8 @@
             app:boxStrokeColor="@color/input_stroke_color"
             app:boxStrokeWidth="1dp"
             app:boxBackgroundColor="@android:color/white"
-            android:layout_marginBottom="16dp">
+            app:errorEnabled="true"
+            android:layout_marginBottom="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEmail"
@@ -113,7 +114,7 @@
             app:boxBackgroundColor="@android:color/white"
             app:endIconMode="password_toggle"
             app:endIconTint="#AAAAAA"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPassword"
@@ -126,6 +127,50 @@
                 android:gravity="end"/>
 
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Live password requirements -->
+        <LinearLayout
+            android:id="@+id/llPasswordRequirements"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="4dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tvReqLength"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✗ לפחות 8 תווים"
+                android:textSize="13sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textColor="#999999"
+                android:gravity="start"
+                android:paddingVertical="2dp"/>
+
+            <TextView
+                android:id="@+id/tvReqLetter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✗ לפחות אות אחת"
+                android:textSize="13sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textColor="#999999"
+                android:gravity="start"
+                android:paddingVertical="2dp"/>
+
+            <TextView
+                android:id="@+id/tvReqDigit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✗ לפחות ספרה אחת"
+                android:textSize="13sp"
+                android:fontFamily="@font/ploni_regular_aaa"
+                android:textColor="#999999"
+                android:gravity="start"
+                android:paddingVertical="2dp"/>
+
+        </LinearLayout>
 
         <!-- Confirm Password label -->
         <TextView
@@ -153,7 +198,8 @@
             app:boxStrokeWidth="1dp"
             app:boxBackgroundColor="@android:color/white"
             app:endIconMode="password_toggle"
-            app:endIconTint="#AAAAAA">
+            app:endIconTint="#AAAAAA"
+            app:errorEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etConfirmPassword"
@@ -180,7 +226,7 @@
         android:textColor="@android:color/white"
         android:textSize="16sp"
         android:fontFamily="@font/ploni_bold_aaa"
-        app:backgroundTint="@color/brand_pink"
+        app:backgroundTint="@color/DarkDeep"
         app:cornerRadius="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

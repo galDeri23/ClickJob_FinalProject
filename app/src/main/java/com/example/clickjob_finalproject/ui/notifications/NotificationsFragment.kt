@@ -1,19 +1,25 @@
 package com.example.clickjob_finalproject.ui.notifications
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.clickjob_finalproject.AppViewModel
 import com.example.clickjob_finalproject.R
 import com.example.clickjob_finalproject.adapters.NotificationItem
 import com.example.clickjob_finalproject.adapters.NotificationStatus
 import com.example.clickjob_finalproject.adapters.NotificationsAdapter
+import com.example.clickjob_finalproject.data.model.Notification
+import com.example.clickjob_finalproject.data.repository.UserRepository
 import com.example.clickjob_finalproject.databinding.FragmentNotificationsBinding
-import androidx.fragment.app.activityViewModels
-import com.example.clickjob_finalproject.AppViewModel
+import androidx.core.content.edit
 
 class NotificationsFragment : Fragment() {
 
@@ -22,49 +28,7 @@ class NotificationsFragment : Fragment() {
 
     private lateinit var adapter: NotificationsAdapter
     private var isWorkerMode = true
-
     private val appViewModel: AppViewModel by activityViewModels()
-
-    private val workerNotifications = listOf(
-        NotificationItem(
-            title = "נדרש אישור לעבודה ב\"מיט-בר\"",
-            dateTime = "עבודה ביום שני 23.03.26 19:00",
-            timeAgo = "לפני 12 דקות",
-            status = NotificationStatus.ALERT
-        ),
-        NotificationItem(
-            title = "תזכורת לסיום עבודה ב\"מיט-בר\"",
-            dateTime = "27.03.26 00:00",
-            timeAgo = "לפני 12 דקות",
-            status = NotificationStatus.PENDING
-        ),
-        NotificationItem(
-            title = "התקבלת ל\"מאבטח/ת לאירוע\"",
-            dateTime = "שעת אבטחה אושרה. הופעה בשבת ב-20:00",
-            timeAgo = "לפני כשעה",
-            status = NotificationStatus.CONFIRMED
-        ),
-        NotificationItem(
-            title = "דירוג עבודה ב\"חומוס מצמיה\"",
-            dateTime = "דירוגים מעלים את הסיכוי למצוא עבודה",
-            timeAgo = "לפני יום וחצי",
-            status = NotificationStatus.RATING
-        ),
-        NotificationItem(
-            title = "תזכורת להתחלת עבודה ב\"מיט-בר\"",
-            dateTime = "27.03.26 17:00 ב-7 שעות",
-            timeAgo = "לפני 7 שעות",
-            status = NotificationStatus.PEOPLE
-        ),
-        NotificationItem(
-            title = "עבודה בוטלה ב\"השמן\"",
-            dateTime = "לא אושר קבלה",
-            timeAgo = "לפני 11 ימים",
-            status = NotificationStatus.CANCELLED
-        )
-    )
-
-    private val employerNotifications = listOf<NotificationItem>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -78,43 +42,250 @@ class NotificationsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupList()
         setupToggle()
         setupSearch()
-
-        // Show toggle only if user has posted a job
-        val showToggle = arguments?.getBoolean("showToggle", false) ?: false
-        binding.toggleContainer.visibility = if (showToggle) View.VISIBLE else View.GONE
+        checkUserMode()
     }
 
-    private fun setupList() {
+    // Recreate the adapter with the correct mode, then attach it
+    private fun recreateAdapter(isEmployer: Boolean) {
         adapter = NotificationsAdapter(
-            items = workerNotifications,
-            onApprove = { /* TODO: approve action */ },
-            onCancel = { /* TODO: cancel action */ },
-            onRate = { item ->
-                // Extract business name from title e.g. "דירוג עבודה ב\"חומוס מצמיה\""
-                val businessName = item.title
-                    .substringAfter("ב\"")
-                    .removeSuffix("\"")
-                RatingDialog.newInstance(businessName)
-                    .show(childFragmentManager, "RatingDialog")
-            }
+            items = emptyList(),
+            isEmployerMode = isEmployer,
+            onApprove = { item -> handleApprove(item) },
+            onCancel = { item -> handleCancel(item) },
+            onRate = { item -> handleRate(item) },
+            onJobPage = { item -> handleItemClick(item) },
+            onItemClick = { item -> handleItemClick(item) }
         )
         binding.rvNotifications.layoutManager = LinearLayoutManager(requireContext())
         binding.rvNotifications.adapter = adapter
+    }
+
+    // Check if user has posted a job to show toggle
+    private fun checkUserMode() {
+        UserRepository.getUserProfile(
+            onSuccess = { profile ->
+                if (profile.hasPostedJob) {
+                    binding.toggleContainer.visibility = View.VISIBLE
+                    val savedMode = getSavedMode()
+                    isWorkerMode = !savedMode
+                    if (savedMode) switchToEmployerMode() else switchToWorkerMode()
+                } else {
+                    binding.toggleContainer.visibility = View.GONE
+                    isWorkerMode = true
+                    switchToWorkerMode()
+                }
+            },
+            onFailure = {
+                binding.toggleContainer.visibility = View.GONE
+                isWorkerMode = true
+                switchToWorkerMode()
+            }
+        )
+    }
+
+    // Load notifications from Firestore by role
+    private fun loadNotifications(role: String) {
+        UserRepository.getNotifications(
+            role = role,
+            onSuccess = { notifications ->
+                val items = notifications.map { it.toNotificationItem() }
+                adapter.updateItems(items)
+                UserRepository.markNotificationsAsRead(role)
+            },
+            onFailure = { }
+        )
+    }
+
+    // Convert Firestore Notification to UI NotificationItem
+    private fun Notification.toNotificationItem(): NotificationItem {
+        val status = when (type) {
+            "ALERT" -> NotificationStatus.ALERT
+            "CONFIRMED", "WORKER_CONFIRMED" -> NotificationStatus.CONFIRMED
+            "PENDING" -> NotificationStatus.PENDING
+            "CANCELLED", "WORKER_CANCELLED" -> NotificationStatus.CANCELLED
+            "PEOPLE", "NEW_CANDIDATES" -> NotificationStatus.PEOPLE
+            "RATING" -> NotificationStatus.RATING
+            else -> NotificationStatus.PENDING
+        }
+        return NotificationItem(
+            id = id,
+            title = title,
+            dateTime = dateTime,
+            timeAgo = getTimeAgo(createdAt),
+            status = status,
+            jobId = jobId,
+            applicationId = applicationId,
+            actionRequired = actionRequired,
+            isRated = isRated
+        )
+    }
+
+    // Calculate time ago from timestamp
+    private fun getTimeAgo(timestamp: Long): String {
+        val diff = System.currentTimeMillis() - timestamp
+        val minutes = diff / 60000
+        val hours = minutes / 60
+        val days = hours / 24
+        return when {
+            minutes < 60 -> "לפני $minutes דקות"
+            hours < 24 -> "לפני $hours שעות"
+            else -> "לפני $days ימים"
+        }
+    }
+
+    // Worker approves job (double check)
+    private fun handleApprove(item: NotificationItem) {
+        if (item.jobId.isEmpty() || item.applicationId.isEmpty()) return
+
+        UserRepository.getJobById(
+            jobId = item.jobId,
+            onSuccess = { job ->
+                UserRepository.getApplicationById(
+                    applicationId = item.applicationId,
+                    onSuccess = { application ->
+                        UserRepository.confirmJob(
+                            application = application,
+                            job = job,
+                            onSuccess = { loadNotifications("worker") },
+                            onFailure = { }
+                        )
+                    },
+                    onFailure = { }
+                )
+            },
+            onFailure = { }
+        )
+    }
+
+    // Worker cancels job
+    private fun handleCancel(item: NotificationItem) {
+        if (item.jobId.isEmpty() || item.applicationId.isEmpty()) return
+
+        UserRepository.getJobById(
+            jobId = item.jobId,
+            onSuccess = { job ->
+                UserRepository.getApplicationById(
+                    applicationId = item.applicationId,
+                    onSuccess = { application ->
+                        UserRepository.rejectJob(
+                            application = application,
+                            job = job,
+                            onSuccess = { loadNotifications("worker") },
+                            onFailure = { }
+                        )
+                    },
+                    onFailure = { }
+                )
+            },
+            onFailure = { }
+        )
+    }
+    // Open rating dialog
+    private fun handleRate(item: NotificationItem) {
+        if (item.jobId.isEmpty()) return
+
+        if (isWorkerMode) {
+            UserRepository.getJobById(
+                jobId = item.jobId,
+                onSuccess = { job ->
+                    RatingDialog.newInstance(job.company) { score ->
+                        UserRepository.rateEmployer(
+                            employerId = job.employerId,
+                            score = score,
+                            notificationId = item.id,
+                            onSuccess = { loadNotifications("worker") },
+                            onFailure = { }
+                        )
+                    }.show(childFragmentManager, "RatingDialog")
+                },
+                onFailure = { }
+            )
+            return
+        }
+
+        if (item.applicationId.isEmpty()) return
+
+        UserRepository.getApplicationById(
+            applicationId = item.applicationId,
+            onSuccess = { application ->
+                UserRepository.getUserProfileById(
+                    userId = application.workerId,
+                    onSuccess = { profile ->
+                        EmployerRatingDialog.newInstance(
+                            workerName = profile.name,
+                            workerImageUrl = profile.profileImageUrl,
+                            shiftDetails = item.dateTime,
+                            onRatingSubmit = { score ->
+                                UserRepository.rateWorker(
+                                    workerId = application.workerId,
+                                    score = score,
+                                    notificationId = item.id,
+                                    onSuccess = { loadNotifications("employer") },
+                                    onFailure = { }
+                                )
+                            }
+                        ).show(childFragmentManager, "EmployerRatingDialog")
+                    },
+                    onFailure = { }
+                )
+            },
+            onFailure = { }
+        )
+    }
+
+    private fun handleItemClick(item: NotificationItem) {
+        if (item.jobId.isEmpty()) return
+
+        if (!isWorkerMode) {
+            UserRepository.getJobById(
+                jobId = item.jobId,
+                onSuccess = { job ->
+                    val bundle = bundleOf(
+                        "jobId" to item.jobId,
+                        "jobTitle" to job.title,
+                        "jobCompany" to job.company,
+                        "jobCategory" to job.category,
+                        "jobDate" to "",
+                        "jobPrice" to job.salary,
+                        "workersNeeded" to job.workersNeeded
+                    )
+                    findNavController().navigate(
+                        R.id.action_notificationsFragment_to_workerSortingFragment,
+                        bundle
+                    )
+                },
+                onFailure = { }
+            )
+        } else {
+            val isViewOnly = !item.actionRequired
+
+            val args = bundleOf(
+                "jobId" to item.jobId,
+                "applicationId" to item.applicationId,
+                "isViewOnly" to isViewOnly
+            )
+
+            findNavController().navigate(
+                R.id.action_notificationsFragment_to_jobDetailsFragment,
+                args
+            )
+        }
     }
 
     private fun setupToggle() {
         binding.toggleWorker.setOnClickListener {
             if (!isWorkerMode) {
                 isWorkerMode = true
+                saveMode(isEmployer = false)
                 switchToWorkerMode()
             }
         }
         binding.toggleEmployer.setOnClickListener {
             if (isWorkerMode) {
                 isWorkerMode = false
+                saveMode(isEmployer = true)
                 switchToEmployerMode()
             }
         }
@@ -126,7 +297,8 @@ class NotificationsFragment : Fragment() {
         binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         binding.toggleEmployer.background = null
         binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
-        adapter.updateItems(workerNotifications)
+        recreateAdapter(isEmployer = false)
+        loadNotifications("worker")
     }
 
     private fun switchToEmployerMode() {
@@ -135,12 +307,25 @@ class NotificationsFragment : Fragment() {
         binding.toggleEmployer.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         binding.toggleWorker.background = null
         binding.toggleWorker.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_gray))
-        adapter.updateItems(employerNotifications)
+        recreateAdapter(isEmployer = true)
+        loadNotifications("employer")
+    }
+
+    private fun saveMode(isEmployer: Boolean) {
+        requireContext()
+            .getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+            .edit { putBoolean("is_employer_mode", isEmployer) }
+    }
+
+    private fun getSavedMode(): Boolean {
+        return requireContext()
+            .getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+            .getBoolean("is_employer_mode", false)
     }
 
     private fun setupSearch() {
         binding.ivSearch.setOnClickListener {
-            // TODO: open search/filter for notifications
+            // TODO: search/filter notifications
         }
     }
 

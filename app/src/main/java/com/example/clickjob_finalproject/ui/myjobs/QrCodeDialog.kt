@@ -22,18 +22,21 @@ class QrCodeDialog : DialogFragment() {
     private var jobTitle: String = ""
     private var jobCompany: String = ""
     private var category: String = ""
+    private var jobId: String = ""
 
     companion object {
         fun newInstance(
             jobTitle: String,
             jobCompany: String,
-            category: String
+            category: String,
+            jobId: String
         ): QrCodeDialog {
             return QrCodeDialog().apply {
                 arguments = Bundle().apply {
                     putString("jobTitle", jobTitle)
                     putString("jobCompany", jobCompany)
                     putString("category", category)
+                    putString("jobId", jobId)
                 }
             }
         }
@@ -41,9 +44,10 @@ class QrCodeDialog : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        jobTitle = arguments?.getString("jobTitle") ?: ""
+        jobTitle   = arguments?.getString("jobTitle") ?: ""
         jobCompany = arguments?.getString("jobCompany") ?: ""
-        category = arguments?.getString("category") ?: ""
+        category   = arguments?.getString("category") ?: ""
+        jobId      = arguments?.getString("jobId") ?: ""
     }
 
     override fun onCreateView(
@@ -57,7 +61,6 @@ class QrCodeDialog : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Show dialog in center of screen
         dialog?.window?.apply {
             setBackgroundDrawableResource(android.R.color.transparent)
             setLayout(
@@ -68,22 +71,19 @@ class QrCodeDialog : DialogFragment() {
             setDimAmount(0.7f)
         }
 
-        val btnClose = view.findViewById<ImageView>(R.id.btnClose)
-        val tvTime = view.findViewById<TextView>(R.id.tvTime)
-        val tvJobName = view.findViewById<TextView>(R.id.tvJobName)
+        val btnClose   = view.findViewById<ImageView>(R.id.btnClose)
+        val tvTime     = view.findViewById<TextView>(R.id.tvTime)
+        val tvJobName  = view.findViewById<TextView>(R.id.tvJobName)
         val imgCategory = view.findViewById<ImageView>(R.id.imgCategory)
-        val ivQrCode = view.findViewById<ImageView>(R.id.ivQrCode)
+        val ivQrCode   = view.findViewById<ImageView>(R.id.ivQrCode)
 
-        // Set current time
         val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
         tvTime.text = "שעה: ${timeFormat.format(Date())}"
-
-        // Set job details
         tvJobName.text = jobTitle
         imgCategory.setImageResource(EmployerJobsAdapter.getCategoryImage(category))
 
-        // Generate QR code
-        val qrContent = "job:$jobTitle|company:$jobCompany|time:${timeFormat.format(Date())}"
+        // QR content contains jobId for scanning identification
+        val qrContent = "clickjob://scan?jobId=$jobId"
         generateQrCode(qrContent)?.let { bitmap ->
             ivQrCode.setImageBitmap(bitmap)
         }

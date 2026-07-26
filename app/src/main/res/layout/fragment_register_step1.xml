@@ -92,6 +92,25 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- City -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="עיר"
+            android:textSize="16sp"
+            android:fontFamily="@font/ploni_bold_aaa"
+            android:textColor="@color/DarkDeep"
+            android:gravity="start"
+            android:layout_marginBottom="6dp"/>
+
+        <Spinner
+            android:id="@+id/spinnerCity"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_spinner"
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="16dp"/>
+
         <!-- Address -->
         <TextView
             android:layout_width="match_parent"

@@ -26,7 +26,8 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var btnNext: MaterialButton
     private lateinit var tvSkip: TextView
     private lateinit var tvStepTitle: TextView
-    private lateinit var tvStepIndicator: TextView
+    private lateinit var progressBarSteps: ProgressBar
+    private lateinit var tvProgressPercent: TextView
 
     val registerViewModel: RegisterViewModel by viewModels()
 
@@ -37,6 +38,8 @@ class RegisterActivity : AppCompatActivity() {
         "רקע אישי"
     )
 
+    // Progress percentage per step
+    private val stepProgress = listOf(15, 40, 82, 100)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +55,8 @@ class RegisterActivity : AppCompatActivity() {
         btnNext = findViewById(R.id.btnNext)
         tvSkip = findViewById(R.id.tvSkip)
         tvStepTitle = findViewById(R.id.tvStepTitle)
+        progressBarSteps = findViewById(R.id.progressBarSteps)
+        tvProgressPercent = findViewById(R.id.tvProgressPercent)
 
         setupViewPager()
         setupClickListeners()
@@ -95,6 +100,9 @@ class RegisterActivity : AppCompatActivity() {
             Toast.makeText(this, "יש למלא את כל השדות החובה", Toast.LENGTH_SHORT).show()
             return
         }
+
+        // Set default profile image once name is known (Google photo or UI Avatars)
+        registerViewModel.setDefaultProfileImage()
 
         UserRepository.saveUserProfile(
             profile = registerViewModel.buildUserProfile(),
@@ -178,9 +186,17 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun updateStep(step: Int) {
         tvStepTitle.text = stepTitles[step]
+
+        // Update progress bar and percent label
+        progressBarSteps.progress = stepProgress[step]
+        tvProgressPercent.text = "${stepProgress[step]}%"
+
         btnNext.text = if (step == 3) "הצג לי משרות מתאימות" else "הבא"
         if (step == 3) {
-            btnNext.setBackgroundResource(R.color.DarkDeep)
+            btnNext.backgroundTintList = ContextCompat.getColorStateList(this, R.color.brand_pink)
+            progressBarSteps.progressTintList = android.content.res.ColorStateList.valueOf(
+                ContextCompat.getColor(this, R.color.brand_pink)
+            )
         }
         tvSkip.visibility = if (step == 0) View.GONE else View.VISIBLE
     }

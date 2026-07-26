@@ -29,7 +29,6 @@
         android:scaleType="centerCrop"
         app:shapeAppearanceOverlay="@style/CircleImageStyle"
         android:layout_gravity="center"
-        android:layout_marginTop="4dp"
         android:layout_marginBottom="12dp"/>
 
     <!-- Name -->
@@ -91,8 +90,8 @@
 
         <ImageView
             android:id="@+id/ivDocuments"
-            android:layout_width="29dp"
-            android:layout_height="29dp"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
             android:src="@drawable/ic_link"
             android:layout_marginBottom="4dp"/>
 
@@ -123,7 +122,7 @@
             android:textColor="@color/white"
             android:textSize="14sp"
             android:fontFamily="@font/ploni_bold_aaa"
-            app:backgroundTint="#68BAC6"
+            app:backgroundTint="@color/employer_primary"
             app:cornerRadius="8dp"
             android:layout_marginEnd="8dp"/>
 
@@ -132,14 +131,14 @@
             android:id="@+id/btnMoreDetails"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:layout_weight="2"
+            android:layout_height="46dp"
+            android:layout_weight="2.2"
             android:text="פרטים נוספים"
-            android:textColor="#477E87"
+            android:textColor="@color/employer_primary"
             android:textSize="14sp"
             android:fontFamily="@font/ploni_bold_aaa"
             app:backgroundTint="@android:color/white"
-            app:strokeColor="#477E87"
+            app:strokeColor="@color/employer_primary"
             app:strokeWidth="1dp"
             app:cornerRadius="8dp"/>
 
