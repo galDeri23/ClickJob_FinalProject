@@ -1,10 +1,13 @@
 package com.example.clickjob_finalproject
 
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.concurrent.atomic.AtomicInteger
 
 object SeedUsers {
 
     private val db = FirebaseFirestore.getInstance()
+
+    private const val DAY = 24 * 60 * 60 * 1000L
 
     // ===== Real Firebase Auth users =====
     private const val GAL_ID    = "Bqp5ddpJXjd8A9XIXmYQnyTg0O03"
@@ -20,7 +23,9 @@ object SeedUsers {
     private const val LIHI_ID  = "seed_worker_lihi"
     private const val OR_ID    = "seed_worker_or"
 
-    fun seedAll() {
+    fun seedAll(onComplete: () -> Unit = {}) {
+        val now = System.currentTimeMillis()
+
         val users = listOf(
 
             // ===== גל דרעי - the demo star: worker + employer (device A) =====
@@ -37,16 +42,16 @@ object SeedUsers {
                 "licenses"        to listOf("רישיון B", "רישיון D"),
                 "certificates"    to listOf("בגרות", "תואר ראשון", "תעודת הצלה"),
                 "software"        to listOf("Excel", "Word", "PowerPoint"),
-                "jobCategories"   to listOf("חינוך והוראה", "בעלי חיים", "רפואה ובריאות", "טכנולוגיה"),
+                "jobCategories"   to listOf("טכנולוגיה", "חינוך והוראה", "בעלי חיים", "מסעדות"),
                 "softSkills"      to listOf("אסרטיביות", "עבודת צוות", "יצירתיות", "פתרון בעיות", "תקשורת בינאישית", "מנהיגות"),
-                "bio"             to "שמי גל דרעי. מחפשת עבודה בתחומים: חינוך והוראה, בעלי חיים, רפואה ובריאות, טכנולוגיה. זמינה בימים: ראשון, שני, רביעי.",
+                "bio"             to "שמי גל דרעי. סטודנטית להנדסת תוכנה עם ניסיון בשירות, עבודה בצוות וניהול משימות. מחפשת משמרות בתחומי טכנולוגיה, חינוך, בעלי חיים ומסעדנות.",
                 "profileImageUrl" to "https://ui-avatars.com/api/?name=גל+דרעי&background=CE3E8B&color=fff&size=200",
                 "rating"          to 4.7,
                 "ratingsCount"    to 12,
                 "hasPostedJob"    to true,
                 "jobMatches"      to emptyList<Any>(),
                 "upcomingShifts"  to emptyList<Any>(),
-                "createdAt"       to System.currentTimeMillis()
+                "createdAt"       to now - 76 * DAY
             ),
 
             // ===== נועה טל - filler worker (real Auth) =====
@@ -72,7 +77,7 @@ object SeedUsers {
                 "hasPostedJob"    to false,
                 "jobMatches"      to emptyList<Any>(),
                 "upcomingShifts"  to emptyList<Any>(),
-                "createdAt"       to System.currentTimeMillis()
+                "createdAt"       to now - 54 * DAY
             ),
 
             // ===== יוסי כהן - filler worker (real Auth) =====
@@ -98,7 +103,7 @@ object SeedUsers {
                 "hasPostedJob"    to false,
                 "jobMatches"      to emptyList<Any>(),
                 "upcomingShifts"  to emptyList<Any>(),
-                "createdAt"       to System.currentTimeMillis()
+                "createdAt"       to now - 63 * DAY
             ),
 
             // ===== דנה נחום - מסעדת הים - the demo employer (device B) =====
@@ -124,7 +129,7 @@ object SeedUsers {
                 "hasPostedJob"    to true,
                 "jobMatches"      to emptyList<Any>(),
                 "upcomingShifts"  to emptyList<Any>(),
-                "createdAt"       to System.currentTimeMillis()
+                "createdAt"       to now - 91 * DAY
             ),
 
             // ===== רון ביטון - employer, אולם רויאל =====
@@ -150,7 +155,7 @@ object SeedUsers {
                 "hasPostedJob"    to true,
                 "jobMatches"      to emptyList<Any>(),
                 "upcomingShifts"  to emptyList<Any>(),
-                "createdAt"       to System.currentTimeMillis()
+                "createdAt"       to now - 84 * DAY
             ),
 
             // ===== מיכל ינאי - employer, TechStart =====
@@ -176,7 +181,7 @@ object SeedUsers {
                 "hasPostedJob"    to true,
                 "jobMatches"      to emptyList<Any>(),
                 "upcomingShifts"  to emptyList<Any>(),
-                "createdAt"       to System.currentTimeMillis()
+                "createdAt"       to now - 70 * DAY
             ),
 
             // ===== אבי לוי - employer (multi-business) that also takes shifts =====
@@ -202,7 +207,7 @@ object SeedUsers {
                 "hasPostedJob"    to true,
                 "jobMatches"      to emptyList<Any>(),
                 "upcomingShifts"  to emptyList<Any>(),
-                "createdAt"       to System.currentTimeMillis()
+                "createdAt"       to now - 105 * DAY
             ),
 
             // ===== תומר שגב - filler worker (no Auth, applications only) =====
@@ -228,7 +233,7 @@ object SeedUsers {
                 "hasPostedJob"    to false,
                 "jobMatches"      to emptyList<Any>(),
                 "upcomingShifts"  to emptyList<Any>(),
-                "createdAt"       to System.currentTimeMillis()
+                "createdAt"       to now - 48 * DAY
             ),
 
             // ===== ליהי ברק - filler worker (no Auth, applications only) =====
@@ -254,7 +259,7 @@ object SeedUsers {
                 "hasPostedJob"    to false,
                 "jobMatches"      to emptyList<Any>(),
                 "upcomingShifts"  to emptyList<Any>(),
-                "createdAt"       to System.currentTimeMillis()
+                "createdAt"       to now - 39 * DAY
             ),
 
             // ===== אור מזרחי - filler worker (no Auth, applications only) =====
@@ -280,9 +285,18 @@ object SeedUsers {
                 "hasPostedJob"    to false,
                 "jobMatches"      to emptyList<Any>(),
                 "upcomingShifts"  to emptyList<Any>(),
-                "createdAt"       to System.currentTimeMillis()
+                "createdAt"       to now - 32 * DAY
             )
         )
+
+        val completed = AtomicInteger(0)
+
+        fun markFinished() {
+            if (completed.incrementAndGet() == users.size) {
+                android.util.Log.d("SeedUsers", "All demo users were saved")
+                onComplete()
+            }
+        }
 
         users.forEach { user ->
             val userId = user["id"] as String
@@ -290,9 +304,11 @@ object SeedUsers {
                 .set(user)
                 .addOnSuccessListener {
                     android.util.Log.d("SeedUsers", "User saved: ${user["name"]}")
+                    markFinished()
                 }
                 .addOnFailureListener {
                     android.util.Log.e("SeedUsers", "Failed to save: ${user["name"]} - ${it.message}")
+                    markFinished()
                 }
         }
     }

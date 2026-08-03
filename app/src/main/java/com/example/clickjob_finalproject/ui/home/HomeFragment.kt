@@ -26,7 +26,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var loadedCount = 0
-    private val totalToLoad = 3   // שלוש הסקציות: upcoming shifts, best match, urgent
+    private val totalToLoad = 3   // The three sections: upcoming shifts, best match, urgent
     private var screenShown = false
 
     override fun onCreateView(
@@ -92,12 +92,12 @@ class HomeFragment : Fragment() {
     private fun loadUserLocation() {
         UserRepository.getUserProfile(
             onSuccess = { profile ->
-                // ה-binding עלול להיות null אם המשתמש עזב את המסך בינתיים
+                // The binding may be null if the user left the screen in the meantime
                 if (profile.address.isNotEmpty()) {
                     _binding?.tvLocation?.text = profile.address
                 }
             },
-            onFailure = { }   // הכתובת לא קריטית — לא עושים כלום אם היא נכשלת
+            onFailure = { }   // The address is not critical — do nothing if it fails
         )
     }
 
@@ -343,7 +343,17 @@ class HomeFragment : Fragment() {
     private fun setupUrgentList() {
         UserRepository.getUrgentJobs(
             onSuccess = { jobs ->
-                if (jobs.isEmpty()) {
+                val now = System.currentTimeMillis()
+
+                // Show only urgent jobs whose shift hasn't started yet.
+                // The calculation combines the work day (job.date) with the start time (startTime).
+                val futureUrgentJobs = jobs
+                    .filter { job ->
+                        job.isUrgent && getJobStartMillis(job) > now
+                    }
+                    .sortedBy { job -> getJobStartMillis(job) }
+
+                if (futureUrgentJobs.isEmpty()) {
                     binding.tvSectionUrgent.visibility = View.GONE
                     binding.rvUrgent.visibility = View.GONE
                     onSectionLoaded()
@@ -355,7 +365,7 @@ class HomeFragment : Fragment() {
                     add(java.util.Calendar.DAY_OF_YEAR, 1)
                 }
 
-                val employerIds = jobs.map { it.employerId }.distinct()
+                val employerIds = futureUrgentJobs.map { it.employerId }.distinct()
                 val employerRatings = mutableMapOf<String, String>()
                 var loadedEmployers = 0
 
@@ -368,14 +378,24 @@ class HomeFragment : Fragment() {
                             }
                             loadedEmployers++
                             if (loadedEmployers == employerIds.size) {
-                                showUrgent(jobs, employerRatings, todayCalendar, tomorrowCalendar)
+                                showUrgent(
+                                    futureUrgentJobs,
+                                    employerRatings,
+                                    todayCalendar,
+                                    tomorrowCalendar
+                                )
                             }
                         },
                         onFailure = { e ->
                             Log.e("DEBUG", "Failed to load employer $employerId: ${e.message}")
                             loadedEmployers++
                             if (loadedEmployers == employerIds.size) {
-                                showUrgent(jobs, employerRatings, todayCalendar, tomorrowCalendar)
+                                showUrgent(
+                                    futureUrgentJobs,
+                                    employerRatings,
+                                    todayCalendar,
+                                    tomorrowCalendar
+                                )
                             }
                         }
                     )
@@ -383,6 +403,26 @@ class HomeFragment : Fragment() {
             },
             onFailure = { onSectionLoaded() }
         )
+    }
+
+    /**
+     * Returns the shift start time in milliseconds.
+     * job.date holds the work day and startTime holds the time in HH:mm format.
+     */
+    private fun getJobStartMillis(
+        job: com.example.clickjob_finalproject.data.model.JobPost
+    ): Long {
+        val timeParts = job.startTime.trim().split(":")
+        val hour = timeParts.getOrNull(0)?.toIntOrNull() ?: return job.date
+        val minute = timeParts.getOrNull(1)?.toIntOrNull() ?: return job.date
+
+        return java.util.Calendar.getInstance().apply {
+            timeInMillis = job.date
+            set(java.util.Calendar.HOUR_OF_DAY, hour)
+            set(java.util.Calendar.MINUTE, minute)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
     }
 
     private fun showUrgent(
@@ -394,7 +434,7 @@ class HomeFragment : Fragment() {
         if (_binding == null) return
 
         val items = jobs
-            .sortedBy { it.date }
+            .sortedBy { getJobStartMillis(it) }
             .map { job ->
                 val jobCalendar = java.util.Calendar.getInstance().apply { timeInMillis = job.date }
                 val dateLabel = when {

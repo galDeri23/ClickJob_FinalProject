@@ -8,6 +8,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.security.MessageDigest
+import java.util.concurrent.atomic.AtomicInteger
 
 object SeedData {
 
@@ -30,9 +32,15 @@ object SeedData {
     private const val DAY = 24 * 60 * 60 * 1000L
     private const val HOUR = 60 * 60 * 1000L
 
+    /**
+     * Call this single function from a temporary admin/debug button.
+     * Users are written first, so applications never load empty worker profiles.
+     */
     fun seedAll() {
-        seedJobs { jobIds ->
-            seedApplicationsAndNotifications(jobIds)
+        SeedUsers.seedAll {
+            seedJobs { jobIds ->
+                seedApplicationsAndNotifications(jobIds)
+            }
         }
     }
 
@@ -678,9 +686,17 @@ object SeedData {
         val totalJobs = jobs.size
 
         jobs.forEach { (key, job) ->
-            val ref = db.collection("jobs").document()
+            // Stable IDs make this seeder safe to run again without duplicating data.
+            val ref = db.collection("jobs").document("seed_job_$key")
             val jobWithId = job.copy(id = ref.id)
+            val metadata = mapOf<String, Any>(
+                "seedData" to true,
+                "seedKey" to key,
+                "createdAt" to now - jobAgeDays(key) * DAY
+            )
+
             ref.set(jobWithId)
+                .continueWithTask { ref.update(metadata) }
                 .addOnSuccessListener {
                     synchronized(jobIds) {
                         jobIds[key] = ref.id
@@ -690,11 +706,16 @@ object SeedData {
                         }
                     }
                 }
+                .addOnFailureListener {
+                    android.util.Log.e("SeedData", "Failed to save job $key: ${it.message}")
+                }
         }
     }
 
     private fun seedApplicationsAndNotifications(jobIds: Map<String, String>) {
         loadWorkerProfiles { profiles ->
+
+            updateGalJobMatches(jobIds)
 
             // Small helper to keep dateTime strings consistent with actual job dates
             fun line(startTime: String, baseOffsetDays: Long): String {
@@ -742,14 +763,16 @@ object SeedData {
             createApplication(jobIds["avi_3"]!!, GAL_ID, AVI_ID, profiles[GAL_ID], "pending")
 
             // 4. History: finished job -> worker history tab + rating notification
-            createApplication(jobIds["avi_history_2"]!!, GAL_ID, AVI_ID, profiles[GAL_ID], "confirmed")
-            sendNotification(
-                GAL_ID, "worker", "RATING",
-                "דרג את העבודה ב\"EduCenter\"",
-                "דירוגים מעלים את הסיכוי למצוא עבודה",
-                jobIds["avi_history_2"]!!,
-                hoursAgo = 24 * 8
-            )
+            createApplication(jobIds["avi_history_2"]!!, GAL_ID, AVI_ID, profiles[GAL_ID], "confirmed") { appId ->
+                sendNotification(
+                    GAL_ID, "worker", "RATING",
+                    "דרגי את העבודה ב\"EduCenter\"",
+                    "הדירוג שלך עוזר לעובדים אחרים לבחור נכון",
+                    jobIds["avi_history_2"]!!, appId,
+                    isRated = false,
+                    hoursAgo = 24 * 8
+                )
+            }
 
             // 5. Old cancelled notification for flavor
             sendNotification(
@@ -792,9 +815,10 @@ object SeedData {
             createApplication(jobIds["gal_history"]!!, TOMER_ID, GAL_ID, profiles[TOMER_ID], "arrived") { appId ->
                 sendNotification(
                     GAL_ID, "employer", "RATING",
-                    "דירוג העובד \"תומר שגב\"",
-                    "דירוגים מסייעים למצוא עובדים מתאימים",
+                    "דרגי את העובד \"תומר שגב\"",
+                    "הדירוג שלך יסייע למעסיקים נוספים",
                     jobIds["gal_history"]!!, appId,
+                    isRated = false,
                     hoursAgo = 24 * 5
                 )
             }
@@ -883,7 +907,13 @@ object SeedData {
     private fun loadWorkerProfiles(onComplete: (Map<String, Map<String, String>>) -> Unit) {
         val workerIds = listOf(GAL_ID, NOA_ID, YOSI_ID, AVI_ID, TOMER_ID, LIHI_ID, OR_ID)
         val profiles = mutableMapOf<String, Map<String, String>>()
-        var loaded = 0
+        val completed = AtomicInteger(0)
+
+        fun finishOne() {
+            if (completed.incrementAndGet() == workerIds.size) {
+                onComplete(profiles)
+            }
+        }
 
         workerIds.forEach { userId ->
             db.collection("candidates").document(userId)
@@ -895,8 +925,12 @@ object SeedData {
                         "profileImageUrl" to (doc.getString("profileImageUrl") ?: ""),
                         "jobCategory"     to ((doc.get("jobCategories") as? List<*>)?.firstOrNull()?.toString() ?: "")
                     )
-                    loaded++
-                    if (loaded == workerIds.size) onComplete(profiles)
+                    finishOne()
+                }
+                .addOnFailureListener {
+                    android.util.Log.e("SeedData", "Failed to load profile $userId: ${it.message}")
+                    profiles[userId] = emptyMap()
+                    finishOne()
                 }
         }
     }
@@ -909,7 +943,8 @@ object SeedData {
         status: String,
         onCreated: ((String) -> Unit)? = null
     ) {
-        val ref = db.collection("applications").document()
+        val ref = db.collection("applications")
+            .document("seed_app_${jobId}_${workerId}")
         val application = Application(
             id = ref.id,
             jobId = jobId,
@@ -921,9 +956,14 @@ object SeedData {
             workerProfileImageUrl = profile?.get("profileImageUrl") ?: "",
             status = status
         )
-        ref.set(application).addOnSuccessListener {
-            onCreated?.invoke(ref.id)
-        }
+        ref.set(application)
+            .continueWithTask { ref.update(mapOf<String, Any>("seedData" to true)) }
+            .addOnSuccessListener {
+                onCreated?.invoke(ref.id)
+            }
+            .addOnFailureListener {
+                android.util.Log.e("SeedData", "Failed to save application ${ref.id}: ${it.message}")
+            }
     }
 
     private fun updateUpcomingShift(userId: String, jobId: String) {
@@ -931,6 +971,8 @@ object SeedData {
             .update("upcomingShifts", FieldValue.arrayUnion(jobId))
     }
 
+    // NOTE: isRated is now written explicitly so the rating button shows/hides
+    // reliably regardless of the model's default value.
     private fun sendNotification(
         userId: String,
         role: String,
@@ -940,9 +982,12 @@ object SeedData {
         jobId: String,
         applicationId: String = "",
         actionRequired: Boolean = false,
+        isRated: Boolean = false,
         hoursAgo: Long = 2
     ) {
-        val ref = db.collection("notifications").document()
+        val rawId = listOf(userId, role, type, title, jobId, applicationId).joinToString("|")
+        val ref = db.collection("notifications")
+            .document(stableDocumentId("seed_notification", rawId))
         val notification = Notification(
             id = ref.id,
             userId = userId,
@@ -953,8 +998,46 @@ object SeedData {
             jobId = jobId,
             applicationId = applicationId,
             actionRequired = actionRequired,
+            isRated = isRated,
             createdAt = System.currentTimeMillis() - hoursAgo * HOUR
         )
         ref.set(notification)
+            .continueWithTask { ref.update(mapOf<String, Any>("seedData" to true)) }
+            .addOnFailureListener {
+                android.util.Log.e("SeedData", "Failed to save notification ${ref.id}: ${it.message}")
+            }
+    }
+
+    private fun updateGalJobMatches(jobIds: Map<String, String>) {
+        val matches = listOf(
+            mapOf("jobId" to jobIds.getValue("avi_4"), "score" to 96),
+            mapOf("jobId" to jobIds.getValue("michal_1"), "score" to 92),
+            mapOf("jobId" to jobIds.getValue("extra_1"), "score" to 88),
+            mapOf("jobId" to jobIds.getValue("avi_5"), "score" to 85),
+            mapOf("jobId" to jobIds.getValue("extra_6"), "score" to 81)
+        )
+
+        db.collection("candidates").document(GAL_ID)
+            .update("jobMatches", matches)
+            .addOnFailureListener {
+                android.util.Log.e("SeedData", "Failed to update Gal job matches: ${it.message}")
+            }
+    }
+
+    private fun jobAgeDays(key: String): Long = when {
+        key == "gal_history" -> 16
+        key.contains("history") -> 18
+        key == "dana_qr" -> 4
+        key == "dana_open" -> 2
+        key == "gal_active" -> 6
+        else -> 1L + (kotlin.math.abs(key.hashCode().toLong()) % 10L)
+    }
+
+    private fun stableDocumentId(prefix: String, rawValue: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+            .digest(rawValue.toByteArray(Charsets.UTF_8))
+            .take(12)
+            .joinToString("") { byte -> "%02x".format(byte.toInt() and 0xff) }
+        return "${prefix}_$digest"
     }
 }
